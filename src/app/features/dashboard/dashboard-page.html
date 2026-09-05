@@ -1,0 +1,22 @@
+<section class="dashboard">
+  @if (!viewport.isDesktop()) {
+    <app-period-filter class="dashboard__period" [compact]="viewport.isMobile()" />
+  }
+
+  <div class="dashboard__summary">
+    @for (card of summaryCards; track card.label) {
+      <app-summary-card [data]="card" />
+    }
+  </div>
+
+  <div class="dashboard__charts">
+    <app-income-expense-chart [data]="monthlyTotals" />
+    <app-category-chart [data]="categorySpending" />
+  </div>
+
+  <div class="dashboard__lists">
+    <app-upcoming-payments [items]="upcomingPayments" />
+    <app-transaction-list [items]="recentTransactions" />
+    <app-settlement-summary [receivables]="receivables" [payables]="payables" />
+  </div>
+</section>

@@ -1,0 +1,42 @@
+:host {
+  display: block;
+  height: 100dvh;
+}
+
+.shell {
+  height: 100%;
+  background: var(--mat-sys-surface-container-low);
+}
+
+.shell__sidenav {
+  width: 248px;
+  border-right: 1px solid var(--bb-card-border);
+  border-radius: 0;
+  background: var(--mat-sys-surface);
+
+  &--rail {
+    width: 76px;
+  }
+}
+
+.shell__content {
+  background: var(--mat-sys-surface-container-low);
+}
+
+.shell__main {
+  box-sizing: border-box;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+
+  &--mobile {
+    padding: 16px 16px calc(112px + env(safe-area-inset-bottom));
+  }
+}
+
+.shell__fab {
+  position: fixed;
+  right: 16px;
+  bottom: calc(80px + env(safe-area-inset-bottom));
+  z-index: 5;
+}

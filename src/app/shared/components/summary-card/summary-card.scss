@@ -1,0 +1,91 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  padding: 16px 18px;
+}
+
+.card__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.card__label {
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.card__amount {
+  margin: 0;
+  font: var(--mat-sys-headline-small);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+
+.card__hint {
+  margin: 0;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.card--income,
+.card--receivable,
+.card--balance {
+  .card__icon {
+    background: var(--mat-sys-primary-container);
+    color: var(--mat-sys-on-primary-container);
+  }
+}
+
+.card--expense,
+.card--payable {
+  .card__icon {
+    background: var(--mat-sys-error-container);
+    color: var(--mat-sys-on-error-container);
+  }
+}
+
+.card--benefit .card__icon {
+  background: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+}
+
+.card--balance .card__amount {
+  color: var(--mat-sys-primary);
+}
+
+@media (max-width: 767.98px) {
+  .card {
+    padding: 14px;
+  }
+
+  .card__amount {
+    font: var(--mat-sys-title-large);
+    font-weight: 600;
+  }
+}

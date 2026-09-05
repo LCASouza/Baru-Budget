@@ -1,0 +1,24 @@
+<article class="upcoming bb-card">
+  <header class="bb-card__head">
+    <div>
+      <h3 class="bb-card__title">Próximos vencimentos</h3>
+      <p class="bb-card__subtitle">Próximos 30 dias</p>
+    </div>
+  </header>
+
+  <ul class="upcoming__list">
+    @for (item of items(); track item.description) {
+      <li class="upcoming__row">
+        <time class="upcoming__date" [attr.datetime]="item.dueDate">
+          <span class="upcoming__day">{{ item.dueDate | date: 'dd' }}</span>
+          <span class="upcoming__month">{{ item.dueDate | date: 'MMM' }}</span>
+        </time>
+        <div class="upcoming__info">
+          <span class="upcoming__name">{{ item.description }}</span>
+          <span class="upcoming__meta">Vence em {{ item.dueDate | date: 'dd/MM/yyyy' }}</span>
+        </div>
+        <span class="upcoming__amount bb-amount">{{ item.amount | currency }}</span>
+      </li>
+    }
+  </ul>
+</article>

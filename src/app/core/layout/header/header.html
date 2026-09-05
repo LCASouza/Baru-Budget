@@ -1,0 +1,63 @@
+<header [class]="'header header--' + size()">
+  <h1 class="header__title">{{ title() }}</h1>
+
+  @if (size() === 'desktop') {
+    <app-period-filter class="header__period" />
+  }
+
+  <div class="header__actions">
+    <button
+      class="header__context"
+      matButton
+      [matMenuTriggerFor]="contextMenu"
+      aria-label="Contexto financeiro"
+    >
+      <mat-icon>{{ selectedContext().icon }}</mat-icon>
+      <span class="header__context-label">{{ selectedContext().label }}</span>
+      <mat-icon class="header__caret" iconPositionEnd>expand_more</mat-icon>
+    </button>
+    <mat-menu #contextMenu="matMenu">
+      @for (option of contexts; track option.id) {
+        <button
+          mat-menu-item
+          [class.header__menu-item--selected]="option.id === selectedContext().id"
+          (click)="selectContext(option)"
+        >
+          <mat-icon>{{ option.icon }}</mat-icon>
+          <span>{{ option.label }}</span>
+        </button>
+      }
+    </mat-menu>
+
+    @if (size() !== 'mobile') {
+      <button matButton="filled" class="header__new" (click)="newTransaction.emit()">
+        <mat-icon>add</mat-icon>
+        {{ size() === 'desktop' ? 'Nova movimentação' : 'Nova' }}
+      </button>
+    }
+
+    <button
+      class="header__avatar"
+      matIconButton
+      [matMenuTriggerFor]="userMenu"
+      aria-label="Usuário"
+    >
+      <span class="header__initials">{{ user.initials }}</span>
+    </button>
+    <mat-menu #userMenu="matMenu">
+      <div class="header__user">
+        <strong>{{ user.displayName }}</strong>
+        <span>{{ user.email }}</span>
+      </div>
+      <mat-divider />
+      <button mat-menu-item>
+        <mat-icon>person</mat-icon>
+        <span>Perfil</span>
+      </button>
+      <button mat-menu-item>
+        <mat-icon>logout</mat-icon>
+        <span>Sair</span>
+      </button>
+    </mat-menu>
+  </div>
+</header>

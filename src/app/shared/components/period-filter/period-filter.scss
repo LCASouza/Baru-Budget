@@ -1,0 +1,33 @@
+:host {
+  display: inline-block;
+}
+
+.period {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 999px;
+  background: var(--mat-sys-surface-container);
+}
+
+.period__nav {
+  --mat-icon-button-state-layer-size: 36px;
+}
+
+.period__label {
+  --mat-button-text-label-text-color: var(--mat-sys-on-surface);
+  min-width: 156px;
+  font-weight: 600;
+}
+
+.period--compact {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  box-sizing: border-box;
+
+  .period__label {
+    flex: 1 1 auto;
+  }
+}

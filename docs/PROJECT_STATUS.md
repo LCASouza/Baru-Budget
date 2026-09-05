@@ -2,7 +2,9 @@
 
 ## Current Version
 
-No version has been started. The next version is **v0.1 — Foundation**.
+No roadmap version has been started. The next version is **v0.1 — Foundation**.
+
+A visual prototype (pre-v0.1) with mock data was approved on 2026-09-05; see `VISUAL_PROTOTYPE.md`. The prototype does not deliver any financial feature.
 
 ## Roadmap
 
@@ -27,6 +29,7 @@ No version has been started. The next version is **v0.1 — Foundation**.
 
 | Item | Version | Status | Notes |
 |---|---|---|---|
+| Visual prototype | pre-v0.1 | DELIVERED | Approved on 2026-09-05; see `VISUAL_PROTOTYPE.md` |
 | Architectural analysis | v0.1 | PENDING | Required before any implementation (MASTER_PROMPT.md, section 67) |
 
 ## Features
@@ -67,7 +70,7 @@ No version has been started. The next version is **v0.1 — Foundation**.
 
 | ID | Description | Version | Status | Notes |
 |---|---|---|---|---|
-| — | No technical debt registered | — | — | — |
+| DEBT-001 | Initial bundle exceeds the default 500 kB warning budget because of Material shell components | pre-v0.1 | PENDING | Review budget and lazy loading in v0.1 |
 
 ## Excluded Items
 
@@ -87,4 +90,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-05 — Initial document. No version started.
+2026-09-05 — Visual prototype approved. v0.1 not started.

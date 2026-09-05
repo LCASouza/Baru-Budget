@@ -1,0 +1,80 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.transactions {
+  height: 100%;
+}
+
+.transactions__list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.transactions__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--bb-card-border);
+
+  &:first-child {
+    padding-top: 0;
+    border-top: 0;
+  }
+}
+
+.transactions__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--mat-sys-surface-container);
+  color: var(--mat-sys-on-surface-variant);
+
+  &--income {
+    background: var(--mat-sys-primary-container);
+    color: var(--mat-sys-on-primary-container);
+  }
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.transactions__info {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.transactions__name {
+  font: var(--mat-sys-body-medium);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.transactions__meta {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.transactions__amount {
+  font: var(--mat-sys-label-large);
+  white-space: nowrap;
+
+  &--income {
+    color: var(--mat-sys-primary);
+  }
+}

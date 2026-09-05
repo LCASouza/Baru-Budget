@@ -1,0 +1,80 @@
+@use '@angular/material' as mat;
+@use './theme/theme-colors' as theme;
+
+html {
+  height: 100%;
+
+  @include mat.theme(
+    (
+      color: (
+        primary: theme.$primary-palette,
+        tertiary: theme.$tertiary-palette,
+      ),
+      typography: Inter,
+      density: 0,
+    )
+  );
+
+  --bb-chart-income: #20895f;
+  --bb-chart-expense: #8a5cd6;
+  --bb-card-radius: 16px;
+  --bb-card-border: color-mix(in srgb, var(--mat-sys-outline-variant) 70%, transparent);
+}
+
+body {
+  color-scheme: light;
+  margin: 0;
+  height: 100%;
+  background-color: var(--mat-sys-surface-container-low);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+  -webkit-font-smoothing: antialiased;
+}
+
+.bb-card {
+  box-sizing: border-box;
+  padding: 20px;
+  border: 1px solid var(--bb-card-border);
+  border-radius: var(--bb-card-radius);
+  background: var(--mat-sys-surface-container-lowest);
+}
+
+.bb-card__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.bb-card__title {
+  margin: 0;
+  font: var(--mat-sys-title-medium);
+  font-weight: 600;
+}
+
+.bb-card__subtitle {
+  margin: 2px 0 0;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.bb-card__link {
+  font: var(--mat-sys-label-large);
+  color: var(--mat-sys-primary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.bb-amount {
+  font-variant-numeric: tabular-nums;
+}
+
+.bb-dialog-fullscreen {
+  --mat-dialog-container-shape: 0;
+
+  .mat-mdc-dialog-surface {
+    border-radius: 0;
+  }
+}

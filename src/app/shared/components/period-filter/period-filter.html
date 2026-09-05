@@ -1,0 +1,12 @@
+<div class="period" [class.period--compact]="compact()">
+  <button matIconButton class="period__nav" (click)="previous()" aria-label="Mês anterior">
+    <mat-icon>chevron_left</mat-icon>
+  </button>
+  <button matButton class="period__label">
+    <mat-icon>calendar_month</mat-icon>
+    {{ label() }}
+  </button>
+  <button matIconButton class="period__nav" (click)="next()" aria-label="Próximo mês">
+    <mat-icon>chevron_right</mat-icon>
+  </button>
+</div>

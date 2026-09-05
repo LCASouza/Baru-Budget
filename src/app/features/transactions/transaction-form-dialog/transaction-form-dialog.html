@@ -1,0 +1,91 @@
+<h2 mat-dialog-title class="dialog__title">Nova movimentação</h2>
+
+<mat-dialog-content>
+  <form class="tx-form" [formGroup]="form">
+    <mat-button-toggle-group
+      class="tx-form__kind"
+      formControlName="kind"
+      hideSingleSelectionIndicator
+      aria-label="Tipo de movimentação"
+    >
+      <mat-button-toggle value="INCOME">
+        <mat-icon>arrow_downward</mat-icon>
+        Entrada
+      </mat-button-toggle>
+      <mat-button-toggle value="EXPENSE">
+        <mat-icon>arrow_upward</mat-icon>
+        Saída
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Descrição</mat-label>
+      <input matInput formControlName="description" placeholder="Ex.: Supermercado" />
+    </mat-form-field>
+
+    <div class="tx-form__row">
+      <mat-form-field appearance="outline">
+        <mat-label>Valor</mat-label>
+        <span matTextPrefix>R$&nbsp;</span>
+        <input matInput formControlName="amount" inputmode="decimal" placeholder="0,00" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Data</mat-label>
+        <input matInput formControlName="date" [matDatepicker]="picker" />
+        <mat-datepicker-toggle matIconSuffix [for]="picker" />
+        <mat-datepicker #picker />
+      </mat-form-field>
+    </div>
+
+    <div class="tx-form__row">
+      <mat-form-field appearance="outline">
+        <mat-label>Categoria</mat-label>
+        <mat-select formControlName="categoryId">
+          @for (category of categories(); track category.id) {
+            <mat-option [value]="category.id">{{ category.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Conta</mat-label>
+        <mat-select formControlName="accountId">
+          @for (account of accounts; track account.id) {
+            <mat-option [value]="account.id">{{ account.label }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    @if (isExpense()) {
+      <div class="tx-form__origin">
+        <span class="tx-form__label">Tipo/origem</span>
+        <mat-chip-listbox formControlName="origin" aria-label="Origem da saída">
+          @for (origin of origins; track origin.id) {
+            <mat-chip-option [value]="origin.id">{{ origin.label }}</mat-chip-option>
+          }
+        </mat-chip-listbox>
+      </div>
+    }
+
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        @for (status of statuses; track status.id) {
+          <mat-option [value]="status.id">{{ status.label }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Observações</mat-label>
+      <textarea matInput formControlName="notes" rows="2"></textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button matButton mat-dialog-close>Cancelar</button>
+  <button matButton="filled" (click)="save()">Salvar</button>
+</mat-dialog-actions>

@@ -1,0 +1,19 @@
+<div class="more">
+  <span class="more__handle" aria-hidden="true"></span>
+  <h2 class="more__title">Mais</h2>
+  <nav class="more__grid" aria-label="Outras áreas">
+    @for (item of items; track item.path) {
+      <a
+        class="more__item"
+        [routerLink]="item.path"
+        routerLinkActive="more__item--active"
+        (click)="close()"
+      >
+        <span class="more__icon"
+          ><mat-icon>{{ item.icon }}</mat-icon></span
+        >
+        <span class="more__label">{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+</div>

@@ -1,0 +1,33 @@
+<mat-sidenav-container class="shell">
+  @if (!viewport.isMobile()) {
+    <mat-sidenav
+      class="shell__sidenav"
+      [class.shell__sidenav--rail]="viewport.isTablet()"
+      mode="side"
+      [opened]="true"
+      disableClose
+    >
+      <app-sidebar [rail]="viewport.isTablet()" />
+    </mat-sidenav>
+  }
+
+  <mat-sidenav-content class="shell__content">
+    <app-header
+      [title]="navigation.currentTitle()"
+      [size]="viewport.size()"
+      (newTransaction)="openNewTransaction()"
+    />
+
+    <main class="shell__main" [class.shell__main--mobile]="viewport.isMobile()">
+      <router-outlet />
+    </main>
+
+    @if (viewport.isMobile()) {
+      <button matFab extended class="shell__fab" (click)="openNewTransaction()">
+        <mat-icon>add</mat-icon>
+        Nova movimentação
+      </button>
+      <app-bottom-nav (openMore)="openMoreMenu()" />
+    }
+  </mat-sidenav-content>
+</mat-sidenav-container>

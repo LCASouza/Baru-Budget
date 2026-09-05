@@ -1,0 +1,17 @@
+<article [class]="['card', 'bb-card', 'card--' + data().tone]">
+  <div class="card__head">
+    <span class="card__icon" aria-hidden="true"
+      ><mat-icon>{{ data().icon }}</mat-icon></span
+    >
+    <span class="card__label">{{ data().label }}</span>
+  </div>
+  <p class="card__amount bb-amount">
+    @if (data().signed) {
+      <span class="card__sign">{{ sign() }} </span>
+    }
+    {{ absoluteAmount() | currency }}
+  </p>
+  @if (data().hint) {
+    <p class="card__hint">{{ data().hint }}</p>
+  }
+</article>

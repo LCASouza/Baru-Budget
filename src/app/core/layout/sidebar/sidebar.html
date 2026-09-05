@@ -1,0 +1,33 @@
+<nav class="sidebar" [class.sidebar--rail]="rail()" aria-label="Navegação principal">
+  <div class="sidebar__brand">
+    <span class="sidebar__logo" aria-hidden="true">
+      <mat-icon>savings</mat-icon>
+    </span>
+    @if (!rail()) {
+      <span class="sidebar__name">Baru Budget</span>
+    }
+  </div>
+
+  <ul class="sidebar__list">
+    @for (item of items; track item.path) {
+      <li>
+        <a
+          class="sidebar__link"
+          [routerLink]="item.path"
+          routerLinkActive="sidebar__link--active"
+          [matTooltip]="rail() ? item.label : ''"
+          matTooltipPosition="right"
+        >
+          <mat-icon>{{ item.icon }}</mat-icon>
+          @if (!rail()) {
+            <span class="sidebar__label">{{ item.label }}</span>
+          }
+        </a>
+      </li>
+    }
+  </ul>
+
+  @if (!rail()) {
+    <div class="sidebar__footer">Protótipo visual</div>
+  }
+</nav>

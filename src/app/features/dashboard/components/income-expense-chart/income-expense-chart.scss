@@ -1,0 +1,72 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+.chart {
+  height: 100%;
+}
+
+.chart__legend {
+  display: flex;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: var(--mat-sys-label-medium);
+  color: var(--mat-sys-on-surface-variant);
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.chart__swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+
+  &--income {
+    background: var(--bb-chart-income);
+  }
+
+  &--expense {
+    background: var(--bb-chart-expense);
+  }
+}
+
+.chart__svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.chart__grid {
+  stroke: var(--mat-sys-outline-variant);
+  stroke-width: 1;
+}
+
+.chart__tick,
+.chart__month {
+  fill: var(--mat-sys-on-surface-variant);
+  font-family: inherit;
+  font-size: 11px;
+}
+
+.chart__bar {
+  transition: opacity 0.15s ease;
+
+  &--income {
+    fill: var(--bb-chart-income);
+  }
+
+  &--expense {
+    fill: var(--bb-chart-expense);
+  }
+
+  &:hover {
+    opacity: 0.8;
+  }
+}

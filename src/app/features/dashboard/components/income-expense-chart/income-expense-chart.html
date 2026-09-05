@@ -1,0 +1,48 @@
+<article class="chart bb-card">
+  <header class="bb-card__head">
+    <div>
+      <h3 class="bb-card__title">Receitas × Despesas</h3>
+      <p class="bb-card__subtitle">Últimos 6 meses</p>
+    </div>
+    <ul class="chart__legend">
+      <li><span class="chart__swatch chart__swatch--income"></span>Receitas</li>
+      <li><span class="chart__swatch chart__swatch--expense"></span>Despesas</li>
+    </ul>
+  </header>
+
+  <svg
+    class="chart__svg"
+    [attr.viewBox]="viewBox()"
+    role="img"
+    aria-label="Receitas e despesas por mês"
+  >
+    @for (tick of ticks(); track tick.label) {
+      <line
+        class="chart__grid"
+        [attr.x1]="plotLeft"
+        [attr.x2]="plotRight()"
+        [attr.y1]="tick.y"
+        [attr.y2]="tick.y"
+      />
+      <text class="chart__tick" [attr.x]="plotLeft - 8" [attr.y]="tick.y + 4" text-anchor="end">
+        {{ tick.label }}
+      </text>
+    }
+    @for (group of groups(); track group.month) {
+      <path class="chart__bar chart__bar--income" [attr.d]="group.income.path">
+        <title>Receitas · {{ group.month }}: {{ group.income.value | currency }}</title>
+      </path>
+      <path class="chart__bar chart__bar--expense" [attr.d]="group.expense.path">
+        <title>Despesas · {{ group.month }}: {{ group.expense.value | currency }}</title>
+      </path>
+      <text
+        class="chart__month"
+        [attr.x]="group.labelX"
+        [attr.y]="baseline + 18"
+        text-anchor="middle"
+      >
+        {{ group.month }}
+      </text>
+    }
+  </svg>
+</article>
