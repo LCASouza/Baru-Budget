@@ -2,15 +2,15 @@
 
 ## Current Version
 
-No roadmap version has been started. The next version is **v0.1 — Foundation**.
+**v0.1 — Foundation** (IN_PROGRESS). The architectural analysis is delivered in `ARCHITECTURE_ANALYSIS_V0.1.md`; implementation starts after its approval. Version file: `versions/v0.1.md`.
 
-A visual prototype (pre-v0.1) with mock data was approved on 2026-09-05; see `VISUAL_PROTOTYPE.md`. The prototype does not deliver any financial feature.
+The visual prototype (pre-v0.1) was approved on 2026-09-05; see `VISUAL_PROTOTYPE.md`.
 
 ## Roadmap
 
 | Version | Name | Status | Notes |
 |---|---|---|---|
-| v0.1 | Foundation | PENDING | Angular project, feature-based structure, Supabase setup, migrations, base schema (profiles, categories, accounts), financial types, initial layout, initial tests |
+| v0.1 | Foundation | IN_PROGRESS | Angular project, feature-based structure, Supabase setup, migrations, base schema (profiles, categories, accounts), financial types, initial layout, initial tests |
 | v0.2 | Auth, RLS and Deploy | PENDING | Login, logout, session, protected routes, initial RLS policies, Cloudflare Pages automatic deploy, basic mobile validation |
 | v0.3 | Transactions | PENDING | INCOME, EXPENSE, TRANSFER; accounts, benefits, categories, CRUD, basic filters, balance, status |
 | v0.4 | Households and Sharing | PENDING | households, household_members, financial_access_grants, VIEW, MANAGE, non-transitivity, created_by/updated_by, complete policies |
@@ -30,19 +30,20 @@ A visual prototype (pre-v0.1) with mock data was approved on 2026-09-05; see `VI
 | Item | Version | Status | Notes |
 |---|---|---|---|
 | Visual prototype | pre-v0.1 | DELIVERED | Approved on 2026-09-05; see `VISUAL_PROTOTYPE.md` |
-| Architectural analysis | v0.1 | PENDING | Required before any implementation (MASTER_PROMPT.md, section 67) |
+| Architectural analysis | v0.1 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.1.md`; awaiting approval |
+| v0.1 implementation | v0.1 | PENDING | Starts after approval of the architectural analysis |
 
 ## Features
 
 | ID | Feature | Version | Status | Notes |
 |---|---|---|---|---|
-| FEAT-001 | Angular project foundation | v0.1 | PENDING | Standalone components, strict TypeScript, feature-based structure |
+| FEAT-001 | Angular project foundation | v0.1 | DELIVERED | Delivered by the approved visual prototype (Angular 22, standalone, strict, feature-based) |
 | FEAT-002 | Supabase project and migrations | v0.1 | PENDING | PostgreSQL, migration strategy, base schema |
 | FEAT-003 | Profiles | v0.1 | PENDING | Table linked to Supabase Auth users |
 | FEAT-004 | Categories | v0.1 | PENDING | Income and expense categories, customizable |
 | FEAT-005 | Accounts | v0.1 | PENDING | Types BANK, CASH, BENEFIT, OTHER |
 | FEAT-006 | Financial types | v0.1 | PENDING | INCOME, EXPENSE, TRANSFER, SETTLEMENT |
-| FEAT-007 | Application shell | v0.1 | PENDING | Sidebar on desktop, adaptive navigation on mobile, theme, temporary home page |
+| FEAT-007 | Application shell | v0.1 | DELIVERED | Delivered by the approved visual prototype (sidebar, rail, bottom navigation, theme, mock dashboard) |
 | FEAT-008 | Authentication | v0.2 | PENDING | Email and password, login, logout, session, protected routes |
 | FEAT-009 | Row Level Security | v0.2 | PENDING | Initial policies on every financial table |
 | FEAT-010 | Cloudflare Pages deploy | v0.2 | PENDING | Automatic deploy from the main branch |
@@ -90,4 +91,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-05 — Visual prototype approved. v0.1 not started.
+2026-09-05 — v0.1 started: architectural analysis delivered, awaiting approval.
