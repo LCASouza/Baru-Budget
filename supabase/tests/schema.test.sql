@@ -60,6 +60,12 @@ select has_index('public', 'transactions', 'transactions_account_idx', 'transact
 select has_index('public', 'transactions', 'transactions_destination_account_idx', 'transactions has the destination account index');
 
 select has_view('public', 'account_balances', 'account_balances view exists');
+select has_view('public', 'monthly_transaction_totals', 'monthly_transaction_totals view exists');
+select has_column('public', 'monthly_transaction_totals', 'month', 'monthly_transaction_totals.month exists');
+select has_column('public', 'monthly_transaction_totals', 'kind', 'monthly_transaction_totals.kind exists');
+select has_column('public', 'monthly_transaction_totals', 'total', 'monthly_transaction_totals.total exists');
+select has_column('public', 'monthly_transaction_totals', 'transaction_count', 'monthly_transaction_totals.transaction_count exists');
+select has_column('public', 'monthly_transaction_totals', 'household_id', 'monthly_transaction_totals.household_id exists');
 select has_column('public', 'account_balances', 'account_id', 'account_balances.account_id exists');
 select has_column('public', 'account_balances', 'owner_user_id', 'account_balances.owner_user_id exists');
 select has_column('public', 'account_balances', 'opening_balance', 'account_balances.opening_balance exists');

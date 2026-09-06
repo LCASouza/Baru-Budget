@@ -3,20 +3,77 @@
     <app-period-filter class="dashboard__period" [compact]="viewport.isMobile()" />
   }
 
-  <div class="dashboard__summary">
-    @for (card of summaryCards; track card.label) {
-      <app-summary-card [data]="card" />
+  @if (store.isLoading()) {
+    <mat-progress-bar mode="indeterminate" />
+  }
+
+  @if (store.error()) {
+    <article class="bb-card">
+      <app-empty-state
+        icon="error_outline"
+        title="Não foi possível carregar o dashboard"
+        description="Verifique a conexão e tente novamente."
+      >
+        <button matButton="outlined" (click)="store.reload()">Tentar novamente</button>
+      </app-empty-state>
+    </article>
+  } @else if (!store.isHousehold() && !store.hasAccounts()) {
+    <article class="bb-card">
+      <app-empty-state
+        icon="account_balance"
+        title="Cadastre uma conta para começar"
+        description="O dashboard mostra receitas, despesas e saldos a partir das suas movimentações."
+      >
+        <a matButton="filled" routerLink="/settings/accounts">Cadastrar conta</a>
+      </app-empty-state>
+    </article>
+  } @else {
+    <div class="dashboard__summary">
+      @for (card of store.cards(); track card.label) {
+        <app-summary-card [data]="card" />
+      }
+    </div>
+
+    @if (store.isEmptyMonth()) {
+      <article class="bb-card">
+        <app-empty-state
+          icon="insights"
+          [title]="store.isHousehold() ? 'Nenhuma movimentação do grupo neste período' : 'Nenhuma movimentação neste período'"
+          [description]="store.isHousehold() ? 'Marque uma movimentação com o grupo para acompanhá-la aqui.' : 'Registre entradas e saídas para ver o resumo do período.'"
+        >
+          @if (store.canManage() && !store.isHousehold()) {
+            <button matButton="filled" (click)="create()">
+              <mat-icon>add</mat-icon>
+              Nova movimentação
+            </button>
+          }
+          <a matButton="outlined" routerLink="/transactions">Ver movimentações</a>
+        </app-empty-state>
+      </article>
     }
-  </div>
 
-  <div class="dashboard__charts">
-    <app-income-expense-chart [data]="monthlyTotals" />
-    <app-category-chart [data]="categorySpending" />
-  </div>
+    <div class="dashboard__charts">
+      <app-income-expense-chart
+        [data]="store.monthlySeries()"
+        [subtitle]="store.hasEvolutionData() ? 'Últimos 6 meses' : 'Sem movimentações nos últimos 6 meses'"
+      />
+      <app-category-chart [data]="store.byCategory()" />
+    </div>
 
-  <div class="dashboard__lists">
-    <app-upcoming-payments [items]="upcomingPayments" />
-    <app-transaction-list [items]="recentTransactions" />
-    <app-settlement-summary [receivables]="receivables" [payables]="payables" />
-  </div>
+    <div class="dashboard__lists">
+      @if (store.isHousehold()) {
+        <app-category-chart
+          [data]="store.byOwner()"
+          title="Gastos por pessoa"
+          emptyMessage="Sem despesas do grupo no período."
+        />
+      }
+      <app-pending-payments [items]="store.pending()" (openTransaction)="open($event)" />
+      <app-transaction-list
+        [items]="store.recent()"
+        [showOwner]="store.isHousehold()"
+        (openTransaction)="open($event)"
+      />
+    </div>
+  }
 </section>

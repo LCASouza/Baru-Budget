@@ -1,13 +1,14 @@
 import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { ViewportService } from '../../../../core/layout/viewport.service';
+import { formatTickLabel, niceTickStep } from '../../dashboard-summary';
 import { MonthlyTotals } from '../../dashboard.models';
 
 const DESKTOP_WIDTH = 600;
 const MOBILE_WIDTH = 360;
 const HEIGHT = 220;
 const PADDING = { top: 12, right: 8, bottom: 28, left: 52 } as const;
-const TICK_STEP = 2000;
+const TARGET_TICKS = 4;
 const BAR_RADIUS = 4;
 const BAR_GAP = 4;
 const MAX_BAR_WIDTH = 22;
@@ -18,6 +19,7 @@ interface Bar {
 }
 
 interface BarGroup {
+  readonly key: string;
   readonly month: string;
   readonly labelX: number;
   readonly income: Bar;
@@ -58,6 +60,7 @@ function yFor(value: number, max: number): number {
 })
 export class IncomeExpenseChart {
   readonly data = input.required<readonly MonthlyTotals[]>();
+  readonly subtitle = input('Últimos 6 meses');
 
   private readonly viewport = inject(ViewportService);
 
@@ -70,16 +73,25 @@ export class IncomeExpenseChart {
   protected readonly plotRight = computed(() => this.width() - PADDING.right);
   protected readonly baseline = HEIGHT - PADDING.bottom;
 
+  // The axis adapts to the data: without a fixed step, months in the hundreds and
+  // months in the tens of thousands both stay readable.
+  private readonly tickStep = computed(() => {
+    const highest = Math.max(0, ...this.data().flatMap((item) => [item.income, item.expense]));
+    return niceTickStep(highest, TARGET_TICKS);
+  });
+
   private readonly maxValue = computed(() => {
-    const highest = Math.max(...this.data().flatMap((item) => [item.income, item.expense]));
-    return Math.max(TICK_STEP, Math.ceil(highest / TICK_STEP) * TICK_STEP);
+    const step = this.tickStep();
+    const highest = Math.max(0, ...this.data().flatMap((item) => [item.income, item.expense]));
+    return Math.max(step, Math.ceil(highest / step) * step);
   });
 
   protected readonly ticks = computed<Tick[]>(() => {
     const max = this.maxValue();
+    const step = this.tickStep();
     const ticks: Tick[] = [];
-    for (let value = 0; value <= max; value += TICK_STEP) {
-      ticks.push({ y: yFor(value, max), label: value === 0 ? '0' : `${value / 1000} mil` });
+    for (let value = 0; value <= max; value += step) {
+      ticks.push({ y: yFor(value, max), label: formatTickLabel(value) });
     }
     return ticks;
   });
@@ -94,6 +106,7 @@ export class IncomeExpenseChart {
     return data.map((item, index) => {
       const center = PADDING.left + groupWidth * index + groupWidth / 2;
       return {
+        key: item.key,
         month: item.month,
         labelX: center,
         income: this.bar(center - barWidth - BAR_GAP / 2, item.income, max, barWidth),

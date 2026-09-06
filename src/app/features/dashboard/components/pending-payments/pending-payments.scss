@@ -3,11 +3,11 @@
   min-width: 0;
 }
 
-.upcoming {
+.pending {
   height: 100%;
 }
 
-.upcoming__list {
+.pending__list {
   display: flex;
   flex-direction: column;
   margin: 0;
@@ -15,7 +15,7 @@
   list-style: none;
 }
 
-.upcoming__row {
+.pending__row {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -28,7 +28,7 @@
   }
 }
 
-.upcoming__date {
+.pending__date {
   display: flex;
   flex: none;
   flex-direction: column;
@@ -41,26 +41,26 @@
   color: var(--mat-sys-on-tertiary-container);
 }
 
-.upcoming__day {
+.pending__day {
   font: var(--mat-sys-title-medium);
   font-weight: 700;
   line-height: 1;
 }
 
-.upcoming__month {
+.pending__month {
   font: var(--mat-sys-label-small);
   text-transform: uppercase;
   line-height: 1.2;
 }
 
-.upcoming__info {
+.pending__info {
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
   min-width: 0;
 }
 
-.upcoming__name {
+.pending__name {
   font: var(--mat-sys-body-medium);
   font-weight: 500;
   white-space: nowrap;
@@ -68,12 +68,56 @@
   text-overflow: ellipsis;
 }
 
-.upcoming__meta {
+.pending__meta {
   font: var(--mat-sys-body-small);
   color: var(--mat-sys-on-surface-variant);
 }
 
-.upcoming__amount {
+.pending__amount {
   font: var(--mat-sys-label-large);
   white-space: nowrap;
+}
+
+.pending__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pending__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 4px;
+  border: 0;
+  border-top: 1px solid var(--bb-card-border);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--mat-sys-surface-container);
+    outline: none;
+  }
+}
+
+li:first-child .pending__row {
+  border-top: 0;
+}
+
+.pending__date--overdue {
+  background: var(--mat-sys-error-container);
+  color: var(--mat-sys-on-error-container);
+}
+
+.pending__empty {
+  margin: 0;
+  padding: 12px 0;
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
 }

@@ -1,8 +1,15 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
-import { RecentTransaction } from '../../dashboard.models';
+import { TransactionView } from '../../../transactions/transaction.model';
+
+const KIND_ICONS = {
+  INCOME: 'arrow_downward',
+  EXPENSE: 'arrow_upward',
+  TRANSFER: 'swap_horiz',
+  SETTLEMENT: 'handshake',
+} as const;
 
 @Component({
   selector: 'app-transaction-list',
@@ -12,5 +19,10 @@ import { RecentTransaction } from '../../dashboard.models';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TransactionList {
-  readonly items = input.required<readonly RecentTransaction[]>();
+  readonly items = input.required<readonly TransactionView[]>();
+  /** Shows who registered the transaction instead of the account. */
+  readonly showOwner = input(false);
+  readonly openTransaction = output<TransactionView>();
+
+  protected readonly kindIcons = KIND_ICONS;
 }

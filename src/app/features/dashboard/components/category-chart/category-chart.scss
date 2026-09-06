@@ -50,3 +50,10 @@
   color: var(--mat-sys-on-surface-variant);
   white-space: nowrap;
 }
+
+.categories__empty {
+  margin: 0;
+  padding: 12px 0;
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+}

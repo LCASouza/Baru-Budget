@@ -2,7 +2,7 @@
 
 Personal and family finance management web application.
 
-Current state: v0.4 (Households and Sharing) — households with ADMIN/MEMBER roles, personal access grants (VIEW/MANAGE) enforced by row level security, a real financial context selector, on top of the v0.3 transactions, accounts and categories, deployed at https://baru-budget.pages.dev. The dashboard still shows mock data until v0.5. See `docs/PROJECT_STATUS.md` for the roadmap.
+Current state: v0.5 (Dashboard) — real summary cards, six-month income and expense evolution, expenses by category and by person, pending and recent transactions, all following the selected month and financial context, on top of the v0.4 households and sharing, deployed at https://baru-budget.pages.dev. See `docs/PROJECT_STATUS.md` for the roadmap.
 
 ## Stack
 
@@ -47,5 +47,5 @@ Project documentation lives exclusively in `docs/*.md`:
 - `docs/MASTER_PROMPT.md` — product specification and rules
 - `docs/DOCUMENTATION_POLICY.md` — documentation governance
 - `docs/PROJECT_STATUS.md` — roadmap, features, bugs and technical debt
-- `docs/ARCHITECTURE_ANALYSIS_V0.1.md` to `V0.4.md` — approved architecture per version
+- `docs/ARCHITECTURE_ANALYSIS_V0.1.md` to `V0.5.md` — approved architecture per version
 - `docs/versions/` — one file per version

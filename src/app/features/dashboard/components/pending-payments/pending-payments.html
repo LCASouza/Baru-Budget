@@ -1,0 +1,39 @@
+<article class="pending bb-card">
+  <header class="bb-card__head">
+    <div>
+      <h3 class="bb-card__title">Pendências do período</h3>
+      <p class="bb-card__subtitle">
+        {{ items().length }} {{ items().length === 1 ? 'movimentação pendente' : 'movimentações pendentes' }}
+      </p>
+    </div>
+  </header>
+
+  @if (items().length === 0) {
+    <p class="pending__empty">Nenhuma pendência neste período.</p>
+  } @else {
+    <ul class="pending__list">
+      @for (item of items(); track item.view.transaction.id) {
+        <li>
+          <button type="button" class="pending__row" (click)="openTransaction.emit(item.view)">
+            <time
+              class="pending__date"
+              [class.pending__date--overdue]="item.status === 'OVERDUE'"
+              [attr.datetime]="item.dueDate"
+            >
+              <span class="pending__day">{{ item.dueDate | date: 'dd' }}</span>
+              <span class="pending__month">{{ item.dueDate | date: 'MMM' }}</span>
+            </time>
+            <span class="pending__info">
+              <span class="pending__name">{{ item.view.transaction.description }}</span>
+              <span class="pending__meta">
+                {{ statusLabel(item.status, item.view.transaction.kind) }} ·
+                {{ item.dueDate | date: 'dd/MM/yyyy' }}
+              </span>
+            </span>
+            <span class="pending__amount bb-amount">{{ item.view.transaction.amount | currency }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</article>

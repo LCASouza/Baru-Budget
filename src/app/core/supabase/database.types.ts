@@ -504,6 +504,32 @@ export type Database = {
           },
         ]
       }
+      monthly_transaction_totals: {
+        Row: {
+          household_id: string | null
+          kind: Database["public"]["Enums"]["transaction_kind"] | null
+          month: string | null
+          owner_user_id: string | null
+          total: number | null
+          transaction_count: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       can_manage: { Args: { owner: string }; Returns: boolean }

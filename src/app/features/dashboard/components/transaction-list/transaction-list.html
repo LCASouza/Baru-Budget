@@ -1,34 +1,54 @@
 <article class="transactions bb-card">
   <header class="bb-card__head">
     <div>
-      <h3 class="bb-card__title">Transações recentes</h3>
-      <p class="bb-card__subtitle">Últimos lançamentos</p>
+      <h3 class="bb-card__title">Movimentações recentes</h3>
+      <p class="bb-card__subtitle">Últimos lançamentos do período</p>
     </div>
     <a class="bb-card__link" routerLink="/transactions">Ver todas</a>
   </header>
 
-  <ul class="transactions__list">
-    @for (item of items(); track item.description) {
-      <li class="transactions__row">
-        <span
-          class="transactions__icon"
-          [class.transactions__icon--income]="item.kind === 'INCOME'"
-        >
-          <mat-icon>{{ item.icon }}</mat-icon>
-        </span>
-        <div class="transactions__info">
-          <span class="transactions__name">{{ item.description }}</span>
-          <span class="transactions__meta"
-            >{{ item.date | date: 'dd/MM/yyyy' }} · {{ item.category }}</span
+  @if (items().length === 0) {
+    <p class="transactions__empty">Nenhuma movimentação no período.</p>
+  } @else {
+    <ul class="transactions__list">
+      @for (item of items(); track item.transaction.id) {
+        <li>
+          <button
+            type="button"
+            class="transactions__row"
+            [class.transactions__row--cancelled]="item.transaction.status === 'CANCELLED'"
+            (click)="openTransaction.emit(item)"
           >
-        </div>
-        <span
-          class="transactions__amount bb-amount"
-          [class.transactions__amount--income]="item.kind === 'INCOME'"
-        >
-          {{ item.kind === 'INCOME' ? '+' : '−' }} {{ item.amount | currency }}
-        </span>
-      </li>
-    }
-  </ul>
+            <span
+              class="transactions__icon"
+              [class.transactions__icon--income]="item.transaction.kind === 'INCOME'"
+            >
+              <mat-icon>{{ kindIcons[item.transaction.kind] }}</mat-icon>
+            </span>
+            <span class="transactions__info">
+              <span class="transactions__name">{{ item.transaction.description }}</span>
+              <span class="transactions__meta">
+                {{ item.transaction.date | date: 'dd/MM/yyyy' }}
+                @if (showOwner()) {
+                  · {{ item.ownerName ?? 'Membro' }}
+                } @else if (item.categoryName) {
+                  · {{ item.categoryName }}
+                }
+              </span>
+            </span>
+            <span
+              class="transactions__amount bb-amount"
+              [class.transactions__amount--income]="item.transaction.kind === 'INCOME'"
+            >
+              @switch (item.transaction.kind) {
+                @case ('INCOME') { + }
+                @case ('EXPENSE') { − }
+              }
+              {{ item.transaction.amount | currency }}
+            </span>
+          </button>
+        </li>
+      }
+    </ul>
+  }
 </article>

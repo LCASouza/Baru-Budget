@@ -1,20 +1,24 @@
 <article class="categories bb-card">
   <header class="bb-card__head">
     <div>
-      <h3 class="bb-card__title">Gastos por categoria</h3>
+      <h3 class="bb-card__title">{{ title() }}</h3>
       <p class="bb-card__subtitle">Total {{ total() | currency }}</p>
     </div>
   </header>
 
-  <ul class="categories__list">
-    @for (row of rows(); track row.name) {
-      <li class="categories__row">
-        <span class="categories__name">{{ row.name }}</span>
-        <span class="categories__track">
-          <span class="categories__bar" [style.width.%]="row.percent"></span>
-        </span>
-        <span class="categories__value bb-amount">{{ row.amount | currency }}</span>
-      </li>
-    }
-  </ul>
+  @if (rows().length === 0) {
+    <p class="categories__empty">{{ emptyMessage() }}</p>
+  } @else {
+    <ul class="categories__list">
+      @for (row of rows(); track row.name) {
+        <li class="categories__row">
+          <span class="categories__name" [title]="row.name">{{ row.name }}</span>
+          <span class="categories__track">
+            <span class="categories__bar" [style.width.%]="row.percent"></span>
+          </span>
+          <span class="categories__value bb-amount">{{ row.amount | currency }}</span>
+        </li>
+      }
+    </ul>
+  }
 </article>
