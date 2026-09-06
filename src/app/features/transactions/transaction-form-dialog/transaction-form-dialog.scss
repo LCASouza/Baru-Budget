@@ -5,13 +5,13 @@
 .tx-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   padding-top: 8px;
 }
 
 .tx-form__kind {
   align-self: stretch;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
 
   mat-button-toggle {
     flex: 1 1 0;
@@ -29,7 +29,8 @@
 .tx-form__row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  align-items: start;
+  gap: 16px;
 }
 
 mat-form-field {
@@ -39,7 +40,7 @@ mat-form-field {
 @media (max-width: 767.98px) {
   .tx-form__row {
     grid-template-columns: minmax(0, 1fr);
-    gap: 12px;
+    gap: 16px;
   }
 }
 

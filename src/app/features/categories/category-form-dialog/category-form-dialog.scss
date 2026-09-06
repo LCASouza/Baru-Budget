@@ -1,13 +1,13 @@
 .category-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   padding-top: 8px;
 }
 
 .category-form__kind {
   align-self: stretch;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
 
   mat-button-toggle {
     flex: 1 1 0;
