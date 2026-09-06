@@ -13,7 +13,7 @@ Current state: v0.2 (Auth, RLS and Deploy) — e-mail and password login with pr
 
 ## Requirements
 
-- Node.js 24 and npm 11
+- Node.js 24.15 or newer (`.node-version` pins 24.18.0) and npm 11
 - Docker (for the local Supabase stack)
 
 ## Commands

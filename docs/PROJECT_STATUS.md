@@ -67,7 +67,7 @@ Delivered: v0.1 Foundation (2026-09-05, `versions/v0.1.md`); visual prototype (`
 
 | ID | Description | Found In | Status | Fixed In | Notes |
 |---|---|---|---|---|---|
-| — | No bugs registered | — | — | — | — |
+| BUG-001 | Cloudflare Pages build failed: `.node-version` set to `24` resolved to Node 24.13.1, below the Angular CLI minimum of 24.15.0 | v0.2 | FIXED | v0.2 | `.node-version` pinned to 24.18.0; `engines.node` added to package.json |
 
 ## Technical Debt
 
