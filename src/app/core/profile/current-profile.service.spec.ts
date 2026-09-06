@@ -1,4 +1,4 @@
-import { ApplicationRef, signal } from '@angular/core';
+import { ApplicationRef, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { User } from '@supabase/supabase-js';
 import { vi } from 'vitest';
@@ -27,7 +27,7 @@ describe('CurrentProfileService', () => {
     findById = vi.fn().mockResolvedValue(PROFILE);
     TestBed.configureTestingModule({
       providers: [
-        { provide: AuthService, useValue: { user } },
+        { provide: AuthService, useValue: { user, userId: computed(() => user()?.id ?? null) } },
         { provide: ProfileRepository, useValue: { findById } },
       ],
     });

@@ -1,0 +1,30 @@
+<article class="profile bb-card">
+  <header class="bb-card__head">
+    <div>
+      <h3 class="bb-card__title">Perfil</h3>
+      <p class="bb-card__subtitle">Nome exibido para você e para quem compartilha finanças</p>
+    </div>
+  </header>
+
+  <form class="profile__form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <mat-form-field appearance="outline">
+      <mat-label>Nome</mat-label>
+      <input matInput formControlName="displayName" autocomplete="name" maxlength="80" />
+      @if (form.controls.displayName.hasError('required')) {
+        <mat-error>Informe o nome.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>E-mail</mat-label>
+      <input matInput [value]="currentProfile.email()" readonly />
+      <mat-hint>Troca de e-mail e senha é feita pelo administrador.</mat-hint>
+    </mat-form-field>
+
+    <div class="profile__actions">
+      <button matButton="filled" type="submit" [disabled]="submitting() || !form.dirty">
+        {{ submitting() ? 'Salvando…' : 'Salvar' }}
+      </button>
+    </div>
+  </form>
+</article>

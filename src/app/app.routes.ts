@@ -43,11 +43,14 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/dashboard/dashboard-page').then((m) => m.DashboardPage),
       },
-      placeholderRoute(
-        '/transactions',
-        'Entradas, saídas e transferências com filtros por período, categoria, conta e status.',
-        'v0.3',
-      ),
+      {
+        path: 'transactions',
+        title: navItem('/transactions').label,
+        loadComponent: () =>
+          import('./features/transactions/transactions-page/transactions-page').then(
+            (m) => m.TransactionsPage,
+          ),
+      },
       placeholderRoute(
         '/cards',
         'Cartões de crédito com limite, fechamento, vencimento e faturas por competência.',
@@ -84,7 +87,32 @@ export const routes: Routes = [
         'Acesso às suas finanças concedido a outras pessoas com permissão VIEW ou MANAGE.',
         'v0.4',
       ),
-      placeholderRoute('/settings', 'Perfil, contas, categorias e preferências.', 'v0.1'),
+      {
+        path: 'settings',
+        title: navItem('/settings').label,
+        loadComponent: () =>
+          import('./features/settings/settings-page/settings-page').then((m) => m.SettingsPage),
+        children: [
+          { path: '', pathMatch: 'full', redirectTo: 'accounts' },
+          {
+            path: 'accounts',
+            loadComponent: () =>
+              import('./features/accounts/accounts-page/accounts-page').then((m) => m.AccountsPage),
+          },
+          {
+            path: 'categories',
+            loadComponent: () =>
+              import('./features/categories/categories-page/categories-page').then(
+                (m) => m.CategoriesPage,
+              ),
+          },
+          {
+            path: 'profile',
+            loadComponent: () =>
+              import('./features/settings/profile-page/profile-page').then((m) => m.ProfilePage),
+          },
+        ],
+      },
     ],
   },
   { path: '**', redirectTo: 'dashboard' },

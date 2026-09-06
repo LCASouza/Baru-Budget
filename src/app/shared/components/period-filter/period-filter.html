@@ -1,12 +1,18 @@
 <div class="period" [class.period--compact]="compact()">
-  <button matIconButton class="period__nav" (click)="previous()" aria-label="Mês anterior">
+  <button matIconButton class="period__nav" (click)="period.previous()" aria-label="Mês anterior">
     <mat-icon>chevron_left</mat-icon>
   </button>
-  <button matButton class="period__label">
+  <button
+    matButton
+    class="period__label"
+    (click)="period.reset()"
+    [disabled]="period.isCurrentMonth()"
+    [matTooltip]="period.isCurrentMonth() ? '' : 'Voltar ao mês atual'"
+  >
     <mat-icon>calendar_month</mat-icon>
-    {{ label() }}
+    {{ period.label() }}
   </button>
-  <button matIconButton class="period__nav" (click)="next()" aria-label="Próximo mês">
+  <button matIconButton class="period__nav" (click)="period.next()" aria-label="Próximo mês">
     <mat-icon>chevron_right</mat-icon>
   </button>
 </div>

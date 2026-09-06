@@ -1,0 +1,11 @@
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+  min-width: min(440px, 100%);
+}
+
+mat-form-field {
+  width: 100%;
+}

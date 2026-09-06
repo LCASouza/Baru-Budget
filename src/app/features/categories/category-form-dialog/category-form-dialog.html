@@ -1,0 +1,36 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Editar categoria' : 'Nova categoria' }}</h2>
+
+<mat-dialog-content>
+  <form class="category-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <mat-button-toggle-group
+      class="category-form__kind"
+      formControlName="kind"
+      hideSingleSelectionIndicator
+      aria-label="Tipo de categoria"
+    >
+      <mat-button-toggle value="INCOME">
+        <mat-icon>arrow_downward</mat-icon>
+        Receita
+      </mat-button-toggle>
+      <mat-button-toggle value="EXPENSE">
+        <mat-icon>arrow_upward</mat-icon>
+        Despesa
+      </mat-button-toggle>
+    </mat-button-toggle-group>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Nome</mat-label>
+      <input matInput formControlName="name" placeholder="Ex.: Pets" maxlength="60" />
+      @if (form.controls.name.hasError('required')) {
+        <mat-error>Informe o nome.</mat-error>
+      }
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button matButton mat-dialog-close type="button">Cancelar</button>
+  <button matButton="filled" type="button" (click)="save()" [disabled]="submitting()">
+    {{ submitting() ? 'Salvando…' : 'Salvar' }}
+  </button>
+</mat-dialog-actions>

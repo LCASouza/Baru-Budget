@@ -1,7 +1,17 @@
-<h2 mat-dialog-title class="dialog__title">Nova movimentação</h2>
+<h2 mat-dialog-title class="dialog__title">{{ isEdit ? 'Editar movimentação' : 'Nova movimentação' }}</h2>
 
 <mat-dialog-content>
-  <form class="tx-form" [formGroup]="form">
+  @if (!accountsLoading() && !hasAccounts()) {
+    <div class="tx-form__notice">
+      <mat-icon>info</mat-icon>
+      <p>
+        Cadastre pelo menos uma conta antes de registrar movimentações.
+        <a routerLink="/settings/accounts" mat-dialog-close>Ir para Contas</a>
+      </p>
+    </div>
+  }
+
+  <form class="tx-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
     <mat-button-toggle-group
       class="tx-form__kind"
       formControlName="kind"
@@ -16,11 +26,18 @@
         <mat-icon>arrow_upward</mat-icon>
         Saída
       </mat-button-toggle>
+      <mat-button-toggle value="TRANSFER">
+        <mat-icon>swap_horiz</mat-icon>
+        Transferência
+      </mat-button-toggle>
     </mat-button-toggle-group>
 
     <mat-form-field appearance="outline">
       <mat-label>Descrição</mat-label>
-      <input matInput formControlName="description" placeholder="Ex.: Supermercado" />
+      <input matInput formControlName="description" placeholder="Ex.: Supermercado" maxlength="120" />
+      @if (form.controls.description.hasError('required')) {
+        <mat-error>Informe a descrição.</mat-error>
+      }
     </mat-form-field>
 
     <div class="tx-form__row">
@@ -28,64 +45,121 @@
         <mat-label>Valor</mat-label>
         <span matTextPrefix>R$&nbsp;</span>
         <input matInput formControlName="amount" inputmode="decimal" placeholder="0,00" />
+        @if (form.controls.amount.invalid) {
+          <mat-error>Informe um valor maior que zero.</mat-error>
+        }
       </mat-form-field>
 
       <mat-form-field appearance="outline">
         <mat-label>Data</mat-label>
-        <input matInput formControlName="date" [matDatepicker]="picker" />
-        <mat-datepicker-toggle matIconSuffix [for]="picker" />
-        <mat-datepicker #picker />
+        <input matInput formControlName="date" [matDatepicker]="datePicker" />
+        <mat-datepicker-toggle matIconSuffix [for]="datePicker" />
+        <mat-datepicker #datePicker />
+        @if (form.controls.date.invalid) {
+          <mat-error>Informe a data.</mat-error>
+        }
       </mat-form-field>
     </div>
 
-    <div class="tx-form__row">
-      <mat-form-field appearance="outline">
-        <mat-label>Categoria</mat-label>
-        <mat-select formControlName="categoryId">
-          @for (category of categories(); track category.id) {
-            <mat-option [value]="category.id">{{ category.label }}</mat-option>
+    @if (isTransfer()) {
+      <div class="tx-form__row">
+        <mat-form-field appearance="outline">
+          <mat-label>De</mat-label>
+          <mat-select formControlName="accountId">
+            @for (account of accounts(); track account.id) {
+              <mat-option [value]="account.id">{{ account.name }}</mat-option>
+            }
+          </mat-select>
+          @if (form.controls.accountId.hasError('required')) {
+            <mat-error>Selecione a conta de origem.</mat-error>
           }
-        </mat-select>
-      </mat-form-field>
+        </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Conta</mat-label>
-        <mat-select formControlName="accountId">
-          @for (account of accounts; track account.id) {
-            <mat-option [value]="account.id">{{ account.label }}</mat-option>
+        <mat-form-field appearance="outline">
+          <mat-label>Para</mat-label>
+          <mat-select formControlName="destinationAccountId">
+            @for (account of accounts(); track account.id) {
+              <mat-option [value]="account.id">{{ account.name }}</mat-option>
+            }
+          </mat-select>
+          @if (form.controls.destinationAccountId.hasError('required')) {
+            <mat-error>Selecione a conta de destino.</mat-error>
+          } @else if (form.controls.destinationAccountId.hasError('sameAccount')) {
+            <mat-error>Escolha uma conta diferente da origem.</mat-error>
           }
-        </mat-select>
-      </mat-form-field>
-    </div>
+        </mat-form-field>
+      </div>
+    } @else {
+      <div class="tx-form__row">
+        <mat-form-field appearance="outline">
+          <mat-label>Categoria</mat-label>
+          <mat-select formControlName="categoryId">
+            @for (category of categories(); track category.id) {
+              <mat-option [value]="category.id">{{ category.name }}</mat-option>
+            }
+          </mat-select>
+          @if (form.controls.categoryId.hasError('required')) {
+            <mat-error>Selecione a categoria.</mat-error>
+          }
+        </mat-form-field>
 
-    @if (isExpense()) {
-      <div class="tx-form__origin">
-        <span class="tx-form__label">Tipo/origem</span>
-        <mat-chip-listbox formControlName="origin" aria-label="Origem da saída">
-          @for (origin of origins; track origin.id) {
-            <mat-chip-option [value]="origin.id">{{ origin.label }}</mat-chip-option>
+        <mat-form-field appearance="outline">
+          <mat-label>Conta</mat-label>
+          <mat-select formControlName="accountId">
+            @for (account of accounts(); track account.id) {
+              <mat-option [value]="account.id">{{ account.name }}</mat-option>
+            }
+          </mat-select>
+          @if (form.controls.accountId.hasError('required')) {
+            <mat-error>Selecione a conta.</mat-error>
           }
-        </mat-chip-listbox>
+        </mat-form-field>
       </div>
     }
 
-    <mat-form-field appearance="outline">
-      <mat-label>Status</mat-label>
-      <mat-select formControlName="status">
-        @for (status of statuses; track status.id) {
-          <mat-option [value]="status.id">{{ status.label }}</mat-option>
-        }
-      </mat-select>
-    </mat-form-field>
+    <div class="tx-form__row">
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          @for (status of statuses; track status) {
+            <mat-option [value]="status">{{ statusLabels[status] }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      @if (isPending()) {
+        <mat-form-field appearance="outline">
+          <mat-label>Vencimento</mat-label>
+          <input matInput formControlName="dueDate" [matDatepicker]="duePicker" />
+          <mat-datepicker-toggle matIconSuffix [for]="duePicker" />
+          <mat-datepicker #duePicker />
+          <mat-hint>Opcional. Sem vencimento, a data é usada.</mat-hint>
+        </mat-form-field>
+      }
+    </div>
 
     <mat-form-field appearance="outline">
       <mat-label>Observações</mat-label>
-      <textarea matInput formControlName="notes" rows="2"></textarea>
+      <textarea matInput formControlName="notes" rows="2" maxlength="1000"></textarea>
     </mat-form-field>
   </form>
 </mat-dialog-content>
 
-<mat-dialog-actions align="end">
-  <button matButton mat-dialog-close>Cancelar</button>
-  <button matButton="filled" (click)="save()">Salvar</button>
+<mat-dialog-actions class="tx-form__actions">
+  @if (isEdit) {
+    <button matButton class="tx-form__delete" type="button" (click)="remove()" [disabled]="submitting()">
+      <mat-icon>delete</mat-icon>
+      Excluir
+    </button>
+  }
+  <span class="tx-form__spacer"></span>
+  <button matButton mat-dialog-close type="button">Cancelar</button>
+  <button
+    matButton="filled"
+    type="button"
+    (click)="save()"
+    [disabled]="submitting() || !hasAccounts()"
+  >
+    {{ submitting() ? 'Salvando…' : 'Salvar' }}
+  </button>
 </mat-dialog-actions>

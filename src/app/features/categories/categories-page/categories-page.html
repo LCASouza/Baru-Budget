@@ -1,0 +1,67 @@
+<section class="categories">
+  @if (store.isLoading() && !store.loaded()) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else if (store.error()) {
+    <article class="bb-card">
+      <app-empty-state
+        icon="error_outline"
+        title="Não foi possível carregar as categorias"
+        description="Verifique a conexão e tente novamente."
+      >
+        <button matButton="outlined" (click)="store.reload()">Tentar novamente</button>
+      </app-empty-state>
+    </article>
+  } @else {
+    @for (section of sections(); track section.kind) {
+      <article class="bb-card">
+        <header class="bb-card__head">
+          <div>
+            <h3 class="bb-card__title">{{ section.title }}</h3>
+            <p class="bb-card__subtitle">{{ section.items.length }} categorias</p>
+          </div>
+          <button matButton="outlined" (click)="openForm({ kind: section.kind })">
+            <mat-icon>add</mat-icon>
+            Nova
+          </button>
+        </header>
+
+        @if (section.items.length === 0) {
+          <app-empty-state icon="label" title="Nenhuma categoria" />
+        } @else {
+          <ul class="categories__list">
+            @for (category of section.items; track category.id) {
+              <li class="categories__row" [class.categories__row--inactive]="!category.active">
+                <span class="categories__icon" [class.categories__icon--income]="section.kind === 'INCOME'">
+                  <mat-icon>{{ section.icon }}</mat-icon>
+                </span>
+                <span class="categories__name">
+                  {{ category.name }}
+                  @if (!category.active) {
+                    <span class="categories__badge">Inativa</span>
+                  }
+                </span>
+                <button matIconButton [matMenuTriggerFor]="menu" [attr.aria-label]="'Ações da categoria ' + category.name">
+                  <mat-icon>more_vert</mat-icon>
+                </button>
+                <mat-menu #menu="matMenu">
+                  <button mat-menu-item (click)="openForm({ category })">
+                    <mat-icon>edit</mat-icon>
+                    <span>Editar</span>
+                  </button>
+                  <button mat-menu-item (click)="toggleActive(category)">
+                    <mat-icon>{{ category.active ? 'visibility_off' : 'visibility' }}</mat-icon>
+                    <span>{{ category.active ? 'Desativar' : 'Ativar' }}</span>
+                  </button>
+                  <button mat-menu-item (click)="remove(category)">
+                    <mat-icon>delete</mat-icon>
+                    <span>Excluir</span>
+                  </button>
+                </mat-menu>
+              </li>
+            }
+          </ul>
+        }
+      </article>
+    }
+  }
+</section>

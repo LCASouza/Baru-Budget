@@ -9,7 +9,7 @@ export class CurrentProfileService {
   private readonly repository = inject(ProfileRepository);
 
   private readonly profileResource = resource({
-    params: () => this.auth.user()?.id,
+    params: () => this.auth.userId() ?? undefined,
     loader: ({ params: userId }) => this.repository.findById(userId),
   });
 
@@ -20,4 +20,8 @@ export class CurrentProfileService {
   readonly email = computed(() => this.auth.user()?.email ?? '');
   readonly displayName = computed(() => this.profile()?.display_name ?? this.email());
   readonly initials = computed(() => profileInitials(this.displayName()));
+
+  reload(): void {
+    this.profileResource.reload();
+  }
 }

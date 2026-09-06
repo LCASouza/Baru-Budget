@@ -1,0 +1,10 @@
+<div class="empty">
+  <span class="empty__icon" aria-hidden="true"><mat-icon>{{ icon() }}</mat-icon></span>
+  <h3 class="empty__title">{{ title() }}</h3>
+  @if (description()) {
+    <p class="empty__description">{{ description() }}</p>
+  }
+  <div class="empty__actions">
+    <ng-content />
+  </div>
+</div>

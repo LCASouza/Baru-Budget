@@ -2,9 +2,9 @@
 
 ## Current Version
 
-**v0.2 — Auth, RLS and Deploy** (DELIVERED on 2026-09-05; see `versions/v0.2.md`). The next version is **v0.3 — Transactions**.
+**v0.3 — Transactions** (IN_PROGRESS). Architectural analysis approved on 2026-09-06 (`ARCHITECTURE_ANALYSIS_V0.3.md`); implementation complete locally, hosted migration and production validation pending. Version file: `versions/v0.3.md`.
 
-Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype, v0.1 Foundation, v0.2 Auth, RLS and Deploy.
+Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype, v0.1 Foundation (`versions/v0.1.md`), v0.2 Auth, RLS and Deploy (`versions/v0.2.md`).
 
 ## Roadmap
 
@@ -12,7 +12,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 |---|---|---|---|
 | v0.1 | Foundation | DELIVERED | Angular project, feature-based structure, Supabase setup, migrations, base schema (profiles, categories, accounts), financial types, initial layout, initial tests |
 | v0.2 | Auth, RLS and Deploy | DELIVERED | Login, logout, session, protected routes, initial RLS policies, Cloudflare Pages automatic deploy, basic mobile validation |
-| v0.3 | Transactions | PENDING | INCOME, EXPENSE, TRANSFER; accounts, benefits, categories, CRUD, basic filters, balance, status |
+| v0.3 | Transactions | IN_PROGRESS | INCOME, EXPENSE, TRANSFER; accounts, benefits, categories, CRUD, basic filters, balance, status |
 | v0.4 | Households and Sharing | PENDING | households, household_members, financial_access_grants, VIEW, MANAGE, non-transitivity, created_by/updated_by, complete policies |
 | v0.5 | Dashboard | PENDING | Incomes, expenses, balance, benefits, periods, person, household, shared view, charts, summary cards |
 | v0.6 | Credit Cards and Invoices | PENDING | Cards, limit, closing day, due day, purchases, invoices, competence rule, double-counting prevention |
@@ -34,7 +34,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.1 implementation | v0.1 | DELIVERED | Schema, RLS, tests, Supabase client and environments; see `versions/v0.1.md` |
 | v0.2 architectural analysis | v0.2 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.2.md` |
 | v0.2 implementation | v0.2 | DELIVERED | Authentication, hosted migrations, Cloudflare Pages deploy; production login confirmed |
-| v0.3 — Transactions | v0.3 | PENDING | Starts with an architectural analysis for approval |
+| v0.3 architectural analysis | v0.3 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.3.md`; approved on 2026-09-06 |
+| v0.3 implementation | v0.3 | IN_PROGRESS | Migrations, transactions, accounts, categories and settings screens, tests done locally; hosted `db push` and production validation pending |
 
 ## Features
 
@@ -43,14 +44,14 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | FEAT-001 | Angular project foundation | v0.1 | DELIVERED | Delivered by the approved visual prototype (Angular 22, standalone, strict, feature-based) |
 | FEAT-002 | Supabase project and migrations | v0.1 | DELIVERED | Local project via CLI, six migrations, pgTAP tests, generated types |
 | FEAT-003 | Profiles | v0.1 | DELIVERED | Table, RLS, creation trigger on auth.users |
-| FEAT-004 | Categories | v0.1 | DELIVERED | Table, RLS, default categories seeded per user; screens in v0.3 |
-| FEAT-005 | Accounts | v0.1 | DELIVERED | Table with opening_balance, RLS; screens in v0.3 |
+| FEAT-004 | Categories | v0.1 | DELIVERED | Table, RLS, default categories seeded per user; management screen delivered in v0.3 (`/settings/categories`) |
+| FEAT-005 | Accounts | v0.1 | DELIVERED | Table with opening_balance, RLS; management screen with derived balances delivered in v0.3 (`/settings/accounts`) |
 | FEAT-006 | Financial types | v0.1 | DELIVERED | PostgreSQL enums and TypeScript unions with pt-BR labels |
 | FEAT-007 | Application shell | v0.1 | DELIVERED | Delivered by the approved visual prototype (sidebar, rail, bottom navigation, theme, mock dashboard) |
 | FEAT-008 | Authentication | v0.2 | DELIVERED | Email and password login, logout, persistent session, protected routes, real profile in header |
 | FEAT-009 | Row Level Security | v0.2 | DELIVERED | v0.1 policies applied to the hosted project and verified through the API |
 | FEAT-010 | Cloudflare Pages deploy | v0.2 | DELIVERED | Automatic deploy of `main` to https://baru-budget.pages.dev with security headers and SPA fallback |
-| FEAT-011 | Transactions | v0.3 | PENDING | INCOME, EXPENSE, TRANSFER; CRUD, filters, balance, status |
+| FEAT-011 | Transactions | v0.3 | IN_PROGRESS | INCOME, EXPENSE, TRANSFER; CRUD, month filters, derived balances, derived OVERDUE; implemented locally, production validation pending |
 | FEAT-012 | Households | v0.4 | PENDING | households, household_members |
 | FEAT-013 | Financial access grants | v0.4 | PENDING | VIEW and MANAGE permissions, non-transitive |
 | FEAT-014 | Dashboard | v0.5 | PENDING | Summary cards, charts, context switching |
@@ -75,6 +76,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | ID | Description | Version | Status | Notes |
 |---|---|---|---|---|
 | DEBT-001 | Initial bundle exceeded the default 500 kB warning budget | pre-v0.1 | DELIVERED | v0.1: transaction dialog lazy-loaded; budget set to 1 MB warning / 1.5 MB error (~860 kB raw, ~197 kB transferred) |
+| DEBT-002 | Transactions are loaded per month with a fixed limit of 1000 rows (PostgREST cap); months above that are truncated | v0.3 | PENDING | Add pagination when a real month approaches the limit |
 
 ## Excluded Items
 
@@ -94,4 +96,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-05 — v0.2 Auth, RLS and Deploy delivered. Next: v0.3 Transactions.
+2026-09-06 — v0.3 Transactions implemented locally (migrations, screens, 180 pgTAP assertions, 104 Vitest tests); hosted migration and production validation pending.

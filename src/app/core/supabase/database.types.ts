@@ -53,7 +53,7 @@ export type Database = {
           active?: boolean
           color?: string | null
           created_at?: string
-          created_by: string
+          created_by?: string
           id?: string
           institution?: string | null
           name: string
@@ -61,7 +61,7 @@ export type Database = {
           owner_user_id: string
           type: Database["public"]["Enums"]["account_type"]
           updated_at?: string
-          updated_by: string
+          updated_by?: string
         }
         Update: {
           active?: boolean
@@ -119,14 +119,14 @@ export type Database = {
           active?: boolean
           color?: string | null
           created_at?: string
-          created_by: string
+          created_by?: string
           icon?: string | null
           id?: string
           kind: Database["public"]["Enums"]["category_kind"]
           name: string
           owner_user_id: string
           updated_at?: string
-          updated_by: string
+          updated_by?: string
         }
         Update: {
           active?: boolean
@@ -189,9 +189,139 @@ export type Database = {
         }
         Relationships: []
       }
+      transactions: {
+        Row: {
+          account_id: string
+          amount: number
+          category_id: string | null
+          created_at: string
+          created_by: string
+          date: string
+          description: string
+          destination_account_id: string | null
+          due_date: string | null
+          id: string
+          kind: Database["public"]["Enums"]["transaction_kind"]
+          notes: string | null
+          owner_user_id: string
+          status: Database["public"]["Enums"]["transaction_status"]
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          account_id: string
+          amount: number
+          category_id?: string | null
+          created_at?: string
+          created_by?: string
+          date: string
+          description: string
+          destination_account_id?: string | null
+          due_date?: string | null
+          id?: string
+          kind: Database["public"]["Enums"]["transaction_kind"]
+          notes?: string | null
+          owner_user_id: string
+          status?: Database["public"]["Enums"]["transaction_status"]
+          updated_at?: string
+          updated_by?: string
+        }
+        Update: {
+          account_id?: string
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          created_by?: string
+          date?: string
+          description?: string
+          destination_account_id?: string | null
+          due_date?: string | null
+          id?: string
+          kind?: Database["public"]["Enums"]["transaction_kind"]
+          notes?: string | null
+          owner_user_id?: string
+          status?: Database["public"]["Enums"]["transaction_status"]
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "account_balances"
+            referencedColumns: ["account_id"]
+          },
+          {
+            foreignKeyName: "transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_destination_account_id_fkey"
+            columns: ["destination_account_id"]
+            isOneToOne: false
+            referencedRelation: "account_balances"
+            referencedColumns: ["account_id"]
+          },
+          {
+            foreignKeyName: "transactions_destination_account_id_fkey"
+            columns: ["destination_account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
-      [_ in never]: never
+      account_balances: {
+        Row: {
+          account_id: string | null
+          current_balance: number | null
+          opening_balance: number | null
+          owner_user_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "accounts_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       seed_default_categories: {
@@ -203,6 +333,7 @@ export type Database = {
       account_type: "BANK" | "CASH" | "BENEFIT" | "OTHER"
       category_kind: "INCOME" | "EXPENSE"
       transaction_kind: "INCOME" | "EXPENSE" | "TRANSFER" | "SETTLEMENT"
+      transaction_status: "PENDING" | "PAID" | "CANCELLED"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -336,6 +467,7 @@ export const Constants = {
       account_type: ["BANK", "CASH", "BENEFIT", "OTHER"],
       category_kind: ["INCOME", "EXPENSE"],
       transaction_kind: ["INCOME", "EXPENSE", "TRANSFER", "SETTLEMENT"],
+      transaction_status: ["PENDING", "PAID", "CANCELLED"],
     },
   },
 } as const

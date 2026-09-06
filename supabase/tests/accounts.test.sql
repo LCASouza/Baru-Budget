@@ -99,7 +99,7 @@ select is(
   1500.50::numeric,
   'another user did not modify the owner account'
 );
-select is((select count(*)::int from public.accounts), 1, 'another user did not delete the owner account');
+select is((select count(*)::int from public.accounts where owner_user_id = '11111111-1111-1111-1111-111111111111'), 1, 'another user did not delete the owner account');
 
 -- Anonymous
 set local role anon;

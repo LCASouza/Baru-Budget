@@ -1,0 +1,84 @@
+<section class="accounts">
+  <div class="accounts__summary">
+    @for (card of summaryCards(); track card.label) {
+      <app-summary-card [data]="card" />
+    }
+  </div>
+
+  <article class="bb-card">
+    <header class="bb-card__head">
+      <div>
+        <h3 class="bb-card__title">Contas</h3>
+        <p class="bb-card__subtitle">Saldo atual calculado pelas movimentações pagas</p>
+      </div>
+      <button matButton="filled" (click)="openForm()">
+        <mat-icon>add</mat-icon>
+        Nova conta
+      </button>
+    </header>
+
+    @if (store.isLoading() && !store.loaded()) {
+      <mat-progress-bar mode="indeterminate" />
+    } @else if (store.error()) {
+      <app-empty-state
+        icon="error_outline"
+        title="Não foi possível carregar as contas"
+        description="Verifique a conexão e tente novamente."
+      >
+        <button matButton="outlined" (click)="store.reload()">Tentar novamente</button>
+      </app-empty-state>
+    } @else if (store.accounts().length === 0) {
+      <app-empty-state
+        icon="account_balance"
+        title="Nenhuma conta cadastrada"
+        description="Cadastre a conta bancária, o dinheiro em espécie e os benefícios para começar a registrar movimentações."
+      >
+        <button matButton="filled" (click)="openForm()">Cadastrar conta</button>
+      </app-empty-state>
+    } @else {
+      <ul class="accounts__list">
+        @for (account of store.accounts(); track account.id) {
+          <li class="accounts__row" [class.accounts__row--inactive]="!account.active">
+            <span class="accounts__icon" [class.accounts__icon--benefit]="account.type === 'BENEFIT'">
+              <mat-icon>{{ account.type === 'BENEFIT' ? 'restaurant' : account.type === 'CASH' ? 'payments' : 'account_balance' }}</mat-icon>
+            </span>
+            <div class="accounts__info">
+              <span class="accounts__name">
+                {{ account.name }}
+                @if (!account.active) {
+                  <span class="accounts__badge">Inativa</span>
+                }
+              </span>
+              <span class="accounts__meta">
+                {{ typeLabels[account.type] }}
+                @if (account.institution) {
+                  · {{ account.institution }}
+                }
+              </span>
+            </div>
+            <span class="accounts__amount bb-amount" [class.accounts__amount--negative]="balanceOf(account) < 0">
+              {{ balanceOf(account) | currency }}
+            </span>
+            <button matIconButton [matMenuTriggerFor]="menu" [attr.aria-label]="'Ações da conta ' + account.name">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+              <button mat-menu-item (click)="openForm(account)">
+                <mat-icon>edit</mat-icon>
+                <span>Editar</span>
+              </button>
+              <button mat-menu-item (click)="toggleActive(account)">
+                <mat-icon>{{ account.active ? 'visibility_off' : 'visibility' }}</mat-icon>
+                <span>{{ account.active ? 'Desativar' : 'Ativar' }}</span>
+              </button>
+              <button mat-menu-item (click)="remove(account)">
+                <mat-icon>delete</mat-icon>
+                <span>Excluir</span>
+              </button>
+            </mat-menu>
+          </li>
+        }
+      </ul>
+    }
+  </article>
+</section>

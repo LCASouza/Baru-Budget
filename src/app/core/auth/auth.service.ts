@@ -14,6 +14,8 @@ export class AuthService {
 
   readonly session = this.sessionState.asReadonly();
   readonly user = computed(() => this.session()?.user ?? null);
+  // Stable across token refreshes, unlike the user object identity.
+  readonly userId = computed(() => this.user()?.id ?? null);
   readonly isAuthenticated = computed(() => this.session() !== null);
 
   // Resolves once the persisted session has been restored, so route guards can

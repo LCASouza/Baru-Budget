@@ -1,0 +1,191 @@
+<section class="transactions">
+  @if (!viewport.isDesktop()) {
+    <app-period-filter class="transactions__period" [compact]="viewport.isMobile()" />
+  }
+
+  <nav mat-tab-nav-bar [tabPanel]="panel" class="transactions__tabs" aria-label="Tipo de movimentação">
+    @for (tab of tabs; track tab.label) {
+      <a mat-tab-link routerLink="." [queryParams]="tab.queryParams" [active]="isTabActive(tab)">
+        {{ tab.label }}
+      </a>
+    }
+  </nav>
+  <mat-tab-nav-panel #panel class="transactions__panel">
+    <div class="transactions__summary">
+      @for (card of summaryCards(); track card.label) {
+        <app-summary-card [data]="card" />
+      }
+    </div>
+
+    <article class="bb-card transactions__card">
+      <header class="bb-card__head transactions__head">
+        <div>
+          <h3 class="bb-card__title">Movimentações</h3>
+          <p class="bb-card__subtitle">{{ store.filtered().length }} de {{ store.views().length }} no mês</p>
+        </div>
+        <div class="transactions__head-actions">
+          @if (!viewport.isDesktop()) {
+            <button matButton="outlined" (click)="toggleFilters()" [attr.aria-expanded]="filtersOpen()">
+              <mat-icon>filter_list</mat-icon>
+              Filtros
+              @if (store.activeFilterCount() > 0) {
+                <span class="transactions__filter-count">{{ store.activeFilterCount() }}</span>
+              }
+            </button>
+          }
+          @if (store.activeFilterCount() > 0) {
+            <button matButton (click)="store.clearFilters()">Limpar filtros</button>
+          }
+        </div>
+      </header>
+
+      @if (viewport.isDesktop() || filtersOpen()) {
+        <div class="transactions__filters">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Buscar</mat-label>
+            <input
+              matInput
+              type="search"
+              [ngModel]="store.filters().search"
+              (ngModelChange)="store.setSearch($event)"
+              placeholder="Descrição"
+            />
+            <mat-icon matIconSuffix>search</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Categoria</mat-label>
+            <mat-select
+              [ngModel]="store.filters().categoryId"
+              (ngModelChange)="store.setCategory($event)"
+            >
+              <mat-option [value]="null">Todas</mat-option>
+              @if (categoryOptions().income.length > 0) {
+                <mat-optgroup label="Receitas">
+                  @for (category of categoryOptions().income; track category.id) {
+                    <mat-option [value]="category.id">{{ category.name }}</mat-option>
+                  }
+                </mat-optgroup>
+              }
+              @if (categoryOptions().expense.length > 0) {
+                <mat-optgroup label="Despesas">
+                  @for (category of categoryOptions().expense; track category.id) {
+                    <mat-option [value]="category.id">{{ category.name }}</mat-option>
+                  }
+                </mat-optgroup>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Conta</mat-label>
+            <mat-select [ngModel]="store.filters().accountId" (ngModelChange)="store.setAccount($event)">
+              <mat-option [value]="null">Todas</mat-option>
+              @for (account of accounts.accounts(); track account.id) {
+                <mat-option [value]="account.id">
+                  {{ account.name }}{{ account.active ? '' : ' (inativa)' }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Status</mat-label>
+            <mat-select [ngModel]="store.filters().status" (ngModelChange)="onStatusChange($event)">
+              <mat-option [value]="null">Todos</mat-option>
+              @for (status of statuses; track status) {
+                <mat-option [value]="status">{{ statusLabels[status] }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      }
+
+      @if (isInitialLoading()) {
+        <mat-progress-bar mode="indeterminate" />
+      } @else if (store.error()) {
+        <app-empty-state
+          icon="error_outline"
+          title="Não foi possível carregar as movimentações"
+          description="Verifique a conexão e tente novamente."
+        >
+          <button matButton="outlined" (click)="store.reload()">Tentar novamente</button>
+        </app-empty-state>
+      } @else if (!hasAccounts()) {
+        <app-empty-state
+          icon="account_balance"
+          title="Cadastre uma conta para começar"
+          description="Toda movimentação pertence a uma conta: conta bancária, dinheiro ou benefício."
+        >
+          <a matButton="filled" routerLink="/settings/accounts">Cadastrar conta</a>
+        </app-empty-state>
+      } @else if (store.views().length === 0) {
+        <app-empty-state
+          icon="receipt_long"
+          title="Nenhuma movimentação neste mês"
+          description="Registre entradas, saídas e transferências para acompanhar o período."
+        >
+          <button matButton="filled" (click)="create()">
+            <mat-icon>add</mat-icon>
+            Nova movimentação
+          </button>
+        </app-empty-state>
+      } @else if (store.filtered().length === 0) {
+        <app-empty-state
+          icon="filter_list_off"
+          title="Nenhum resultado para os filtros"
+          description="Ajuste a busca ou limpe os filtros para ver as movimentações do mês."
+        >
+          <button matButton="outlined" (click)="store.clearFilters()">Limpar filtros</button>
+        </app-empty-state>
+      } @else {
+        @if (store.isLoading()) {
+          <mat-progress-bar mode="indeterminate" />
+        }
+        @for (group of store.grouped(); track group.date) {
+          <section class="tx-group">
+            <h4 class="tx-group__date">{{ group.date | date: 'EEEE, dd/MM' }}</h4>
+            <ul class="tx-group__list">
+              @for (view of group.items; track view.transaction.id) {
+                <li>
+                  <button
+                    type="button"
+                    class="tx-row"
+                    [class.tx-row--cancelled]="view.transaction.status === 'CANCELLED'"
+                    (click)="edit(view)"
+                  >
+                    <span class="tx-row__icon" [class]="'tx-row__icon tx-row__icon--' + view.transaction.kind.toLowerCase()">
+                      <mat-icon>{{ kindIcons[view.transaction.kind] }}</mat-icon>
+                    </span>
+                    <span class="tx-row__info">
+                      <span class="tx-row__name">{{ view.transaction.description }}</span>
+                      <span class="tx-row__meta">
+                        @if (view.transaction.kind === 'TRANSFER') {
+                          {{ view.accountName }} → {{ view.destinationAccountName }}
+                        } @else {
+                          {{ view.categoryName }} · {{ view.accountName }}
+                        }
+                      </span>
+                    </span>
+                    @if (view.displayStatus !== 'PAID') {
+                      <span [class]="'tx-row__status tx-row__status--' + view.displayStatus.toLowerCase()">
+                        {{ statusLabels[view.displayStatus] }}
+                      </span>
+                    }
+                    <span [class]="'tx-row__amount bb-amount tx-row__amount--' + view.transaction.kind.toLowerCase()">
+                      @switch (view.transaction.kind) {
+                        @case ('INCOME') { + }
+                        @case ('EXPENSE') { − }
+                      }
+                      {{ view.transaction.amount | currency }}
+                    </span>
+                  </button>
+                </li>
+              }
+            </ul>
+          </section>
+        }
+      }
+    </article>
+  </mat-tab-nav-panel>
+</section>

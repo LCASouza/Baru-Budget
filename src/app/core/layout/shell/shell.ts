@@ -5,6 +5,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { RouterOutlet } from '@angular/router';
+import { openTransactionDialog } from '../../../features/transactions/open-transaction-dialog';
 import { NavigationService } from '../../navigation/navigation.service';
 import { BottomNav } from '../bottom-nav/bottom-nav';
 import { Header } from '../header/header';
@@ -34,26 +35,7 @@ export class Shell {
   protected readonly navigation = inject(NavigationService);
 
   protected async openNewTransaction(): Promise<void> {
-    const { TransactionFormDialog } =
-      await import('../../../features/transactions/transaction-form-dialog/transaction-form-dialog');
-
-    if (this.viewport.isMobile()) {
-      this.dialog.open(TransactionFormDialog, {
-        width: '100vw',
-        maxWidth: '100vw',
-        height: '100dvh',
-        maxHeight: '100dvh',
-        panelClass: 'bb-dialog-fullscreen',
-        autoFocus: false,
-      });
-      return;
-    }
-
-    this.dialog.open(TransactionFormDialog, {
-      width: '600px',
-      maxWidth: 'calc(100vw - 32px)',
-      autoFocus: 'dialog',
-    });
+    await openTransactionDialog(this.dialog, this.viewport);
   }
 
   protected openMoreMenu(): void {

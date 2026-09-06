@@ -36,21 +36,44 @@ mat-form-field {
   width: 100%;
 }
 
-.tx-form__origin {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 16px;
-}
-
-.tx-form__label {
-  font: var(--mat-sys-label-medium);
-  color: var(--mat-sys-on-surface-variant);
-}
-
 @media (max-width: 767.98px) {
   .tx-form__row {
     grid-template-columns: minmax(0, 1fr);
     gap: 4px;
   }
+}
+
+.tx-form__notice {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 8px 0 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+
+  p {
+    margin: 0;
+    font: var(--mat-sys-body-medium);
+  }
+
+  a {
+    color: inherit;
+    font-weight: 600;
+  }
+}
+
+.tx-form__actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.tx-form__spacer {
+  flex: 1 1 auto;
+}
+
+.tx-form__delete {
+  color: var(--mat-sys-error);
 }

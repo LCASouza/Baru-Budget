@@ -1,0 +1,12 @@
+.settings {
+  display: grid;
+  gap: 20px;
+}
+
+.settings__tabs {
+  --mat-tab-header-divider-height: 1px;
+}
+
+.settings__panel {
+  display: block;
+}

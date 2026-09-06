@@ -2,14 +2,14 @@
 
 Personal and family finance management web application.
 
-Current state: v0.2 (Auth, RLS and Deploy) delivered — e-mail and password login with protected routes on top of the v0.1 schema, deployed at https://baru-budget.pages.dev. The dashboard still shows mock data until transactions (v0.3) are implemented. See `docs/PROJECT_STATUS.md` for the roadmap.
+Current state: v0.3 (Transactions) — incomes, expenses and transfers between own accounts, account and category management, monthly filters and derived balances, on top of the v0.2 authentication and deployment at https://baru-budget.pages.dev. The dashboard still shows mock data until v0.5. See `docs/PROJECT_STATUS.md` for the roadmap.
 
 ## Stack
 
 - Angular 22 (standalone components, zoneless, strict TypeScript)
 - Angular Material 22 (Material 3 theme)
 - Supabase (PostgreSQL 17, Auth, Row Level Security) via `@supabase/supabase-js`
-- Cloudflare Pages (planned from v0.2)
+- Cloudflare Pages (automatic deploy from `main`)
 
 ## Requirements
 
@@ -28,7 +28,7 @@ npm run lint       # ESLint
 npm run build      # production build in dist/baru-budget
 ```
 
-Local login: `supabase/seed.sql` creates the development user `dev@baru.local` with password `baru-dev-123` (local stack only; sign-ups are disabled).
+Local login: `supabase/seed.sql` creates the development user `dev@baru.local` with password `baru-dev-123`, three sample accounts and a few transactions in the current and previous month (local stack only; sign-ups are disabled).
 
 Database workflow:
 
@@ -38,6 +38,8 @@ npm run db:types   # regenerate src/app/core/supabase/database.types.ts
 npm run db:stop
 ```
 
+Hosted project: `npx supabase db push` applies pending migrations before the frontend is deployed.
+
 ## Documentation
 
 Project documentation lives exclusively in `docs/*.md`:
@@ -45,5 +47,5 @@ Project documentation lives exclusively in `docs/*.md`:
 - `docs/MASTER_PROMPT.md` — product specification and rules
 - `docs/DOCUMENTATION_POLICY.md` — documentation governance
 - `docs/PROJECT_STATUS.md` — roadmap, features, bugs and technical debt
-- `docs/ARCHITECTURE_ANALYSIS_V0.1.md`, `docs/ARCHITECTURE_ANALYSIS_V0.2.md` — approved architecture per version
+- `docs/ARCHITECTURE_ANALYSIS_V0.1.md`, `V0.2.md`, `V0.3.md` — approved architecture per version
 - `docs/versions/` — one file per version
