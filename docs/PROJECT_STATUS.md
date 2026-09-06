@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**v0.5 — Dashboard** (DELIVERED on 2026-09-06; see `versions/v0.5.md`; the production check is deferred and listed as a known limitation). The next version is **v0.6 — Credit Cards and Invoices**. The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
+**v0.6 — Credit Cards and Invoices** (IN_PROGRESS). The architectural analysis is delivered in `ARCHITECTURE_ANALYSIS_V0.6.md`; implementation starts after its approval. Version file: `versions/v0.6.md`. The v0.5 production check is deferred (see `versions/v0.5.md`). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
 
 Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.5 (`versions/v0.1.md` to `versions/v0.5.md`).
 
@@ -15,7 +15,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.3 | Transactions | DELIVERED | INCOME, EXPENSE, TRANSFER; accounts, benefits, categories, CRUD, basic filters, balance, status |
 | v0.4 | Households and Sharing | DELIVERED | households, household_members, financial_access_grants, VIEW, MANAGE, non-transitivity, created_by/updated_by, complete policies |
 | v0.5 | Dashboard | DELIVERED | Incomes, expenses, balance, benefits, periods, person, household, shared view, charts, summary cards |
-| v0.6 | Credit Cards and Invoices | PENDING | Cards, limit, closing day, due day, purchases, invoices, competence rule, double-counting prevention |
+| v0.6 | Credit Cards and Invoices | IN_PROGRESS | Cards, limit, closing day, due day, purchases, invoices, competence rule, double-counting prevention |
 | v0.7 | Installments | PENDING | Installment purchases, installment generation, current and future installments, commitment, filters |
 | v0.8 | Recurrences | PENDING | Fixed expenses, recurring incomes, competence generation, monthly instance editing, recurring templates |
 | v0.9 | Allocations and Settlements | PENDING | transaction_allocations, payer vs. responsible, amounts owed, settlements, receivables, payables |
@@ -40,6 +40,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.4 implementation | v0.4 | DELIVERED | Households, grants, authorization functions, complete policies, real context selector, Grupos and Compartilhamento pages; hosted `db push` applied on 2026-09-06; production walkthrough with two users deferred |
 | v0.5 architectural analysis | v0.5 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.5.md`; approved on 2026-09-06 |
 | v0.5 implementation | v0.5 | DELIVERED | Monthly totals view, dashboard store, real cards, charts and lists by context and period; hosted `db push` applied on 2026-09-06; production check deferred |
+| v0.6 architectural analysis | v0.6 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.6.md`; awaiting approval |
+| v0.6 implementation | v0.6 | PENDING | Credit cards, invoice competence rule, card purchases, invoice payments, cards pages |
 
 ## Features
 
@@ -101,4 +103,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-06 — v0.5 Dashboard delivered (production check deferred by the administrator). Next: v0.6 Credit Cards and Invoices.
+2026-09-06 — v0.6 Credit Cards and Invoices started: architectural analysis delivered, awaiting approval before implementation.
