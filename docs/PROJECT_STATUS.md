@@ -2,9 +2,9 @@
 
 ## Current Version
 
-**v0.3 — Transactions** (IN_PROGRESS). Architectural analysis approved on 2026-09-06 (`ARCHITECTURE_ANALYSIS_V0.3.md`); implementation complete, migrations applied to the hosted project and `main` deployed; production validation on desktop and phone pending. Version file: `versions/v0.3.md`.
+**v0.3 — Transactions** (DELIVERED on 2026-09-06; see `versions/v0.3.md`). The next version is **v0.4 — Households and Sharing**, which starts with an architectural analysis for approval.
 
-Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype, v0.1 Foundation (`versions/v0.1.md`), v0.2 Auth, RLS and Deploy (`versions/v0.2.md`).
+Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype, v0.1 Foundation (`versions/v0.1.md`), v0.2 Auth, RLS and Deploy (`versions/v0.2.md`), v0.3 Transactions (`versions/v0.3.md`).
 
 ## Roadmap
 
@@ -12,7 +12,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 |---|---|---|---|
 | v0.1 | Foundation | DELIVERED | Angular project, feature-based structure, Supabase setup, migrations, base schema (profiles, categories, accounts), financial types, initial layout, initial tests |
 | v0.2 | Auth, RLS and Deploy | DELIVERED | Login, logout, session, protected routes, initial RLS policies, Cloudflare Pages automatic deploy, basic mobile validation |
-| v0.3 | Transactions | IN_PROGRESS | INCOME, EXPENSE, TRANSFER; accounts, benefits, categories, CRUD, basic filters, balance, status |
+| v0.3 | Transactions | DELIVERED | INCOME, EXPENSE, TRANSFER; accounts, benefits, categories, CRUD, basic filters, balance, status |
 | v0.4 | Households and Sharing | PENDING | households, household_members, financial_access_grants, VIEW, MANAGE, non-transitivity, created_by/updated_by, complete policies |
 | v0.5 | Dashboard | PENDING | Incomes, expenses, balance, benefits, periods, person, household, shared view, charts, summary cards |
 | v0.6 | Credit Cards and Invoices | PENDING | Cards, limit, closing day, due day, purchases, invoices, competence rule, double-counting prevention |
@@ -35,7 +35,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.2 architectural analysis | v0.2 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.2.md` |
 | v0.2 implementation | v0.2 | DELIVERED | Authentication, hosted migrations, Cloudflare Pages deploy; production login confirmed |
 | v0.3 architectural analysis | v0.3 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.3.md`; approved on 2026-09-06 |
-| v0.3 implementation | v0.3 | IN_PROGRESS | Migrations, screens and tests delivered; hosted `db push` applied on 2026-09-06; production validation on desktop and phone pending |
+| v0.3 implementation | v0.3 | DELIVERED | Migrations, screens and tests; hosted `db push` applied and production validated on 2026-09-06 |
+| v0.4 — Households and Sharing | v0.4 | PENDING | Starts with an architectural analysis for approval |
 
 ## Features
 
@@ -51,7 +52,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | FEAT-008 | Authentication | v0.2 | DELIVERED | Email and password login, logout, persistent session, protected routes, real profile in header |
 | FEAT-009 | Row Level Security | v0.2 | DELIVERED | v0.1 policies applied to the hosted project and verified through the API |
 | FEAT-010 | Cloudflare Pages deploy | v0.2 | DELIVERED | Automatic deploy of `main` to https://baru-budget.pages.dev with security headers and SPA fallback |
-| FEAT-011 | Transactions | v0.3 | IN_PROGRESS | INCOME, EXPENSE, TRANSFER; CRUD, month filters, derived balances, derived OVERDUE; implemented locally, production validation pending |
+| FEAT-011 | Transactions | v0.3 | DELIVERED | INCOME, EXPENSE, TRANSFER; CRUD, month filters, derived balances, derived OVERDUE, kind-aware status labels |
 | FEAT-012 | Households | v0.4 | PENDING | households, household_members |
 | FEAT-013 | Financial access grants | v0.4 | PENDING | VIEW and MANAGE permissions, non-transitive |
 | FEAT-014 | Dashboard | v0.5 | PENDING | Summary cards, charts, context switching |
@@ -70,7 +71,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | ID | Description | Found In | Status | Fixed In | Notes |
 |---|---|---|---|---|---|
 | BUG-001 | Cloudflare Pages build failed: `.node-version` set to `24` resolved to Node 24.13.1, below the Angular CLI minimum of 24.15.0 | v0.2 | FIXED | v0.2 | `.node-version` pinned to 24.18.0; `engines.node` added to package.json |
-| BUG-002 | Form field hints and errors overlapped the next field (fixed one-line subscript area) and the account and category dialogs opened too narrow | v0.3 | FIXED | v0.3 | Global `subscriptSizing: 'dynamic'`, shorter hints, form gap 12px, explicit dialog widths |
+| BUG-002 | Form field hints and errors overlapped the next field (fixed one-line subscript area) and the account and category dialogs opened too narrow | v0.3 | FIXED | v0.3 | Global `subscriptSizing: 'dynamic'`, shorter hints, 16px form gap, grid rows aligned to the top, explicit dialog widths |
 
 ## Technical Debt
 
@@ -97,4 +98,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-06 — v0.3 Transactions deployed; production review found BUG-002 (form layout), fixed; status labels now follow the transaction kind (Recebido, Efetuada). Validation on desktop and phone pending.
+2026-09-06 — v0.3 Transactions delivered and validated in production. Next: v0.4 Households and Sharing.
