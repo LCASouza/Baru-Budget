@@ -2,7 +2,7 @@
 
 Personal and family finance management web application.
 
-Current state: v0.2 (Auth, RLS and Deploy) — e-mail and password login with protected routes on top of the v0.1 schema. The dashboard still shows mock data until transactions (v0.3) are implemented. See `docs/PROJECT_STATUS.md` for the roadmap.
+Current state: v0.2 (Auth, RLS and Deploy) delivered — e-mail and password login with protected routes on top of the v0.1 schema, deployed at https://baru-budget.pages.dev. The dashboard still shows mock data until transactions (v0.3) are implemented. See `docs/PROJECT_STATUS.md` for the roadmap.
 
 ## Stack
 

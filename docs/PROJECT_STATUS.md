@@ -2,16 +2,16 @@
 
 ## Current Version
 
-**v0.2 — Auth, RLS and Deploy** (IN_PROGRESS). The architectural analysis is delivered in `ARCHITECTURE_ANALYSIS_V0.2.md`; implementation starts after its approval. Version file: `versions/v0.2.md`.
+**v0.2 — Auth, RLS and Deploy** (DELIVERED on 2026-09-05; see `versions/v0.2.md`). The next version is **v0.3 — Transactions**.
 
-Delivered: v0.1 Foundation (2026-09-05, `versions/v0.1.md`); visual prototype (`VISUAL_PROTOTYPE.md`).
+Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype, v0.1 Foundation, v0.2 Auth, RLS and Deploy.
 
 ## Roadmap
 
 | Version | Name | Status | Notes |
 |---|---|---|---|
 | v0.1 | Foundation | DELIVERED | Angular project, feature-based structure, Supabase setup, migrations, base schema (profiles, categories, accounts), financial types, initial layout, initial tests |
-| v0.2 | Auth, RLS and Deploy | IN_PROGRESS | Login, logout, session, protected routes, initial RLS policies, Cloudflare Pages automatic deploy, basic mobile validation |
+| v0.2 | Auth, RLS and Deploy | DELIVERED | Login, logout, session, protected routes, initial RLS policies, Cloudflare Pages automatic deploy, basic mobile validation |
 | v0.3 | Transactions | PENDING | INCOME, EXPENSE, TRANSFER; accounts, benefits, categories, CRUD, basic filters, balance, status |
 | v0.4 | Households and Sharing | PENDING | households, household_members, financial_access_grants, VIEW, MANAGE, non-transitivity, created_by/updated_by, complete policies |
 | v0.5 | Dashboard | PENDING | Incomes, expenses, balance, benefits, periods, person, household, shared view, charts, summary cards |
@@ -33,7 +33,8 @@ Delivered: v0.1 Foundation (2026-09-05, `versions/v0.1.md`); visual prototype (`
 | Architectural analysis | v0.1 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.1.md`; approved on 2026-09-05 |
 | v0.1 implementation | v0.1 | DELIVERED | Schema, RLS, tests, Supabase client and environments; see `versions/v0.1.md` |
 | v0.2 architectural analysis | v0.2 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.2.md` |
-| v0.2 implementation | v0.2 | IN_PROGRESS | Application, hosted database and deploy delivered; pending hosted auth settings and production login check |
+| v0.2 implementation | v0.2 | DELIVERED | Authentication, hosted migrations, Cloudflare Pages deploy; production login confirmed |
+| v0.3 — Transactions | v0.3 | PENDING | Starts with an architectural analysis for approval |
 
 ## Features
 
@@ -93,4 +94,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-05 — v0.2: authentication, hosted migrations and Cloudflare Pages deploy delivered; hosted auth settings and production login check pending.
+2026-09-05 — v0.2 Auth, RLS and Deploy delivered. Next: v0.3 Transactions.
