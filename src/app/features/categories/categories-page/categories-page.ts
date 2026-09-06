@@ -51,7 +51,12 @@ export class CategoriesPage {
   ]);
 
   protected openForm(data: CategoryFormData = {}): void {
-    this.dialog.open(CategoryFormDialog, { data, maxWidth: 'calc(100vw - 32px)', autoFocus: 'dialog' });
+    this.dialog.open(CategoryFormDialog, {
+      data,
+      width: '440px',
+      maxWidth: 'calc(100vw - 32px)',
+      autoFocus: 'dialog',
+    });
   }
 
   protected async toggleActive(category: Category): Promise<void> {

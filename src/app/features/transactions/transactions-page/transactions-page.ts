@@ -21,8 +21,8 @@ import { RouterLink } from '@angular/router';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import {
   DISPLAY_STATUSES,
-  DISPLAY_STATUS_LABELS,
   DisplayStatus,
+  transactionStatusLabel,
 } from '../../../core/finance/transaction-status';
 import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import { PeriodFilter } from '../../../shared/components/period-filter/period-filter';
@@ -91,8 +91,13 @@ export class TransactionsPage {
 
   protected readonly tabs = KIND_TABS;
   protected readonly kindIcons = KIND_ICONS;
-  protected readonly statuses = DISPLAY_STATUSES;
-  protected readonly statusLabels = DISPLAY_STATUS_LABELS;
+  protected readonly statusLabel = transactionStatusLabel;
+  protected readonly statusOptions = computed(() =>
+    DISPLAY_STATUSES.map((status) => ({
+      value: status,
+      label: transactionStatusLabel(status, this.store.filters().kind),
+    })),
+  );
   protected readonly filtersOpen = signal(false);
 
   protected readonly categoryOptions = computed(() => {

@@ -65,7 +65,12 @@ export class AccountsPage {
 
   protected openForm(account?: Account): void {
     const data: AccountFormData = { account };
-    this.dialog.open(AccountFormDialog, { data, maxWidth: 'calc(100vw - 32px)', autoFocus: 'dialog' });
+    this.dialog.open(AccountFormDialog, {
+      data,
+      width: '480px',
+      maxWidth: 'calc(100vw - 32px)',
+      autoFocus: 'dialog',
+    });
   }
 
   protected async toggleActive(account: Account): Promise<void> {

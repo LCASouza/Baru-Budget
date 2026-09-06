@@ -17,7 +17,7 @@
           <mat-option [value]="type">{{ typeLabels[type] }}</mat-option>
         }
       </mat-select>
-      <mat-hint>Benefícios (vale alimentação, refeição) ficam fora do saldo monetário.</mat-hint>
+      <mat-hint>Benefícios ficam fora do saldo monetário.</mat-hint>
     </mat-form-field>
 
     <mat-form-field appearance="outline">
@@ -32,7 +32,7 @@
       @if (form.controls.openingBalance.invalid) {
         <mat-error>Informe um valor válido.</mat-error>
       }
-      <mat-hint>Saldo na data de cadastro. O saldo atual é calculado pelas movimentações.</mat-hint>
+      <mat-hint>Saldo na data do cadastro.</mat-hint>
     </mat-form-field>
   </form>
 </mat-dialog-content>

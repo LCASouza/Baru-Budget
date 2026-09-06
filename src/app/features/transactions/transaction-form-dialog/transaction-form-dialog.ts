@@ -19,8 +19,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 import {
   TRANSACTION_STATUSES,
-  TRANSACTION_STATUS_LABELS,
   TransactionStatus,
+  transactionStatusLabel,
 } from '../../../core/finance/transaction-status';
 import { describeDataError } from '../../../core/supabase/data-error';
 import { confirmAction } from '../../../shared/components/confirm-dialog/confirm-dialog';
@@ -67,8 +67,6 @@ export class TransactionFormDialog {
 
   protected readonly transaction = this.data?.transaction ?? null;
   protected readonly isEdit = this.transaction !== null;
-  protected readonly statuses = TRANSACTION_STATUSES;
-  protected readonly statusLabels = TRANSACTION_STATUS_LABELS;
   protected readonly submitting = signal(false);
 
   protected readonly form = this.formBuilder.group({
@@ -106,6 +104,12 @@ export class TransactionFormDialog {
   });
 
   protected readonly isTransfer = computed(() => this.kind() === 'TRANSFER');
+  protected readonly statusOptions = computed(() =>
+    TRANSACTION_STATUSES.map((status) => ({
+      value: status,
+      label: transactionStatusLabel(status, this.kind()),
+    })),
+  );
   protected readonly isPending = computed(() => this.status() === 'PENDING');
 
   // Inactive records stay selectable only when the transaction already uses them.

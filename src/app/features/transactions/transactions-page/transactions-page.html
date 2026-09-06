@@ -93,8 +93,8 @@
             <mat-label>Status</mat-label>
             <mat-select [ngModel]="store.filters().status" (ngModelChange)="onStatusChange($event)">
               <mat-option [value]="null">Todos</mat-option>
-              @for (status of statuses; track status) {
-                <mat-option [value]="status">{{ statusLabels[status] }}</mat-option>
+              @for (option of statusOptions(); track option.value) {
+                <mat-option [value]="option.value">{{ option.label }}</mat-option>
               }
             </mat-select>
           </mat-form-field>
@@ -169,7 +169,7 @@
                     </span>
                     @if (view.displayStatus !== 'PAID') {
                       <span [class]="'tx-row__status tx-row__status--' + view.displayStatus.toLowerCase()">
-                        {{ statusLabels[view.displayStatus] }}
+                        {{ statusLabel(view.displayStatus, view.transaction.kind) }}
                       </span>
                     }
                     <span [class]="'tx-row__amount bb-amount tx-row__amount--' + view.transaction.kind.toLowerCase()">

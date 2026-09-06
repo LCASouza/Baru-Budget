@@ -5,7 +5,7 @@
 .tx-form {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 12px;
   padding-top: 8px;
 }
 
@@ -39,7 +39,7 @@ mat-form-field {
 @media (max-width: 767.98px) {
   .tx-form__row {
     grid-template-columns: minmax(0, 1fr);
-    gap: 4px;
+    gap: 12px;
   }
 }
 

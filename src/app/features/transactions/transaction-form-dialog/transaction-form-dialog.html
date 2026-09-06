@@ -85,7 +85,7 @@
           @if (form.controls.destinationAccountId.hasError('required')) {
             <mat-error>Selecione a conta de destino.</mat-error>
           } @else if (form.controls.destinationAccountId.hasError('sameAccount')) {
-            <mat-error>Escolha uma conta diferente da origem.</mat-error>
+            <mat-error>Escolha outra conta.</mat-error>
           }
         </mat-form-field>
       </div>
@@ -121,8 +121,8 @@
       <mat-form-field appearance="outline">
         <mat-label>Status</mat-label>
         <mat-select formControlName="status">
-          @for (status of statuses; track status) {
-            <mat-option [value]="status">{{ statusLabels[status] }}</mat-option>
+          @for (option of statusOptions(); track option.value) {
+            <mat-option [value]="option.value">{{ option.label }}</mat-option>
           }
         </mat-select>
       </mat-form-field>
@@ -133,7 +133,7 @@
           <input matInput formControlName="dueDate" [matDatepicker]="duePicker" />
           <mat-datepicker-toggle matIconSuffix [for]="duePicker" />
           <mat-datepicker #duePicker />
-          <mat-hint>Opcional. Sem vencimento, a data é usada.</mat-hint>
+          <mat-hint>Opcional</mat-hint>
         </mat-form-field>
       }
     </div>

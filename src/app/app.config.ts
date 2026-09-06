@@ -9,6 +9,7 @@ import {
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
 import { MAT_DATE_LOCALE, provideNativeDateAdapter } from '@angular/material/core';
+import { MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
 import { MatIconRegistry } from '@angular/material/icon';
 import { TitleStrategy, provideRouter, withComponentInputBinding } from '@angular/router';
 import { environment } from '../environments/environment';
@@ -34,5 +35,9 @@ export const appConfig: ApplicationConfig = {
     { provide: LOCALE_ID, useValue: 'pt-BR' },
     { provide: DEFAULT_CURRENCY_CODE, useValue: 'BRL' },
     { provide: MAT_DATE_LOCALE, useValue: 'pt-BR' },
+    {
+      provide: MAT_FORM_FIELD_DEFAULT_OPTIONS,
+      useValue: { appearance: 'outline', subscriptSizing: 'dynamic' },
+    },
   ],
 };

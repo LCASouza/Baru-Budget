@@ -70,6 +70,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | ID | Description | Found In | Status | Fixed In | Notes |
 |---|---|---|---|---|---|
 | BUG-001 | Cloudflare Pages build failed: `.node-version` set to `24` resolved to Node 24.13.1, below the Angular CLI minimum of 24.15.0 | v0.2 | FIXED | v0.2 | `.node-version` pinned to 24.18.0; `engines.node` added to package.json |
+| BUG-002 | Form field hints and errors overlapped the next field (fixed one-line subscript area) and the account and category dialogs opened too narrow | v0.3 | FIXED | v0.3 | Global `subscriptSizing: 'dynamic'`, shorter hints, form gap 12px, explicit dialog widths |
 
 ## Technical Debt
 
@@ -96,4 +97,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-06 — v0.3 Transactions implemented and deployed (migrations applied to the hosted project, 180 pgTAP assertions, 104 Vitest tests); production validation on desktop and phone pending.
+2026-09-06 — v0.3 Transactions deployed; production review found BUG-002 (form layout), fixed; status labels now follow the transaction kind (Recebido, Efetuada). Validation on desktop and phone pending.
