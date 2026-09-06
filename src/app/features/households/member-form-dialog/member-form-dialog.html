@@ -1,0 +1,38 @@
+<h2 mat-dialog-title>Adicionar membro</h2>
+
+<mat-dialog-content>
+  <form class="member-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <p class="member-form__intro">Grupo: <strong>{{ data.householdName }}</strong></p>
+
+    <mat-form-field appearance="outline">
+      <mat-label>E-mail do usuário</mat-label>
+      <input matInput type="email" formControlName="email" autocomplete="off" inputmode="email" />
+      @if (form.controls.email.hasError('required')) {
+        <mat-error>Informe o e-mail.</mat-error>
+      } @else if (form.controls.email.hasError('email')) {
+        <mat-error>E-mail inválido.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Papel</mat-label>
+      <mat-select formControlName="role">
+        @for (role of roles; track role) {
+          <mat-option [value]="role">{{ roleLabels[role] }}</mat-option>
+        }
+      </mat-select>
+      <mat-hint>Administradores gerenciam membros e o grupo.</mat-hint>
+    </mat-form-field>
+
+    @if (errorMessage(); as message) {
+      <p class="member-form__error" role="alert">{{ message }}</p>
+    }
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button matButton mat-dialog-close type="button">Cancelar</button>
+  <button matButton="filled" type="button" (click)="save()" [disabled]="submitting()">
+    {{ submitting() ? 'Adicionando…' : 'Adicionar' }}
+  </button>
+</mat-dialog-actions>

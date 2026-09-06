@@ -8,16 +8,26 @@ import { Transaction, TransactionInput } from './transaction.model';
 // deterministic together with the ordering.
 export const TRANSACTIONS_PAGE_LIMIT = 1000;
 
+/** Personal (or shared) transactions of an owner, or every transaction of a household. */
+export type TransactionScope =
+  | { readonly ownerId: string; readonly householdId?: undefined }
+  | { readonly householdId: string; readonly ownerId?: undefined };
+
 @Injectable({ providedIn: 'root' })
 export class TransactionRepository {
   private readonly client = inject(SUPABASE_CLIENT);
 
-  async listByDateRange(range: DateRange): Promise<Transaction[]> {
-    const { data, error } = await this.client
+  async listByDateRange(range: DateRange, scope: TransactionScope): Promise<Transaction[]> {
+    let query = this.client
       .from('transactions')
       .select('*')
       .gte('date', range.start)
-      .lte('date', range.end)
+      .lte('date', range.end);
+    query =
+      scope.householdId !== undefined
+        ? query.eq('household_id', scope.householdId)
+        : query.eq('owner_user_id', scope.ownerId);
+    const { data, error } = await query
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(TRANSACTIONS_PAGE_LIMIT);
@@ -65,6 +75,7 @@ function toRow(input: TransactionInput) {
     category_id: input.categoryId,
     account_id: input.accountId,
     destination_account_id: input.destinationAccountId,
+    household_id: input.householdId,
     notes: input.notes,
   };
 }

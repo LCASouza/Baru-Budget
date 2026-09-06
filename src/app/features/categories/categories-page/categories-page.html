@@ -19,10 +19,12 @@
             <h3 class="bb-card__title">{{ section.title }}</h3>
             <p class="bb-card__subtitle">{{ section.items.length }} categorias</p>
           </div>
-          <button matButton="outlined" (click)="openForm({ kind: section.kind })">
-            <mat-icon>add</mat-icon>
-            Nova
-          </button>
+          @if (context.canManage()) {
+            <button matButton="outlined" (click)="openForm({ kind: section.kind })">
+              <mat-icon>add</mat-icon>
+              Nova
+            </button>
+          }
         </header>
 
         @if (section.items.length === 0) {
@@ -40,9 +42,11 @@
                     <span class="categories__badge">Inativa</span>
                   }
                 </span>
-                <button matIconButton [matMenuTriggerFor]="menu" [attr.aria-label]="'Ações da categoria ' + category.name">
-                  <mat-icon>more_vert</mat-icon>
-                </button>
+                @if (context.canManage()) {
+                  <button matIconButton [matMenuTriggerFor]="menu" [attr.aria-label]="'Ações da categoria ' + category.name">
+                    <mat-icon>more_vert</mat-icon>
+                  </button>
+                }
                 <mat-menu #menu="matMenu">
                   <button mat-menu-item (click)="openForm({ category })">
                     <mat-icon>edit</mat-icon>

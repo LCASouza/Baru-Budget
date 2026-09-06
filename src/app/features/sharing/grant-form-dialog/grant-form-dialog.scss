@@ -1,0 +1,44 @@
+.grant-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 8px;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.grant-form__permissions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.grant-form__permission {
+  --mat-radio-label-text-size: 14px;
+}
+
+.grant-form__permission-label {
+  display: block;
+  font: var(--mat-sys-body-large);
+  font-weight: 500;
+}
+
+.grant-form__permission-description {
+  display: block;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.grant-form__note,
+.grant-form__error {
+  margin: 0;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.grant-form__error {
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-error);
+}

@@ -5,6 +5,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { vi } from 'vitest';
 import { AuthService } from '../../auth/auth.service';
+import { PERSONAL_CONTEXT } from '../../context/financial-context.model';
+import { FinancialContextService } from '../../context/financial-context.service';
 import { CurrentProfileService } from '../../profile/current-profile.service';
 import { Header } from './header';
 
@@ -19,6 +21,15 @@ describe('Header', () => {
       providers: [
         provideRouter([]),
         { provide: AuthService, useValue: { signOut: vi.fn().mockResolvedValue(undefined) } },
+        {
+          provide: FinancialContextService,
+          useValue: {
+            context: signal(PERSONAL_CONTEXT),
+            options: signal([PERSONAL_CONTEXT]),
+            canManage: signal(true),
+            select: vi.fn(),
+          },
+        },
         {
           provide: CurrentProfileService,
           useValue: {

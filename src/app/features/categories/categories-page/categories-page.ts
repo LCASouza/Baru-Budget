@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { FinancialContextService } from '../../../core/context/financial-context.service';
 import { CATEGORY_KIND_LABELS, CategoryKind } from '../../../core/finance/category-kind';
 import { describeDataError } from '../../../core/supabase/data-error';
 import { confirmAction } from '../../../shared/components/confirm-dialog/confirm-dialog';
@@ -32,6 +33,7 @@ interface CategorySection {
 })
 export class CategoriesPage {
   protected readonly store = inject(CategoriesStore);
+  protected readonly context = inject(FinancialContextService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
 

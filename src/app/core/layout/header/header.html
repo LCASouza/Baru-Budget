@@ -12,25 +12,33 @@
       [matMenuTriggerFor]="contextMenu"
       aria-label="Contexto financeiro"
     >
-      <mat-icon>{{ selectedContext().icon }}</mat-icon>
-      <span class="header__context-label">{{ selectedContext().label }}</span>
+      <mat-icon>{{ contextIcon(context.context()) }}</mat-icon>
+      <span class="header__context-label">{{ contextLabel(context.context()) }}</span>
       <mat-icon class="header__caret" iconPositionEnd>expand_more</mat-icon>
     </button>
     <mat-menu #contextMenu="matMenu">
-      @for (option of contexts; track option.id) {
+      @for (option of context.options(); track contextKey(option)) {
         <button
           mat-menu-item
-          [class.header__menu-item--selected]="option.id === selectedContext().id"
-          (click)="selectContext(option)"
+          [class.header__menu-item--selected]="contextKey(option) === contextKey(context.context())"
+          (click)="context.select(option)"
         >
-          <mat-icon>{{ option.icon }}</mat-icon>
-          <span>{{ option.label }}</span>
+          <mat-icon>{{ contextIcon(option) }}</mat-icon>
+          <span>{{ contextLabel(option) }}</span>
+          @if (option.kind === 'shared') {
+            <span class="header__menu-hint">{{ permissionLabels[option.permission] }}</span>
+          }
         </button>
       }
     </mat-menu>
 
     @if (size() !== 'mobile') {
-      <button matButton="filled" class="header__new" (click)="newTransaction.emit()">
+      <button
+        matButton="filled"
+        class="header__new"
+        (click)="newTransaction.emit()"
+        [disabled]="!context.canManage()"
+      >
         <mat-icon>add</mat-icon>
         {{ size() === 'desktop' ? 'Nova movimentação' : 'Nova' }}
       </button>

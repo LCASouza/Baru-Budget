@@ -1,0 +1,79 @@
+<section class="sharing">
+  @if (store.isLoading() && !store.loaded()) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else if (store.error()) {
+    <article class="bb-card">
+      <app-empty-state icon="error_outline" title="Não foi possível carregar os compartilhamentos" description="Verifique a conexão e tente novamente.">
+        <button matButton="outlined" (click)="store.reload()">Tentar novamente</button>
+      </app-empty-state>
+    </article>
+  } @else {
+    <article class="bb-card">
+      <header class="bb-card__head">
+        <div>
+          <h3 class="bb-card__title">Quem acessa minhas finanças</h3>
+          <p class="bb-card__subtitle">Acesso às suas contas, saldos, categorias e movimentações</p>
+        </div>
+        <button matButton="filled" (click)="openForm()">
+          <mat-icon>person_add</mat-icon>
+          Compartilhar
+        </button>
+      </header>
+
+      @if (store.given().length === 0) {
+        <app-empty-state icon="share" title="Você não compartilhou suas finanças com ninguém" description="Conceda acesso de visualização ou administração pelo e-mail de outro usuário." />
+      } @else {
+        <ul class="grants">
+          @for (grant of store.given(); track grant.id) {
+            <li class="grant">
+              <span class="grant__avatar" aria-hidden="true">{{ grant.grantedUserName.charAt(0).toUpperCase() }}</span>
+              <span class="grant__name">{{ grant.grantedUserName }}</span>
+              <span class="grant__permission" [class.grant__permission--manage]="grant.permission === 'MANAGE'">
+                {{ permissionLabels[grant.permission] }}
+              </span>
+              <button matIconButton [matMenuTriggerFor]="grantMenu" [attr.aria-label]="'Ações do acesso de ' + grant.grantedUserName">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #grantMenu="matMenu">
+                <button mat-menu-item (click)="togglePermission(grant)">
+                  <mat-icon>{{ grant.permission === 'VIEW' ? 'edit' : 'visibility' }}</mat-icon>
+                  <span>{{ grant.permission === 'VIEW' ? 'Permitir administrar' : 'Apenas visualizar' }}</span>
+                </button>
+                <button mat-menu-item (click)="revoke(grant)">
+                  <mat-icon>person_remove</mat-icon>
+                  <span>Revogar acesso</span>
+                </button>
+              </mat-menu>
+            </li>
+          }
+        </ul>
+      }
+    </article>
+
+    <article class="bb-card">
+      <header class="bb-card__head">
+        <div>
+          <h3 class="bb-card__title">Compartilhadas comigo</h3>
+          <p class="bb-card__subtitle">Finanças de outras pessoas que você pode ver ou administrar</p>
+        </div>
+      </header>
+
+      @if (store.received().length === 0) {
+        <app-empty-state icon="folder_shared" title="Ninguém compartilhou finanças com você" />
+      } @else {
+        <ul class="grants">
+          @for (grant of store.received(); track grant.id) {
+            <li class="grant">
+              <span class="grant__avatar grant__avatar--owner" aria-hidden="true">{{ grant.ownerName.charAt(0).toUpperCase() }}</span>
+              <span class="grant__name">Finanças de {{ grant.ownerName }}</span>
+              <span class="grant__permission" [class.grant__permission--manage]="grant.permission === 'MANAGE'">
+                {{ permissionLabels[grant.permission] }}
+              </span>
+              <button matButton="outlined" (click)="openContext(grant)">Abrir</button>
+            </li>
+          }
+        </ul>
+      }
+    </article>
+  }
+</section>

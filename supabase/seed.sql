@@ -112,3 +112,74 @@ begin
     (dev_user, 'EXPENSE',  'Cinema',             60.00, previous_month + 20, null,         'CANCELLED', cat_leisure, bank_account, null,       dev_user, dev_user);
 end;
 $$;
+
+-- Second development user for sharing scenarios: dev2@baru.local / baru-dev-123
+insert into auth.users (
+  id, instance_id, aud, role, email, encrypted_password, email_confirmed_at,
+  raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+  confirmation_token, recovery_token, email_change, email_change_token_new, email_change_token_current
+)
+values (
+  '00000000-0000-4000-8000-000000000002',
+  '00000000-0000-0000-0000-000000000000',
+  'authenticated',
+  'authenticated',
+  'dev2@baru.local',
+  extensions.crypt('baru-dev-123', extensions.gen_salt('bf')),
+  now(),
+  '{"provider": "email", "providers": ["email"]}',
+  '{"display_name": "Dev Dois"}',
+  now(), now(), '', '', '', '', ''
+);
+
+insert into auth.identities (id, user_id, provider_id, provider, identity_data, last_sign_in_at, created_at, updated_at)
+values (
+  gen_random_uuid(),
+  '00000000-0000-4000-8000-000000000002',
+  '00000000-0000-4000-8000-000000000002',
+  'email',
+  '{"sub": "00000000-0000-4000-8000-000000000002", "email": "dev2@baru.local", "email_verified": true}',
+  now(), now(), now()
+);
+
+-- Household shared by both development users, a VIEW grant from the second user
+-- to the first, and household-tagged transactions from both.
+do $$
+declare
+  dev_user   constant uuid := '00000000-0000-4000-8000-000000000001';
+  dev2_user  constant uuid := '00000000-0000-4000-8000-000000000002';
+  month_start constant date := date_trunc('month', current_date)::date;
+  family     uuid;
+  dev2_bank  uuid;
+  dev2_food  uuid;
+  dev2_salary uuid;
+begin
+  insert into public.households (name, created_by, updated_by)
+  values ('Família', dev_user, dev_user)
+  returning id into family;
+
+  insert into public.household_members (household_id, user_id, role, status, created_by, updated_by)
+  values (family, dev2_user, 'MEMBER', 'ACTIVE', dev_user, dev_user);
+
+  insert into public.financial_access_grants (owner_user_id, granted_user_id, permission, created_by, updated_by)
+  values (dev2_user, dev_user, 'VIEW', dev2_user, dev2_user);
+
+  insert into public.accounts (owner_user_id, name, type, institution, opening_balance, created_by, updated_by)
+  values (dev2_user, 'Conta corrente', 'BANK', 'Banco', 900.00, dev2_user, dev2_user)
+  returning id into dev2_bank;
+
+  select id into dev2_food   from public.categories where owner_user_id = dev2_user and kind = 'EXPENSE' and name = 'Alimentação';
+  select id into dev2_salary from public.categories where owner_user_id = dev2_user and kind = 'INCOME'  and name = 'Salário';
+
+  insert into public.transactions
+    (owner_user_id, kind, description, amount, date, status, category_id, account_id, household_id, created_by, updated_by)
+  values
+    (dev2_user, 'INCOME',  'Salário',      3200.00, month_start + 4, 'PAID', dev2_salary, dev2_bank, null,   dev2_user, dev2_user),
+    (dev2_user, 'EXPENSE', 'Feira',         145.30, month_start + 6, 'PAID', dev2_food,   dev2_bank, family, dev2_user, dev2_user),
+    (dev2_user, 'EXPENSE', 'Farmácia',       62.00, month_start + 2, 'PAID', dev2_food,   dev2_bank, null,   dev2_user, dev2_user);
+
+  update public.transactions
+     set household_id = family
+   where owner_user_id = dev_user and description = 'Supermercado' and date >= month_start;
+end;
+$$;

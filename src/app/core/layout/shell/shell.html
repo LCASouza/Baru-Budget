@@ -23,10 +23,12 @@
     </main>
 
     @if (viewport.isMobile()) {
-      <button matFab extended class="shell__fab" (click)="openNewTransaction()">
-        <mat-icon>add</mat-icon>
-        Nova movimentação
-      </button>
+      @if (context.canManage()) {
+        <button matFab extended class="shell__fab" (click)="openNewTransaction()">
+          <mat-icon>add</mat-icon>
+          Nova movimentação
+        </button>
+      }
       <app-bottom-nav (openMore)="openMoreMenu()" />
     }
   </mat-sidenav-content>

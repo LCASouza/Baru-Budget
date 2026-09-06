@@ -1,7 +1,7 @@
 import { ApplicationRef, computed, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
-import { AuthService } from '../../core/auth/auth.service';
+import { FinancialContextService } from '../../core/context/financial-context.service';
 import { PeriodService } from '../../core/period/period.service';
 import { makeAccount, makeCategory, makeTransaction } from '../../testing/finance-fixtures';
 import { AccountsStore } from '../accounts/accounts.store';
@@ -10,7 +10,9 @@ import { TransactionRepository } from './transaction.repository';
 import { TransactionsStore } from './transactions.store';
 
 describe('TransactionsStore', () => {
-  const userId = signal<string | null>('u1');
+  const ownerId = signal<string | null>('u1');
+  const householdId = signal<string | null>(null);
+  const memberNameById = signal<ReadonlyMap<string, string>>(new Map());
   let repository: {
     listByDateRange: ReturnType<typeof vi.fn>;
     create: ReturnType<typeof vi.fn>;
@@ -23,7 +25,9 @@ describe('TransactionsStore', () => {
   const settle = () => TestBed.inject(ApplicationRef).whenStable();
 
   beforeEach(() => {
-    userId.set('u1');
+    ownerId.set('u1');
+    householdId.set(null);
+    memberNameById.set(new Map());
     repository = {
       listByDateRange: vi.fn().mockResolvedValue([
         makeTransaction({ id: 'salary', kind: 'INCOME', description: 'Salário', amount: 5000, category_id: 'salary' }),
@@ -38,7 +42,16 @@ describe('TransactionsStore', () => {
     const categories = signal([makeCategory(), makeCategory({ id: 'salary', kind: 'INCOME', name: 'Salário' })]);
     TestBed.configureTestingModule({
       providers: [
-        { provide: AuthService, useValue: { userId } },
+        {
+          provide: FinancialContextService,
+          useValue: {
+            dataOwnerId: ownerId,
+            householdId,
+            memberNameById,
+            canManage: signal(true),
+            canManageOwner: (id: string) => id === 'u1',
+          },
+        },
         { provide: TransactionRepository, useValue: repository },
         {
           provide: AccountsStore,
@@ -57,9 +70,9 @@ describe('TransactionsStore', () => {
     store = TestBed.inject(TransactionsStore);
   });
 
-  it('loads the selected month for the authenticated user', async () => {
+  it('loads the selected month for the context owner', async () => {
     await settle();
-    expect(repository.listByDateRange).toHaveBeenCalledWith(expect.objectContaining(period.range()));
+    expect(repository.listByDateRange).toHaveBeenCalledWith(period.range(), { ownerId: 'u1' });
     expect(store.views()).toHaveLength(3);
     expect(store.views()[0].categoryName).toBe('Salário');
     expect(store.summary()).toEqual({ income: 5000, expense: 320, balance: 4680, count: 3 });
@@ -70,7 +83,19 @@ describe('TransactionsStore', () => {
     period.previous();
     await settle();
     expect(repository.listByDateRange).toHaveBeenCalledTimes(2);
-    expect(repository.listByDateRange).toHaveBeenLastCalledWith(expect.objectContaining(period.range()));
+    expect(repository.listByDateRange).toHaveBeenLastCalledWith(period.range(), { ownerId: 'u1' });
+  });
+
+  it('lists the household transactions and resolves member names in a household context', async () => {
+    await settle();
+    householdId.set('h1');
+    memberNameById.set(new Map([['u1', 'Alice']]));
+    await settle();
+    expect(repository.listByDateRange).toHaveBeenLastCalledWith(period.range(), { householdId: 'h1' });
+    expect(store.isHouseholdContext()).toBe(true);
+    expect(store.views()[0].ownerName).toBe('Alice');
+    expect(store.canEdit(store.views()[0].transaction)).toBe(true);
+    expect(store.canEdit(makeTransaction({ owner_user_id: 'u2' }))).toBe(false);
   });
 
   it('applies filters on the loaded month', async () => {
@@ -105,6 +130,7 @@ describe('TransactionsStore', () => {
       categoryId: 'cat-food',
       accountId: 'acc-bank',
       destinationAccountId: null,
+      householdId: null,
       notes: null,
     });
     await settle();
@@ -120,12 +146,12 @@ describe('TransactionsStore', () => {
 
   it('clears after logout and surfaces load errors', async () => {
     await settle();
-    userId.set(null);
+    ownerId.set(null);
     await settle();
     expect(store.transactions()).toEqual([]);
 
     repository.listByDateRange.mockRejectedValueOnce(new Error('offline'));
-    userId.set('u2');
+    ownerId.set('u2');
     await settle();
     expect(store.error()).toBeTruthy();
   });

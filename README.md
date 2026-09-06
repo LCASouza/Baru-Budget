@@ -2,7 +2,7 @@
 
 Personal and family finance management web application.
 
-Current state: v0.3 (Transactions) — incomes, expenses and transfers between own accounts, account and category management, monthly filters and derived balances, on top of the v0.2 authentication and deployment at https://baru-budget.pages.dev. The dashboard still shows mock data until v0.5. See `docs/PROJECT_STATUS.md` for the roadmap.
+Current state: v0.4 (Households and Sharing) — households with ADMIN/MEMBER roles, personal access grants (VIEW/MANAGE) enforced by row level security, a real financial context selector, on top of the v0.3 transactions, accounts and categories, deployed at https://baru-budget.pages.dev. The dashboard still shows mock data until v0.5. See `docs/PROJECT_STATUS.md` for the roadmap.
 
 ## Stack
 
@@ -28,7 +28,7 @@ npm run lint       # ESLint
 npm run build      # production build in dist/baru-budget
 ```
 
-Local login: `supabase/seed.sql` creates the development user `dev@baru.local` with password `baru-dev-123`, three sample accounts and a few transactions in the current and previous month (local stack only; sign-ups are disabled).
+Local login: `supabase/seed.sql` creates the development users `dev@baru.local` and `dev2@baru.local` (password `baru-dev-123`), sample accounts and transactions, a shared household and a VIEW grant from the second user to the first (local stack only; sign-ups are disabled).
 
 Database workflow:
 
@@ -47,5 +47,5 @@ Project documentation lives exclusively in `docs/*.md`:
 - `docs/MASTER_PROMPT.md` — product specification and rules
 - `docs/DOCUMENTATION_POLICY.md` — documentation governance
 - `docs/PROJECT_STATUS.md` — roadmap, features, bugs and technical debt
-- `docs/ARCHITECTURE_ANALYSIS_V0.1.md`, `V0.2.md`, `V0.3.md` — approved architecture per version
+- `docs/ARCHITECTURE_ANALYSIS_V0.1.md` to `V0.4.md` — approved architecture per version
 - `docs/versions/` — one file per version

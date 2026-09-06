@@ -165,6 +165,178 @@ export type Database = {
           },
         ]
       }
+      financial_access_grants: {
+        Row: {
+          created_at: string
+          created_by: string
+          granted_user_id: string
+          id: string
+          owner_user_id: string
+          permission: Database["public"]["Enums"]["access_permission"]
+          revoked_at: string | null
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          granted_user_id: string
+          id?: string
+          owner_user_id: string
+          permission: Database["public"]["Enums"]["access_permission"]
+          revoked_at?: string | null
+          updated_at?: string
+          updated_by?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          granted_user_id?: string
+          id?: string
+          owner_user_id?: string
+          permission?: Database["public"]["Enums"]["access_permission"]
+          revoked_at?: string | null
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_access_grants_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_access_grants_granted_user_id_fkey"
+            columns: ["granted_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_access_grants_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_access_grants_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      household_members: {
+        Row: {
+          created_at: string
+          created_by: string
+          household_id: string
+          joined_at: string
+          role: Database["public"]["Enums"]["household_role"]
+          status: Database["public"]["Enums"]["household_member_status"]
+          updated_at: string
+          updated_by: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          household_id: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["household_role"]
+          status?: Database["public"]["Enums"]["household_member_status"]
+          updated_at?: string
+          updated_by?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          household_id?: string
+          joined_at?: string
+          role?: Database["public"]["Enums"]["household_role"]
+          status?: Database["public"]["Enums"]["household_member_status"]
+          updated_at?: string
+          updated_by?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "household_members_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_members_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_members_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "household_members_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      households: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "households_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "households_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -200,6 +372,7 @@ export type Database = {
           description: string
           destination_account_id: string | null
           due_date: string | null
+          household_id: string | null
           id: string
           kind: Database["public"]["Enums"]["transaction_kind"]
           notes: string | null
@@ -218,6 +391,7 @@ export type Database = {
           description: string
           destination_account_id?: string | null
           due_date?: string | null
+          household_id?: string | null
           id?: string
           kind: Database["public"]["Enums"]["transaction_kind"]
           notes?: string | null
@@ -236,6 +410,7 @@ export type Database = {
           description?: string
           destination_account_id?: string | null
           due_date?: string | null
+          household_id?: string | null
           id?: string
           kind?: Database["public"]["Enums"]["transaction_kind"]
           notes?: string | null
@@ -288,6 +463,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "transactions_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "transactions_owner_user_id_fkey"
             columns: ["owner_user_id"]
             isOneToOne: false
@@ -324,14 +506,39 @@ export type Database = {
       }
     }
     Functions: {
+      can_manage: { Args: { owner: string }; Returns: boolean }
+      can_view: { Args: { owner: string }; Returns: boolean }
+      category_used_in_my_households: {
+        Args: { category: string }
+        Returns: boolean
+      }
+      is_active_member: {
+        Args: { household: string; member: string }
+        Returns: boolean
+      }
+      is_grant_counterpart: { Args: { other: string }; Returns: boolean }
+      is_household_admin: { Args: { household: string }; Returns: boolean }
+      is_household_member: { Args: { household: string }; Returns: boolean }
+      leave_household: { Args: { household: string }; Returns: undefined }
+      lookup_user_by_email: {
+        Args: { email_address: string }
+        Returns: {
+          display_name: string
+          id: string
+        }[]
+      }
       seed_default_categories: {
         Args: { profile_id: string }
         Returns: undefined
       }
+      shares_household_with: { Args: { other: string }; Returns: boolean }
     }
     Enums: {
+      access_permission: "VIEW" | "MANAGE"
       account_type: "BANK" | "CASH" | "BENEFIT" | "OTHER"
       category_kind: "INCOME" | "EXPENSE"
+      household_member_status: "ACTIVE" | "INACTIVE"
+      household_role: "ADMIN" | "MEMBER"
       transaction_kind: "INCOME" | "EXPENSE" | "TRANSFER" | "SETTLEMENT"
       transaction_status: "PENDING" | "PAID" | "CANCELLED"
     }
@@ -464,8 +671,11 @@ export const Constants = {
   },
   public: {
     Enums: {
+      access_permission: ["VIEW", "MANAGE"],
       account_type: ["BANK", "CASH", "BENEFIT", "OTHER"],
       category_kind: ["INCOME", "EXPENSE"],
+      household_member_status: ["ACTIVE", "INACTIVE"],
+      household_role: ["ADMIN", "MEMBER"],
       transaction_kind: ["INCOME", "EXPENSE", "TRANSFER", "SETTLEMENT"],
       transaction_status: ["PENDING", "PAID", "CANCELLED"],
     },

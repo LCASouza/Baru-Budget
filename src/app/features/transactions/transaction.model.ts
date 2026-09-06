@@ -28,6 +28,7 @@ export interface TransactionInput {
   readonly categoryId: string | null;
   readonly accountId: string;
   readonly destinationAccountId: string | null;
+  readonly householdId: string | null;
   readonly notes: string | null;
 }
 
@@ -46,8 +47,10 @@ export function displayStatus(
 export interface TransactionView {
   readonly transaction: Transaction;
   readonly categoryName: string | null;
+  /** Empty when the account is not visible (transaction of another household member). */
   readonly accountName: string;
   readonly destinationAccountName: string | null;
+  readonly ownerName: string | null;
   readonly displayStatus: DisplayStatus;
 }
 
@@ -56,16 +59,18 @@ export function buildTransactionViews(
   categoriesById: ReadonlyMap<string, Category>,
   accountsById: ReadonlyMap<string, Account>,
   today: IsoDate,
+  ownerNames: ReadonlyMap<string, string> = new Map(),
 ): TransactionView[] {
   const accountName = (id: string | null): string | null =>
-    id ? (accountsById.get(id)?.name ?? 'Conta removida') : null;
+    id ? (accountsById.get(id)?.name ?? null) : null;
   return transactions.map((transaction) => ({
     transaction,
     categoryName: transaction.category_id
-      ? (categoriesById.get(transaction.category_id)?.name ?? 'Categoria removida')
+      ? (categoriesById.get(transaction.category_id)?.name ?? null)
       : null,
     accountName: accountName(transaction.account_id) ?? '',
     destinationAccountName: accountName(transaction.destination_account_id),
+    ownerName: ownerNames.get(transaction.owner_user_id) ?? null,
     displayStatus: displayStatus(transaction, today),
   }));
 }

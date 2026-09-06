@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { RouterOutlet } from '@angular/router';
 import { openTransactionDialog } from '../../../features/transactions/open-transaction-dialog';
+import { FinancialContextService } from '../../context/financial-context.service';
 import { NavigationService } from '../../navigation/navigation.service';
 import { BottomNav } from '../bottom-nav/bottom-nav';
 import { Header } from '../header/header';
@@ -33,6 +34,7 @@ export class Shell {
   private readonly bottomSheet = inject(MatBottomSheet);
   protected readonly viewport = inject(ViewportService);
   protected readonly navigation = inject(NavigationService);
+  protected readonly context = inject(FinancialContextService);
 
   protected async openNewTransaction(): Promise<void> {
     await openTransactionDialog(this.dialog, this.viewport);

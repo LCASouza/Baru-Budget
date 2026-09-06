@@ -78,3 +78,26 @@ mat-form-field {
 .tx-form__delete {
   color: var(--mat-sys-error);
 }
+
+.tx-form__owner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 12px;
+  font: var(--mat-sys-body-medium);
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+.tx-form__audit {
+  margin: 0;
+  padding: 0 0 0 4px;
+  list-style: none;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}

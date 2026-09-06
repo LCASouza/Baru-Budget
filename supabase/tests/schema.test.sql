@@ -65,6 +65,41 @@ select has_column('public', 'account_balances', 'owner_user_id', 'account_balanc
 select has_column('public', 'account_balances', 'opening_balance', 'account_balances.opening_balance exists');
 select has_column('public', 'account_balances', 'current_balance', 'account_balances.current_balance exists');
 
+select has_enum('public', 'household_role', 'household_role enum exists');
+select enum_has_labels('public', 'household_role', array['ADMIN', 'MEMBER'], 'household_role labels');
+select has_enum('public', 'household_member_status', 'household_member_status enum exists');
+select enum_has_labels('public', 'household_member_status', array['ACTIVE', 'INACTIVE'], 'household_member_status labels');
+select has_enum('public', 'access_permission', 'access_permission enum exists');
+select enum_has_labels('public', 'access_permission', array['VIEW', 'MANAGE'], 'access_permission labels');
+
+select has_table('public', 'households', 'households table exists');
+select has_pk('public', 'households', 'households has a primary key');
+select has_table('public', 'household_members', 'household_members table exists');
+select col_is_pk('public', 'household_members', array['household_id', 'user_id'], 'household_members primary key is (household_id, user_id)');
+select col_type_is('public', 'household_members', 'role', 'household_role', 'household_members.role uses the enum');
+select col_type_is('public', 'household_members', 'status', 'household_member_status', 'household_members.status uses the enum');
+select has_index('public', 'household_members', 'household_members_user_idx', 'household_members has the user index');
+
+select has_table('public', 'financial_access_grants', 'financial_access_grants table exists');
+select col_type_is('public', 'financial_access_grants', 'permission', 'access_permission', 'grants.permission uses the enum');
+select col_is_null('public', 'financial_access_grants', 'revoked_at', 'grants.revoked_at is nullable');
+select has_index('public', 'financial_access_grants', 'grants_active_pair_key', 'grants has the active pair index');
+select index_is_unique('public', 'financial_access_grants', 'grants_active_pair_key', 'grants active pair index is unique');
+select has_index('public', 'financial_access_grants', 'grants_granted_user_idx', 'grants has the granted user index');
+
+select has_column('public', 'transactions', 'household_id', 'transactions.household_id exists');
+select col_is_null('public', 'transactions', 'household_id', 'transactions.household_id is nullable');
+select fk_ok('public', 'transactions', 'household_id', 'public', 'households', 'id', 'transactions.household_id references households');
+select has_index('public', 'transactions', 'transactions_household_idx', 'transactions has the household index');
+
+select policies_are('public', 'accounts', array['accounts_select_visible', 'accounts_insert_manage', 'accounts_update_manage', 'accounts_delete_manage'], 'accounts policies');
+select policies_are('public', 'categories', array['categories_select_visible', 'categories_insert_manage', 'categories_update_manage', 'categories_delete_manage'], 'categories policies');
+select policies_are('public', 'transactions', array['transactions_select_visible', 'transactions_insert_manage', 'transactions_update_manage', 'transactions_delete_manage'], 'transactions policies');
+select policies_are('public', 'profiles', array['profiles_select_related', 'profiles_update_own'], 'profiles policies');
+select policies_are('public', 'households', array['households_select_member', 'households_insert_creator', 'households_update_admin', 'households_delete_admin'], 'households policies');
+select policies_are('public', 'household_members', array['household_members_select_member', 'household_members_insert_admin', 'household_members_update_admin', 'household_members_delete_admin'], 'household_members policies');
+select policies_are('public', 'financial_access_grants', array['grants_select_parties', 'grants_insert_owner', 'grants_update_owner', 'grants_delete_owner'], 'grants policies');
+
 -- Functions and triggers
 select has_function('public', 'set_updated_at', 'set_updated_at exists');
 select has_function('public', 'set_audit_on_insert', 'set_audit_on_insert exists');
@@ -83,6 +118,20 @@ select has_function('public', 'validate_transaction_references', 'validate_trans
 select has_trigger('public', 'transactions', 'transactions_set_audit_on_insert', 'transactions has the insert audit trigger');
 select has_trigger('public', 'transactions', 'transactions_set_audit_on_update', 'transactions has the update audit trigger');
 select has_trigger('public', 'transactions', 'transactions_validate_references', 'transactions has the reference validation trigger');
+select has_function('public', 'can_view', array['uuid'], 'can_view exists');
+select is_definer('public', 'can_view', array['uuid'], 'can_view is security definer');
+select has_function('public', 'can_manage', array['uuid'], 'can_manage exists');
+select is_definer('public', 'can_manage', array['uuid'], 'can_manage is security definer');
+select has_function('public', 'is_household_member', array['uuid'], 'is_household_member exists');
+select has_function('public', 'is_household_admin', array['uuid'], 'is_household_admin exists');
+select has_function('public', 'is_active_member', array['uuid', 'uuid'], 'is_active_member exists');
+select has_function('public', 'shares_household_with', array['uuid'], 'shares_household_with exists');
+select has_function('public', 'is_grant_counterpart', array['uuid'], 'is_grant_counterpart exists');
+select has_function('public', 'category_used_in_my_households', array['uuid'], 'category_used_in_my_households exists');
+select has_function('public', 'lookup_user_by_email', array['text'], 'lookup_user_by_email exists');
+select has_function('public', 'leave_household', array['uuid'], 'leave_household exists');
+select has_trigger('public', 'households', 'households_add_creator', 'households has the creator trigger');
+select has_trigger('public', 'household_members', 'household_members_ensure_admin', 'household_members has the last admin guard');
 
 -- Privileged functions are not callable by application roles
 select function_privs_are('public', 'handle_new_user', array[]::text[], 'anon', array[]::text[], 'anon cannot execute handle_new_user');

@@ -18,6 +18,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
 import { RouterLink } from '@angular/router';
+import { FinancialContextService } from '../../../core/context/financial-context.service';
 import { ViewportService } from '../../../core/layout/viewport.service';
 import {
   DISPLAY_STATUSES,
@@ -87,6 +88,7 @@ export class TransactionsPage {
   protected readonly accounts = inject(AccountsStore);
   protected readonly categories = inject(CategoriesStore);
   protected readonly viewport = inject(ViewportService);
+  protected readonly context = inject(FinancialContextService);
   private readonly dialog = inject(MatDialog);
 
   protected readonly tabs = KIND_TABS;
@@ -100,11 +102,17 @@ export class TransactionsPage {
   );
   protected readonly filtersOpen = signal(false);
 
+  protected readonly isHousehold = this.store.isHouseholdContext;
+  protected readonly isShared = computed(() => this.context.context().kind === 'shared');
+
+  // A household context filters over every visible category (members included).
   protected readonly categoryOptions = computed(() => {
     const kind = this.store.filters().kind;
+    const ofKind = (k: 'INCOME' | 'EXPENSE') =>
+      this.isHousehold() ? this.categories.visibleOfKind(k) : this.categories.ofKind(k);
     return {
-      income: kind === 'EXPENSE' ? [] : this.categories.ofKind('INCOME'),
-      expense: kind === 'INCOME' ? [] : this.categories.ofKind('EXPENSE'),
+      income: kind === 'EXPENSE' ? [] : ofKind('INCOME'),
+      expense: kind === 'INCOME' ? [] : ofKind('EXPENSE'),
     };
   });
 

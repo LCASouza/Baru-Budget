@@ -1,0 +1,113 @@
+<section class="households">
+  <header class="households__head">
+    <p class="households__intro">
+      Grupos reúnem pessoas em torno de movimentações compartilhadas. Membros veem apenas o que for marcado com o grupo.
+    </p>
+    <button matButton="filled" (click)="openForm()">
+      <mat-icon>group_add</mat-icon>
+      Novo grupo
+    </button>
+  </header>
+
+  @if (store.isLoading() && !store.loaded()) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else if (store.error()) {
+    <article class="bb-card">
+      <app-empty-state icon="error_outline" title="Não foi possível carregar os grupos" description="Verifique a conexão e tente novamente.">
+        <button matButton="outlined" (click)="store.reload()">Tentar novamente</button>
+      </app-empty-state>
+    </article>
+  } @else if (store.households().length === 0) {
+    <article class="bb-card">
+      <app-empty-state icon="groups" title="Você ainda não participa de nenhum grupo" description="Crie um grupo para a família e adicione os membros pelo e-mail de acesso.">
+        <button matButton="filled" (click)="openForm()">Criar grupo</button>
+      </app-empty-state>
+    </article>
+  } @else {
+    <div class="households__grid">
+      @for (household of store.households(); track household.id) {
+        <article class="bb-card household">
+          <header class="bb-card__head">
+            <div>
+              <h3 class="bb-card__title">{{ household.name }}</h3>
+              <p class="bb-card__subtitle">
+                {{ activeMembers(household).length }} {{ activeMembers(household).length === 1 ? 'membro' : 'membros' }}
+                · você é {{ isAdmin(household) ? 'administrador' : 'membro' }}
+              </p>
+            </div>
+            <div class="household__actions">
+              <button matButton="outlined" (click)="openContext(household)">
+                <mat-icon>visibility</mat-icon>
+                Ver movimentações
+              </button>
+              <button matIconButton [matMenuTriggerFor]="householdMenu" [attr.aria-label]="'Ações do grupo ' + household.name">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #householdMenu="matMenu">
+                @if (isAdmin(household)) {
+                  <button mat-menu-item (click)="openMemberForm(household)">
+                    <mat-icon>person_add</mat-icon>
+                    <span>Adicionar membro</span>
+                  </button>
+                  <button mat-menu-item (click)="openForm(household)">
+                    <mat-icon>edit</mat-icon>
+                    <span>Renomear</span>
+                  </button>
+                  <button mat-menu-item (click)="remove(household)">
+                    <mat-icon>delete</mat-icon>
+                    <span>Excluir grupo</span>
+                  </button>
+                }
+                <button mat-menu-item (click)="leave(household)">
+                  <mat-icon>logout</mat-icon>
+                  <span>Sair do grupo</span>
+                </button>
+              </mat-menu>
+            </div>
+          </header>
+
+          <ul class="household__members">
+            @for (member of activeMembers(household); track member.userId) {
+              <li class="member">
+                <span class="member__avatar" aria-hidden="true">{{ member.displayName.charAt(0).toUpperCase() }}</span>
+                <span class="member__name">
+                  {{ member.displayName }}
+                  @if (isMe(member)) {
+                    <span class="member__me">você</span>
+                  }
+                </span>
+                <span class="member__role" [class.member__role--admin]="member.role === 'ADMIN'">
+                  {{ roleLabels[member.role] }}
+                </span>
+                @if (isAdmin(household)) {
+                  <button matIconButton [matMenuTriggerFor]="memberMenu" [attr.aria-label]="'Ações de ' + member.displayName">
+                    <mat-icon>more_horiz</mat-icon>
+                  </button>
+                  <mat-menu #memberMenu="matMenu">
+                    <button mat-menu-item (click)="setRole(household, member)" [disabled]="isLastAdmin(household, member)">
+                      <mat-icon>{{ member.role === 'ADMIN' ? 'person' : 'admin_panel_settings' }}</mat-icon>
+                      <span>{{ member.role === 'ADMIN' ? 'Tornar membro' : 'Tornar administrador' }}</span>
+                    </button>
+                    @if (!isMe(member)) {
+                      <button mat-menu-item (click)="removeMember(household, member)">
+                        <mat-icon>person_remove</mat-icon>
+                        <span>Remover do grupo</span>
+                      </button>
+                    }
+                  </mat-menu>
+                }
+              </li>
+            }
+          </ul>
+
+          @if (isAdmin(household)) {
+            <button matButton class="household__add" (click)="openMemberForm(household)">
+              <mat-icon>person_add</mat-icon>
+              Adicionar membro
+            </button>
+          }
+        </article>
+      }
+    </div>
+  }
+</section>

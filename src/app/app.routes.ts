@@ -81,12 +81,20 @@ export const routes: Routes = [
         'Divisão de despesas e acertos com valores a receber e a pagar entre pessoas.',
         'v0.9',
       ),
-      placeholderRoute('/households', 'Grupos financeiros compartilhados, como a família.', 'v0.4'),
-      placeholderRoute(
-        '/sharing',
-        'Acesso às suas finanças concedido a outras pessoas com permissão VIEW ou MANAGE.',
-        'v0.4',
-      ),
+      {
+        path: 'households',
+        title: navItem('/households').label,
+        loadComponent: () =>
+          import('./features/households/households-page/households-page').then(
+            (m) => m.HouseholdsPage,
+          ),
+      },
+      {
+        path: 'sharing',
+        title: navItem('/sharing').label,
+        loadComponent: () =>
+          import('./features/sharing/sharing-page/sharing-page').then((m) => m.SharingPage),
+      },
       {
         path: 'settings',
         title: navItem('/settings').label,

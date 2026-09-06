@@ -1,0 +1,39 @@
+<h2 mat-dialog-title>Compartilhar minhas finanças</h2>
+
+<mat-dialog-content>
+  <form class="grant-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <mat-form-field appearance="outline">
+      <mat-label>E-mail do usuário</mat-label>
+      <input matInput type="email" formControlName="email" autocomplete="off" inputmode="email" />
+      @if (form.controls.email.hasError('required')) {
+        <mat-error>Informe o e-mail.</mat-error>
+      } @else if (form.controls.email.hasError('email')) {
+        <mat-error>E-mail inválido.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-radio-group class="grant-form__permissions" formControlName="permission" aria-label="Permissão">
+      @for (permission of permissions; track permission) {
+        <mat-radio-button [value]="permission" class="grant-form__permission">
+          <span class="grant-form__permission-label">{{ permissionLabels[permission] }}</span>
+          <span class="grant-form__permission-description">{{ permissionDescriptions[permission] }}</span>
+        </mat-radio-button>
+      }
+    </mat-radio-group>
+
+    <p class="grant-form__note">
+      Quem recebe o acesso nunca pode compartilhar suas finanças com terceiros nem alterar acessos.
+    </p>
+
+    @if (errorMessage(); as message) {
+      <p class="grant-form__error" role="alert">{{ message }}</p>
+    }
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button matButton mat-dialog-close type="button">Cancelar</button>
+  <button matButton="filled" type="button" (click)="save()" [disabled]="submitting()">
+    {{ submitting() ? 'Compartilhando…' : 'Compartilhar' }}
+  </button>
+</mat-dialog-actions>

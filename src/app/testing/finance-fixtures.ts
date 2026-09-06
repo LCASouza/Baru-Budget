@@ -53,6 +53,7 @@ export function makeTransaction(overrides: Partial<Transaction> = {}): Transacti
     category_id: 'cat-food',
     account_id: 'acc-bank',
     destination_account_id: null,
+    household_id: null,
     notes: null,
     created_at: NOW,
     updated_at: NOW,

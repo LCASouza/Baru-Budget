@@ -7,10 +7,11 @@ import { Category, CategoryInput } from './category.model';
 export class CategoryRepository {
   private readonly client = inject(SUPABASE_CLIENT);
 
-  async listAll(): Promise<Category[]> {
+  async listByOwners(ownerIds: readonly string[]): Promise<Category[]> {
     const { data, error } = await this.client
       .from('categories')
       .select('*')
+      .in('owner_user_id', [...ownerIds])
       .order('kind')
       .order('name');
     if (error) {

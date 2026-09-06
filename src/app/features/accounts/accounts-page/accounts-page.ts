@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { FinancialContextService } from '../../../core/context/financial-context.service';
 import { ACCOUNT_TYPE_LABELS } from '../../../core/finance/account-type';
 import { describeDataError } from '../../../core/supabase/data-error';
 import { confirmAction } from '../../../shared/components/confirm-dialog/confirm-dialog';
@@ -32,6 +33,7 @@ import { AccountsStore } from '../accounts.store';
 })
 export class AccountsPage {
   protected readonly store = inject(AccountsStore);
+  protected readonly context = inject(FinancialContextService);
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
 

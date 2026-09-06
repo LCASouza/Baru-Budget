@@ -115,3 +115,9 @@
     gap: 0;
   }
 }
+
+.header__menu-hint {
+  margin-left: 12px;
+  font: var(--mat-sys-label-small);
+  color: var(--mat-sys-on-surface-variant);
+}

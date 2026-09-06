@@ -20,8 +20,10 @@
     <article class="bb-card transactions__card">
       <header class="bb-card__head transactions__head">
         <div>
-          <h3 class="bb-card__title">Movimentações</h3>
-          <p class="bb-card__subtitle">{{ store.filtered().length }} de {{ store.views().length }} no mês</p>
+          <h3 class="bb-card__title">{{ isHousehold() ? 'Movimentações do grupo' : 'Movimentações' }}</h3>
+          <p class="bb-card__subtitle">
+            {{ store.filtered().length }} de {{ store.views().length }} no mês{{ store.canManage() ? '' : ' · somente leitura' }}
+          </p>
         </div>
         <div class="transactions__head-actions">
           @if (!viewport.isDesktop()) {
@@ -77,17 +79,19 @@
             </mat-select>
           </mat-form-field>
 
-          <mat-form-field appearance="outline" subscriptSizing="dynamic">
-            <mat-label>Conta</mat-label>
-            <mat-select [ngModel]="store.filters().accountId" (ngModelChange)="store.setAccount($event)">
-              <mat-option [value]="null">Todas</mat-option>
-              @for (account of accounts.accounts(); track account.id) {
-                <mat-option [value]="account.id">
-                  {{ account.name }}{{ account.active ? '' : ' (inativa)' }}
-                </mat-option>
-              }
-            </mat-select>
-          </mat-form-field>
+          @if (!isHousehold()) {
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Conta</mat-label>
+              <mat-select [ngModel]="store.filters().accountId" (ngModelChange)="store.setAccount($event)">
+                <mat-option [value]="null">Todas</mat-option>
+                @for (account of accounts.accounts(); track account.id) {
+                  <mat-option [value]="account.id">
+                    {{ account.name }}{{ account.active ? '' : ' (inativa)' }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
 
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>Status</mat-label>
@@ -111,24 +115,38 @@
         >
           <button matButton="outlined" (click)="store.reload()">Tentar novamente</button>
         </app-empty-state>
-      } @else if (!hasAccounts()) {
-        <app-empty-state
-          icon="account_balance"
-          title="Cadastre uma conta para começar"
-          description="Toda movimentação pertence a uma conta: conta bancária, dinheiro ou benefício."
-        >
-          <a matButton="filled" routerLink="/settings/accounts">Cadastrar conta</a>
-        </app-empty-state>
+      } @else if (!isHousehold() && !hasAccounts()) {
+        @if (isShared()) {
+          <app-empty-state
+            icon="account_balance"
+            title="Nenhuma conta cadastrada"
+            description="O proprietário destas finanças ainda não cadastrou contas."
+          >
+            @if (store.canManage()) {
+              <a matButton="filled" routerLink="/settings/accounts">Cadastrar conta</a>
+            }
+          </app-empty-state>
+        } @else {
+          <app-empty-state
+            icon="account_balance"
+            title="Cadastre uma conta para começar"
+            description="Toda movimentação pertence a uma conta: conta bancária, dinheiro ou benefício."
+          >
+            <a matButton="filled" routerLink="/settings/accounts">Cadastrar conta</a>
+          </app-empty-state>
+        }
       } @else if (store.views().length === 0) {
         <app-empty-state
           icon="receipt_long"
-          title="Nenhuma movimentação neste mês"
-          description="Registre entradas, saídas e transferências para acompanhar o período."
+          [title]="isHousehold() ? 'Nenhuma movimentação do grupo neste mês' : 'Nenhuma movimentação neste mês'"
+          [description]="isHousehold() ? 'Marque uma movimentação com o grupo para que os membros a vejam aqui.' : 'Registre entradas, saídas e transferências para acompanhar o período.'"
         >
-          <button matButton="filled" (click)="create()">
-            <mat-icon>add</mat-icon>
-            Nova movimentação
-          </button>
+          @if (store.canManage() && hasAccounts()) {
+            <button matButton="filled" (click)="create()">
+              <mat-icon>add</mat-icon>
+              Nova movimentação
+            </button>
+          }
         </app-empty-state>
       } @else if (store.filtered().length === 0) {
         <app-empty-state
@@ -160,7 +178,9 @@
                     <span class="tx-row__info">
                       <span class="tx-row__name">{{ view.transaction.description }}</span>
                       <span class="tx-row__meta">
-                        @if (view.transaction.kind === 'TRANSFER') {
+                        @if (isHousehold()) {
+                          {{ view.ownerName ?? 'Membro' }}{{ view.categoryName ? ' · ' + view.categoryName : '' }}
+                        } @else if (view.transaction.kind === 'TRANSFER') {
                           {{ view.accountName }} → {{ view.destinationAccountName }}
                         } @else {
                           {{ view.categoryName }} · {{ view.accountName }}

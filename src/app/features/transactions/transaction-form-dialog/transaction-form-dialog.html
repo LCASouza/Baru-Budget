@@ -1,7 +1,21 @@
-<h2 mat-dialog-title class="dialog__title">{{ isEdit ? 'Editar movimentação' : 'Nova movimentação' }}</h2>
+<h2 mat-dialog-title class="dialog__title">
+  {{ readonly ? 'Movimentação' : isEdit ? 'Editar movimentação' : 'Nova movimentação' }}
+</h2>
 
 <mat-dialog-content>
-  @if (!accountsLoading() && !hasAccounts()) {
+  @if (readonly && ownerName()) {
+    <p class="tx-form__owner">
+      <mat-icon>person</mat-icon>
+      Registrada por {{ ownerName() }}. Somente leitura.
+    </p>
+  } @else if (readonly) {
+    <p class="tx-form__owner">
+      <mat-icon>visibility</mat-icon>
+      Somente leitura neste contexto.
+    </p>
+  }
+
+  @if (!readonly && !accountsLoading() && !hasAccounts()) {
     <div class="tx-form__notice">
       <mat-icon>info</mat-icon>
       <p>
@@ -138,28 +152,51 @@
       }
     </div>
 
+    @if (showHouseholdField()) {
+      <mat-form-field appearance="outline">
+        <mat-label>Grupo</mat-label>
+        <mat-select formControlName="householdId">
+          <mat-option value="">Pessoal</mat-option>
+          @for (household of householdOptions(); track household.id) {
+            <mat-option [value]="household.id">{{ household.name }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint>Membros do grupo veem a movimentação; sua conta e saldo continuam privados.</mat-hint>
+      </mat-form-field>
+    }
+
     <mat-form-field appearance="outline">
       <mat-label>Observações</mat-label>
       <textarea matInput formControlName="notes" rows="2" maxlength="1000"></textarea>
     </mat-form-field>
+
+    @if (auditEntries().length > 0) {
+      <ul class="tx-form__audit">
+        @for (entry of auditEntries(); track entry.label) {
+          <li>{{ entry.label }} {{ entry.name }} em {{ entry.at | date: 'dd/MM/yyyy' }}</li>
+        }
+      </ul>
+    }
   </form>
 </mat-dialog-content>
 
 <mat-dialog-actions class="tx-form__actions">
-  @if (isEdit) {
+  @if (isEdit && !readonly) {
     <button matButton class="tx-form__delete" type="button" (click)="remove()" [disabled]="submitting()">
       <mat-icon>delete</mat-icon>
       Excluir
     </button>
   }
   <span class="tx-form__spacer"></span>
-  <button matButton mat-dialog-close type="button">Cancelar</button>
-  <button
-    matButton="filled"
-    type="button"
-    (click)="save()"
-    [disabled]="submitting() || !hasAccounts()"
-  >
-    {{ submitting() ? 'Salvando…' : 'Salvar' }}
-  </button>
+  <button matButton mat-dialog-close type="button">{{ readonly ? 'Fechar' : 'Cancelar' }}</button>
+  @if (!readonly) {
+    <button
+      matButton="filled"
+      type="button"
+      (click)="save()"
+      [disabled]="submitting() || !hasAccounts()"
+    >
+      {{ submitting() ? 'Salvando…' : 'Salvar' }}
+    </button>
+  }
 </mat-dialog-actions>

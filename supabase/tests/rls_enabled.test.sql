@@ -1,6 +1,6 @@
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(5);
+select plan(6);
 
 select is_empty(
   $$
@@ -50,6 +50,18 @@ select is_empty(
         false)
   $$,
   'every view in the public schema runs with security_invoker'
+);
+
+select is_empty(
+  $$
+    select p.proname
+    from pg_proc p
+    join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public'
+      and p.prosecdef
+      and has_function_privilege('anon', p.oid, 'execute')
+  $$,
+  'no security definer function is executable by anon'
 );
 
 select * from finish();

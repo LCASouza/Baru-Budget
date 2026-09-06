@@ -1,21 +1,23 @@
 import { Injectable, computed, inject, resource } from '@angular/core';
-import { AuthService } from '../../core/auth/auth.service';
+import { FinancialContextService } from '../../core/context/financial-context.service';
 import { Account, AccountInput, splitBalances } from './account.model';
 import { AccountRepository } from './account.repository';
 
 @Injectable({ providedIn: 'root' })
 export class AccountsStore {
-  private readonly auth = inject(AuthService);
+  private readonly context = inject(FinancialContextService);
   private readonly repository = inject(AccountRepository);
 
+  // Accounts of the context owner: the user's own in the personal and household
+  // contexts, the owner's in a shared context.
   private readonly accountsResource = resource({
-    params: () => this.auth.userId() ?? undefined,
-    loader: () => this.repository.listAll(),
+    params: () => this.context.dataOwnerId() ?? undefined,
+    loader: ({ params: ownerId }) => this.repository.listByOwner(ownerId),
   });
 
   private readonly balancesResource = resource({
-    params: () => this.auth.userId() ?? undefined,
-    loader: () => this.repository.listBalances(),
+    params: () => this.context.dataOwnerId() ?? undefined,
+    loader: ({ params: ownerId }) => this.repository.listBalances(ownerId),
   });
 
   readonly accounts = computed<readonly Account[]>(() =>
@@ -36,7 +38,7 @@ export class AccountsStore {
   readonly loaded = computed(() => this.accountsResource.hasValue());
 
   async create(input: AccountInput): Promise<void> {
-    await this.repository.create(this.requireUserId(), input);
+    await this.repository.create(this.requireOwnerId(), input);
     this.reload();
   }
 
@@ -64,11 +66,11 @@ export class AccountsStore {
     this.balancesResource.reload();
   }
 
-  private requireUserId(): string {
-    const userId = this.auth.userId();
-    if (!userId) {
+  private requireOwnerId(): string {
+    const ownerId = this.context.dataOwnerId();
+    if (!ownerId) {
       throw new Error('No authenticated user.');
     }
-    return userId;
+    return ownerId;
   }
 }

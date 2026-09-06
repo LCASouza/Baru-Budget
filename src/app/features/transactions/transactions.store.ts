@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, resource, signal } from '@angular/core';
-import { AuthService } from '../../core/auth/auth.service';
+import { FinancialContextService } from '../../core/context/financial-context.service';
 import { DisplayStatus } from '../../core/finance/transaction-status';
 import { PeriodService } from '../../core/period/period.service';
 import { todayIso } from '../../shared/dates/iso-date';
@@ -19,7 +19,7 @@ import { TransactionRepository } from './transaction.repository';
 
 @Injectable({ providedIn: 'root' })
 export class TransactionsStore {
-  private readonly auth = inject(AuthService);
+  private readonly context = inject(FinancialContextService);
   private readonly period = inject(PeriodService);
   private readonly repository = inject(TransactionRepository);
   private readonly accounts = inject(AccountsStore);
@@ -27,13 +27,25 @@ export class TransactionsStore {
 
   private readonly filtersState = signal<TransactionFilters>(EMPTY_FILTERS);
 
+  // Personal and shared contexts list the owner's transactions; a household
+  // context lists every transaction tagged with the household.
   private readonly listResource = resource({
     params: () => {
-      const userId = this.auth.userId();
-      return userId ? { userId, ...this.period.range() } : undefined;
+      const ownerId = this.context.dataOwnerId();
+      if (!ownerId) {
+        return undefined;
+      }
+      const householdId = this.context.householdId();
+      return {
+        range: this.period.range(),
+        scope: householdId ? { householdId } : { ownerId },
+      };
     },
-    loader: ({ params }) => this.repository.listByDateRange(params),
+    loader: ({ params }) => this.repository.listByDateRange(params.range, params.scope),
   });
+
+  readonly isHouseholdContext = computed(() => this.context.householdId() !== null);
+  readonly canManage = this.context.canManage;
 
   readonly filters = this.filtersState.asReadonly();
   readonly activeFilterCount = computed(() => countActiveFilters(this.filters()));
@@ -51,6 +63,7 @@ export class TransactionsStore {
       this.categories.byId(),
       this.accounts.byId(),
       todayIso(),
+      this.context.memberNameById(),
     ),
   );
   readonly filtered = computed(() => filterTransactions(this.views(), this.filters()));
@@ -81,8 +94,12 @@ export class TransactionsStore {
     this.filtersState.update((filters) => ({ ...EMPTY_FILTERS, kind: filters.kind }));
   }
 
+  canEdit(transaction: Transaction): boolean {
+    return this.context.canManageOwner(transaction.owner_user_id);
+  }
+
   async create(input: TransactionInput): Promise<void> {
-    await this.repository.create(this.requireUserId(), input);
+    await this.repository.create(this.requireOwnerId(), input);
     this.afterMutation();
   }
 
@@ -109,11 +126,11 @@ export class TransactionsStore {
     this.filtersState.update((filters) => ({ ...filters, ...patch }));
   }
 
-  private requireUserId(): string {
-    const userId = this.auth.userId();
-    if (!userId) {
+  private requireOwnerId(): string {
+    const ownerId = this.context.dataOwnerId();
+    if (!ownerId) {
       throw new Error('No authenticated user.');
     }
-    return userId;
+    return ownerId;
   }
 }

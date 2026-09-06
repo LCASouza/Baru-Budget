@@ -7,10 +7,11 @@ import { Account, AccountBalance, AccountInput } from './account.model';
 export class AccountRepository {
   private readonly client = inject(SUPABASE_CLIENT);
 
-  async listAll(): Promise<Account[]> {
+  async listByOwner(ownerId: string): Promise<Account[]> {
     const { data, error } = await this.client
       .from('accounts')
       .select('*')
+      .eq('owner_user_id', ownerId)
       .order('active', { ascending: false })
       .order('name');
     if (error) {
@@ -19,10 +20,11 @@ export class AccountRepository {
     return data;
   }
 
-  async listBalances(): Promise<AccountBalance[]> {
+  async listBalances(ownerId: string): Promise<AccountBalance[]> {
     const { data, error } = await this.client
       .from('account_balances')
-      .select('account_id, opening_balance, current_balance');
+      .select('account_id, opening_balance, current_balance')
+      .eq('owner_user_id', ownerId);
     if (error) {
       throw toDataError(error, 'Failed to load account balances');
     }

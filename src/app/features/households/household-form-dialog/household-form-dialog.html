@@ -1,0 +1,25 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Renomear grupo' : 'Novo grupo' }}</h2>
+
+<mat-dialog-content>
+  <form class="household-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <mat-form-field appearance="outline">
+      <mat-label>Nome do grupo</mat-label>
+      <input matInput formControlName="name" placeholder="Ex.: Família" maxlength="60" />
+      @if (form.controls.name.hasError('required')) {
+        <mat-error>Informe o nome.</mat-error>
+      }
+    </mat-form-field>
+    @if (!isEdit) {
+      <p class="household-form__hint">
+        Você será o administrador. Membros veem apenas as movimentações marcadas com o grupo, nunca contas ou saldos pessoais.
+      </p>
+    }
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button matButton mat-dialog-close type="button">Cancelar</button>
+  <button matButton="filled" type="button" (click)="save()" [disabled]="submitting()">
+    {{ submitting() ? 'Salvando…' : isEdit ? 'Salvar' : 'Criar grupo' }}
+  </button>
+</mat-dialog-actions>

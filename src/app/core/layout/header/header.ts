@@ -1,13 +1,19 @@
-import { ChangeDetectionStrategy, Component, inject, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../auth/auth.service';
+import {
+  contextIcon,
+  contextKey,
+  contextLabel,
+} from '../../context/financial-context.model';
+import { FinancialContextService } from '../../context/financial-context.service';
+import { ACCESS_PERMISSION_LABELS } from '../../finance/access-permission';
 import { CurrentProfileService } from '../../profile/current-profile.service';
 import { PeriodFilter } from '../../../shared/components/period-filter/period-filter';
-import { FinancialContextOption, MOCK_CONTEXTS } from '../shell.mock';
 import { ViewportSize } from '../viewport.service';
 
 @Component({
@@ -32,12 +38,12 @@ export class Header {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   protected readonly currentProfile = inject(CurrentProfileService);
-  protected readonly contexts = MOCK_CONTEXTS;
-  protected readonly selectedContext = signal<FinancialContextOption>(MOCK_CONTEXTS[0]);
+  protected readonly context = inject(FinancialContextService);
 
-  protected selectContext(option: FinancialContextOption): void {
-    this.selectedContext.set(option);
-  }
+  protected readonly contextKey = contextKey;
+  protected readonly contextLabel = contextLabel;
+  protected readonly contextIcon = contextIcon;
+  protected readonly permissionLabels = ACCESS_PERMISSION_LABELS;
 
   protected async signOut(): Promise<void> {
     await this.auth.signOut();

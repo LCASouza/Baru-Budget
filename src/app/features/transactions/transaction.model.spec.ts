@@ -42,10 +42,11 @@ describe('transaction.model', () => {
       categories,
       accounts,
       '2026-09-06',
+      new Map([['u1', 'Alice']]),
     );
 
-    expect(views[0]).toMatchObject({ categoryName: 'Alimentação', accountName: 'Conta corrente', destinationAccountName: null, displayStatus: 'PAID' });
+    expect(views[0]).toMatchObject({ categoryName: 'Alimentação', accountName: 'Conta corrente', destinationAccountName: null, displayStatus: 'PAID', ownerName: 'Alice' });
     expect(views[1]).toMatchObject({ categoryName: null, accountName: 'Conta corrente', destinationAccountName: 'Dinheiro' });
-    expect(views[2]).toMatchObject({ categoryName: 'Categoria removida', accountName: 'Conta removida' });
+    expect(views[2]).toMatchObject({ categoryName: null, accountName: '', ownerName: 'Alice' });
   });
 });
