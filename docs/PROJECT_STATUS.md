@@ -33,7 +33,7 @@ Delivered: v0.1 Foundation (2026-09-05, `versions/v0.1.md`); visual prototype (`
 | Architectural analysis | v0.1 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.1.md`; approved on 2026-09-05 |
 | v0.1 implementation | v0.1 | DELIVERED | Schema, RLS, tests, Supabase client and environments; see `versions/v0.1.md` |
 | v0.2 architectural analysis | v0.2 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.2.md` |
-| v0.2 implementation | v0.2 | IN_PROGRESS | Application and hosted database delivered; pending hosted auth settings and Cloudflare Pages confirmation |
+| v0.2 implementation | v0.2 | IN_PROGRESS | Application, hosted database and deploy delivered; pending hosted auth settings and production login check |
 
 ## Features
 
@@ -48,7 +48,7 @@ Delivered: v0.1 Foundation (2026-09-05, `versions/v0.1.md`); visual prototype (`
 | FEAT-007 | Application shell | v0.1 | DELIVERED | Delivered by the approved visual prototype (sidebar, rail, bottom navigation, theme, mock dashboard) |
 | FEAT-008 | Authentication | v0.2 | DELIVERED | Email and password login, logout, persistent session, protected routes, real profile in header |
 | FEAT-009 | Row Level Security | v0.2 | DELIVERED | v0.1 policies applied to the hosted project and verified through the API |
-| FEAT-010 | Cloudflare Pages deploy | v0.2 | IN_PROGRESS | `_redirects`, `_headers`, `robots.txt` and `.node-version` ready; project connection pending confirmation |
+| FEAT-010 | Cloudflare Pages deploy | v0.2 | DELIVERED | Automatic deploy of `main` to https://baru-budget.pages.dev with security headers and SPA fallback |
 | FEAT-011 | Transactions | v0.3 | PENDING | INCOME, EXPENSE, TRANSFER; CRUD, filters, balance, status |
 | FEAT-012 | Households | v0.4 | PENDING | households, household_members |
 | FEAT-013 | Financial access grants | v0.4 | PENDING | VIEW and MANAGE permissions, non-transitive |
@@ -93,4 +93,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-05 — v0.2: authentication delivered, migrations applied to the hosted project; deploy and hosted auth settings pending confirmation.
+2026-09-05 — v0.2: authentication, hosted migrations and Cloudflare Pages deploy delivered; hosted auth settings and production login check pending.
