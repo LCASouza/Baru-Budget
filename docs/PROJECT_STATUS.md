@@ -2,9 +2,9 @@
 
 ## Current Version
 
-**v0.5 — Dashboard** (IN_PROGRESS). Architectural analysis approved on 2026-09-06 (`ARCHITECTURE_ANALYSIS_V0.5.md`); implementation complete, migration applied to the hosted project and `main` deployed; production check pending. Version file: `versions/v0.5.md`. The v0.4 production walkthrough with two users remains deferred (see `versions/v0.4.md`).
+**v0.5 — Dashboard** (DELIVERED on 2026-09-06; see `versions/v0.5.md`; the production check is deferred and listed as a known limitation). The next version is **v0.6 — Credit Cards and Invoices**. The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
 
-Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype, v0.1 Foundation (`versions/v0.1.md`), v0.2 Auth, RLS and Deploy (`versions/v0.2.md`), v0.3 Transactions (`versions/v0.3.md`), v0.4 Households and Sharing (`versions/v0.4.md`).
+Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.5 (`versions/v0.1.md` to `versions/v0.5.md`).
 
 ## Roadmap
 
@@ -14,7 +14,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.2 | Auth, RLS and Deploy | DELIVERED | Login, logout, session, protected routes, initial RLS policies, Cloudflare Pages automatic deploy, basic mobile validation |
 | v0.3 | Transactions | DELIVERED | INCOME, EXPENSE, TRANSFER; accounts, benefits, categories, CRUD, basic filters, balance, status |
 | v0.4 | Households and Sharing | DELIVERED | households, household_members, financial_access_grants, VIEW, MANAGE, non-transitivity, created_by/updated_by, complete policies |
-| v0.5 | Dashboard | IN_PROGRESS | Incomes, expenses, balance, benefits, periods, person, household, shared view, charts, summary cards |
+| v0.5 | Dashboard | DELIVERED | Incomes, expenses, balance, benefits, periods, person, household, shared view, charts, summary cards |
 | v0.6 | Credit Cards and Invoices | PENDING | Cards, limit, closing day, due day, purchases, invoices, competence rule, double-counting prevention |
 | v0.7 | Installments | PENDING | Installment purchases, installment generation, current and future installments, commitment, filters |
 | v0.8 | Recurrences | PENDING | Fixed expenses, recurring incomes, competence generation, monthly instance editing, recurring templates |
@@ -39,7 +39,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.4 architectural analysis | v0.4 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.4.md`; approved on 2026-09-06 |
 | v0.4 implementation | v0.4 | DELIVERED | Households, grants, authorization functions, complete policies, real context selector, Grupos and Compartilhamento pages; hosted `db push` applied on 2026-09-06; production walkthrough with two users deferred |
 | v0.5 architectural analysis | v0.5 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.5.md`; approved on 2026-09-06 |
-| v0.5 implementation | v0.5 | IN_PROGRESS | Monthly totals view, dashboard store, real cards, charts and lists by context and period delivered; hosted `db push` applied on 2026-09-06; production check pending |
+| v0.5 implementation | v0.5 | DELIVERED | Monthly totals view, dashboard store, real cards, charts and lists by context and period; hosted `db push` applied on 2026-09-06; production check deferred |
 
 ## Features
 
@@ -58,7 +58,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | FEAT-011 | Transactions | v0.3 | DELIVERED | INCOME, EXPENSE, TRANSFER; CRUD, month filters, derived balances, derived OVERDUE, kind-aware status labels |
 | FEAT-012 | Households | v0.4 | DELIVERED | households, household_members, ADMIN/MEMBER roles, household-tagged transactions, household context |
 | FEAT-013 | Financial access grants | v0.4 | DELIVERED | VIEW and MANAGE permissions, non-transitive, owner-only management, shared context |
-| FEAT-014 | Dashboard | v0.5 | IN_PROGRESS | Real summary cards, six-month chart with adaptive scale, expenses by category and by person, pending and recent lists, by context and period; implemented locally |
+| FEAT-014 | Dashboard | v0.5 | DELIVERED | Real summary cards, six-month chart with adaptive scale, expenses by category and by person, pending and recent lists, by context and period |
 | FEAT-015 | Credit cards and invoices | v0.6 | PENDING | Closing and due day rules, invoice payment as transfer |
 | FEAT-016 | Installments | v0.7 | PENDING | Installment generation and tracking |
 | FEAT-017 | Fixed expenses | v0.8 | PENDING | Recurring expense templates with editable monthly instances |
@@ -101,4 +101,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-06 — v0.5 Dashboard implemented and deployed (monthly totals view applied to the hosted project, 374 pgTAP assertions, 157 Vitest tests); production check pending.
+2026-09-06 — v0.5 Dashboard delivered (production check deferred by the administrator). Next: v0.6 Credit Cards and Invoices.
