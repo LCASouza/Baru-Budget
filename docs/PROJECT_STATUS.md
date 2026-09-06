@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**v0.3 — Transactions** (IN_PROGRESS). Architectural analysis approved on 2026-09-06 (`ARCHITECTURE_ANALYSIS_V0.3.md`); implementation complete locally, hosted migration and production validation pending. Version file: `versions/v0.3.md`.
+**v0.3 — Transactions** (IN_PROGRESS). Architectural analysis approved on 2026-09-06 (`ARCHITECTURE_ANALYSIS_V0.3.md`); implementation complete, migrations applied to the hosted project and `main` deployed; production validation on desktop and phone pending. Version file: `versions/v0.3.md`.
 
 Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype, v0.1 Foundation (`versions/v0.1.md`), v0.2 Auth, RLS and Deploy (`versions/v0.2.md`).
 
@@ -35,7 +35,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.2 architectural analysis | v0.2 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.2.md` |
 | v0.2 implementation | v0.2 | DELIVERED | Authentication, hosted migrations, Cloudflare Pages deploy; production login confirmed |
 | v0.3 architectural analysis | v0.3 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.3.md`; approved on 2026-09-06 |
-| v0.3 implementation | v0.3 | IN_PROGRESS | Migrations, transactions, accounts, categories and settings screens, tests done locally; hosted `db push` and production validation pending |
+| v0.3 implementation | v0.3 | IN_PROGRESS | Migrations, screens and tests delivered; hosted `db push` applied on 2026-09-06; production validation on desktop and phone pending |
 
 ## Features
 
@@ -96,4 +96,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-06 — v0.3 Transactions implemented locally (migrations, screens, 180 pgTAP assertions, 104 Vitest tests); hosted migration and production validation pending.
+2026-09-06 — v0.3 Transactions implemented and deployed (migrations applied to the hosted project, 180 pgTAP assertions, 104 Vitest tests); production validation on desktop and phone pending.
