@@ -2,15 +2,15 @@
 
 ## Current Version
 
-**v0.1 — Foundation** (IN_PROGRESS). The architectural analysis is delivered in `ARCHITECTURE_ANALYSIS_V0.1.md`; implementation starts after its approval. Version file: `versions/v0.1.md`.
+**v0.1 — Foundation** (DELIVERED on 2026-09-05; see `versions/v0.1.md`). The next version is **v0.2 — Auth, RLS and Deploy**.
 
-The visual prototype (pre-v0.1) was approved on 2026-09-05; see `VISUAL_PROTOTYPE.md`.
+Architecture reference: `ARCHITECTURE_ANALYSIS_V0.1.md` (approved on 2026-09-05). Visual prototype: `VISUAL_PROTOTYPE.md` (approved on 2026-09-05).
 
 ## Roadmap
 
 | Version | Name | Status | Notes |
 |---|---|---|---|
-| v0.1 | Foundation | IN_PROGRESS | Angular project, feature-based structure, Supabase setup, migrations, base schema (profiles, categories, accounts), financial types, initial layout, initial tests |
+| v0.1 | Foundation | DELIVERED | Angular project, feature-based structure, Supabase setup, migrations, base schema (profiles, categories, accounts), financial types, initial layout, initial tests |
 | v0.2 | Auth, RLS and Deploy | PENDING | Login, logout, session, protected routes, initial RLS policies, Cloudflare Pages automatic deploy, basic mobile validation |
 | v0.3 | Transactions | PENDING | INCOME, EXPENSE, TRANSFER; accounts, benefits, categories, CRUD, basic filters, balance, status |
 | v0.4 | Households and Sharing | PENDING | households, household_members, financial_access_grants, VIEW, MANAGE, non-transitivity, created_by/updated_by, complete policies |
@@ -30,19 +30,20 @@ The visual prototype (pre-v0.1) was approved on 2026-09-05; see `VISUAL_PROTOTYP
 | Item | Version | Status | Notes |
 |---|---|---|---|
 | Visual prototype | pre-v0.1 | DELIVERED | Approved on 2026-09-05; see `VISUAL_PROTOTYPE.md` |
-| Architectural analysis | v0.1 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.1.md`; awaiting approval |
-| v0.1 implementation | v0.1 | PENDING | Starts after approval of the architectural analysis |
+| Architectural analysis | v0.1 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.1.md`; approved on 2026-09-05 |
+| v0.1 implementation | v0.1 | DELIVERED | Schema, RLS, tests, Supabase client and environments; see `versions/v0.1.md` |
+| v0.2 — Auth, RLS and Deploy | v0.2 | PENDING | Requires a hosted Supabase project and a Cloudflare Pages project |
 
 ## Features
 
 | ID | Feature | Version | Status | Notes |
 |---|---|---|---|---|
 | FEAT-001 | Angular project foundation | v0.1 | DELIVERED | Delivered by the approved visual prototype (Angular 22, standalone, strict, feature-based) |
-| FEAT-002 | Supabase project and migrations | v0.1 | PENDING | PostgreSQL, migration strategy, base schema |
-| FEAT-003 | Profiles | v0.1 | PENDING | Table linked to Supabase Auth users |
-| FEAT-004 | Categories | v0.1 | PENDING | Income and expense categories, customizable |
-| FEAT-005 | Accounts | v0.1 | PENDING | Types BANK, CASH, BENEFIT, OTHER |
-| FEAT-006 | Financial types | v0.1 | PENDING | INCOME, EXPENSE, TRANSFER, SETTLEMENT |
+| FEAT-002 | Supabase project and migrations | v0.1 | DELIVERED | Local project via CLI, six migrations, pgTAP tests, generated types |
+| FEAT-003 | Profiles | v0.1 | DELIVERED | Table, RLS, creation trigger on auth.users |
+| FEAT-004 | Categories | v0.1 | DELIVERED | Table, RLS, default categories seeded per user; screens in v0.3 |
+| FEAT-005 | Accounts | v0.1 | DELIVERED | Table with opening_balance, RLS; screens in v0.3 |
+| FEAT-006 | Financial types | v0.1 | DELIVERED | PostgreSQL enums and TypeScript unions with pt-BR labels |
 | FEAT-007 | Application shell | v0.1 | DELIVERED | Delivered by the approved visual prototype (sidebar, rail, bottom navigation, theme, mock dashboard) |
 | FEAT-008 | Authentication | v0.2 | PENDING | Email and password, login, logout, session, protected routes |
 | FEAT-009 | Row Level Security | v0.2 | PENDING | Initial policies on every financial table |
@@ -71,7 +72,7 @@ The visual prototype (pre-v0.1) was approved on 2026-09-05; see `VISUAL_PROTOTYP
 
 | ID | Description | Version | Status | Notes |
 |---|---|---|---|---|
-| DEBT-001 | Initial bundle exceeds the default 500 kB warning budget because of Material shell components | pre-v0.1 | PENDING | Review budget and lazy loading in v0.1 |
+| DEBT-001 | Initial bundle exceeded the default 500 kB warning budget | pre-v0.1 | DELIVERED | v0.1: transaction dialog lazy-loaded; budget set to 1 MB warning / 1.5 MB error (~860 kB raw, ~197 kB transferred) |
 
 ## Excluded Items
 
@@ -91,4 +92,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-05 — v0.1 started: architectural analysis delivered, awaiting approval.
+2026-09-05 — v0.1 Foundation delivered. Next: v0.2 Auth, RLS and Deploy.

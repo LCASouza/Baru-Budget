@@ -1,0 +1,1 @@
+-- Local development seed. Intentionally empty in v0.1: users are created through auth and tests create their own data.

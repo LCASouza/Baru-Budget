@@ -5,8 +5,8 @@ import { map } from 'rxjs';
 
 export type ViewportSize = 'mobile' | 'tablet' | 'desktop';
 
-const MOBILE_QUERY = '(max-width: 767.98px)';
-const TABLET_QUERY = '(min-width: 768px) and (max-width: 1023.98px)';
+export const MOBILE_QUERY = '(max-width: 767.98px)';
+export const TABLET_QUERY = '(min-width: 768px) and (max-width: 1023.98px)';
 
 @Injectable({ providedIn: 'root' })
 export class ViewportService {
