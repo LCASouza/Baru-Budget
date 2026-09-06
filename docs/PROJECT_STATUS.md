@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**v0.4 — Households and Sharing** (IN_PROGRESS). Architectural analysis approved on 2026-09-06 (`ARCHITECTURE_ANALYSIS_V0.4.md`); implementation complete locally, hosted migration and production validation with two users pending. Version file: `versions/v0.4.md`.
+**v0.4 — Households and Sharing** (IN_PROGRESS). Architectural analysis approved on 2026-09-06 (`ARCHITECTURE_ANALYSIS_V0.4.md`); implementation complete, migrations applied to the hosted project and `main` deployed; production validation with two users pending. Version file: `versions/v0.4.md`.
 
 Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype, v0.1 Foundation (`versions/v0.1.md`), v0.2 Auth, RLS and Deploy (`versions/v0.2.md`), v0.3 Transactions (`versions/v0.3.md`).
 
@@ -37,7 +37,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.3 architectural analysis | v0.3 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.3.md`; approved on 2026-09-06 |
 | v0.3 implementation | v0.3 | DELIVERED | Migrations, screens and tests; hosted `db push` applied and production validated on 2026-09-06 |
 | v0.4 architectural analysis | v0.4 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.4.md`; approved on 2026-09-06 |
-| v0.4 implementation | v0.4 | IN_PROGRESS | Households, grants, authorization functions, complete policies, real context selector, Grupos and Compartilhamento pages done locally; hosted `db push` and production validation pending |
+| v0.4 implementation | v0.4 | IN_PROGRESS | Households, grants, authorization functions, complete policies, real context selector, Grupos and Compartilhamento pages delivered; hosted `db push` applied on 2026-09-06; production validation with two users pending |
 
 ## Features
 
@@ -99,4 +99,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-06 — v0.4 Households and Sharing implemented locally (4 migrations, 357 pgTAP assertions, 133 Vitest tests); hosted migration and production validation pending.
+2026-09-06 — v0.4 Households and Sharing implemented and deployed (4 migrations applied to the hosted project, 357 pgTAP assertions, 133 Vitest tests); production validation with two users pending.
