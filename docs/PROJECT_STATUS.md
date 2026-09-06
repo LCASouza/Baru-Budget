@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**v0.4 — Households and Sharing** (DELIVERED on 2026-09-06; see `versions/v0.4.md`; the production walkthrough with two users is deferred and listed as a known limitation). The next version is **v0.5 — Dashboard**, which starts with an architectural analysis for approval.
+**v0.5 — Dashboard** (IN_PROGRESS). The architectural analysis is delivered in `ARCHITECTURE_ANALYSIS_V0.5.md`; implementation starts after its approval. Version file: `versions/v0.5.md`. The v0.4 production walkthrough with two users remains deferred (see `versions/v0.4.md`).
 
 Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype, v0.1 Foundation (`versions/v0.1.md`), v0.2 Auth, RLS and Deploy (`versions/v0.2.md`), v0.3 Transactions (`versions/v0.3.md`), v0.4 Households and Sharing (`versions/v0.4.md`).
 
@@ -14,7 +14,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.2 | Auth, RLS and Deploy | DELIVERED | Login, logout, session, protected routes, initial RLS policies, Cloudflare Pages automatic deploy, basic mobile validation |
 | v0.3 | Transactions | DELIVERED | INCOME, EXPENSE, TRANSFER; accounts, benefits, categories, CRUD, basic filters, balance, status |
 | v0.4 | Households and Sharing | DELIVERED | households, household_members, financial_access_grants, VIEW, MANAGE, non-transitivity, created_by/updated_by, complete policies |
-| v0.5 | Dashboard | PENDING | Incomes, expenses, balance, benefits, periods, person, household, shared view, charts, summary cards |
+| v0.5 | Dashboard | IN_PROGRESS | Incomes, expenses, balance, benefits, periods, person, household, shared view, charts, summary cards |
 | v0.6 | Credit Cards and Invoices | PENDING | Cards, limit, closing day, due day, purchases, invoices, competence rule, double-counting prevention |
 | v0.7 | Installments | PENDING | Installment purchases, installment generation, current and future installments, commitment, filters |
 | v0.8 | Recurrences | PENDING | Fixed expenses, recurring incomes, competence generation, monthly instance editing, recurring templates |
@@ -38,7 +38,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.3 implementation | v0.3 | DELIVERED | Migrations, screens and tests; hosted `db push` applied and production validated on 2026-09-06 |
 | v0.4 architectural analysis | v0.4 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.4.md`; approved on 2026-09-06 |
 | v0.4 implementation | v0.4 | DELIVERED | Households, grants, authorization functions, complete policies, real context selector, Grupos and Compartilhamento pages; hosted `db push` applied on 2026-09-06; production walkthrough with two users deferred |
-| v0.5 — Dashboard | v0.5 | PENDING | Starts with an architectural analysis for approval |
+| v0.5 architectural analysis | v0.5 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.5.md`; awaiting approval |
+| v0.5 implementation | v0.5 | PENDING | Monthly totals view, dashboard store, real cards, charts and lists by context and period |
 
 ## Features
 
@@ -100,4 +101,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-06 — v0.4 Households and Sharing delivered (production walkthrough with two users deferred by the administrator). Next: v0.5 Dashboard.
+2026-09-06 — v0.5 Dashboard started: architectural analysis delivered, awaiting approval before implementation.
