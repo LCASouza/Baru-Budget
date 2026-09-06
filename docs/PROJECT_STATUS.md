@@ -2,16 +2,16 @@
 
 ## Current Version
 
-**v0.1 — Foundation** (DELIVERED on 2026-09-05; see `versions/v0.1.md`). The next version is **v0.2 — Auth, RLS and Deploy**.
+**v0.2 — Auth, RLS and Deploy** (IN_PROGRESS). The architectural analysis is delivered in `ARCHITECTURE_ANALYSIS_V0.2.md`; implementation starts after its approval. Version file: `versions/v0.2.md`.
 
-Architecture reference: `ARCHITECTURE_ANALYSIS_V0.1.md` (approved on 2026-09-05). Visual prototype: `VISUAL_PROTOTYPE.md` (approved on 2026-09-05).
+Delivered: v0.1 Foundation (2026-09-05, `versions/v0.1.md`); visual prototype (`VISUAL_PROTOTYPE.md`).
 
 ## Roadmap
 
 | Version | Name | Status | Notes |
 |---|---|---|---|
 | v0.1 | Foundation | DELIVERED | Angular project, feature-based structure, Supabase setup, migrations, base schema (profiles, categories, accounts), financial types, initial layout, initial tests |
-| v0.2 | Auth, RLS and Deploy | PENDING | Login, logout, session, protected routes, initial RLS policies, Cloudflare Pages automatic deploy, basic mobile validation |
+| v0.2 | Auth, RLS and Deploy | IN_PROGRESS | Login, logout, session, protected routes, initial RLS policies, Cloudflare Pages automatic deploy, basic mobile validation |
 | v0.3 | Transactions | PENDING | INCOME, EXPENSE, TRANSFER; accounts, benefits, categories, CRUD, basic filters, balance, status |
 | v0.4 | Households and Sharing | PENDING | households, household_members, financial_access_grants, VIEW, MANAGE, non-transitivity, created_by/updated_by, complete policies |
 | v0.5 | Dashboard | PENDING | Incomes, expenses, balance, benefits, periods, person, household, shared view, charts, summary cards |
@@ -32,7 +32,8 @@ Architecture reference: `ARCHITECTURE_ANALYSIS_V0.1.md` (approved on 2026-09-05)
 | Visual prototype | pre-v0.1 | DELIVERED | Approved on 2026-09-05; see `VISUAL_PROTOTYPE.md` |
 | Architectural analysis | v0.1 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.1.md`; approved on 2026-09-05 |
 | v0.1 implementation | v0.1 | DELIVERED | Schema, RLS, tests, Supabase client and environments; see `versions/v0.1.md` |
-| v0.2 — Auth, RLS and Deploy | v0.2 | PENDING | Requires a hosted Supabase project and a Cloudflare Pages project |
+| v0.2 architectural analysis | v0.2 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.2.md`; awaiting approval |
+| v0.2 implementation | v0.2 | PENDING | Depends on CLI login, project link and a Cloudflare Pages project (analysis, section 8) |
 
 ## Features
 
@@ -92,4 +93,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-05 — v0.1 Foundation delivered. Next: v0.2 Auth, RLS and Deploy.
+2026-09-05 — v0.2 started: hosted Supabase project created, production environment filled, architectural analysis delivered.
