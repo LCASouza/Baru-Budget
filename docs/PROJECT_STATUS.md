@@ -2,9 +2,9 @@
 
 ## Current Version
 
-**v0.4 — Households and Sharing** (IN_PROGRESS). Architectural analysis approved on 2026-09-06 (`ARCHITECTURE_ANALYSIS_V0.4.md`); implementation complete, migrations applied to the hosted project and `main` deployed; production validation with two users pending. Version file: `versions/v0.4.md`.
+**v0.4 — Households and Sharing** (DELIVERED on 2026-09-06; see `versions/v0.4.md`; the production walkthrough with two users is deferred and listed as a known limitation). The next version is **v0.5 — Dashboard**, which starts with an architectural analysis for approval.
 
-Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype, v0.1 Foundation (`versions/v0.1.md`), v0.2 Auth, RLS and Deploy (`versions/v0.2.md`), v0.3 Transactions (`versions/v0.3.md`).
+Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype, v0.1 Foundation (`versions/v0.1.md`), v0.2 Auth, RLS and Deploy (`versions/v0.2.md`), v0.3 Transactions (`versions/v0.3.md`), v0.4 Households and Sharing (`versions/v0.4.md`).
 
 ## Roadmap
 
@@ -13,7 +13,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.1 | Foundation | DELIVERED | Angular project, feature-based structure, Supabase setup, migrations, base schema (profiles, categories, accounts), financial types, initial layout, initial tests |
 | v0.2 | Auth, RLS and Deploy | DELIVERED | Login, logout, session, protected routes, initial RLS policies, Cloudflare Pages automatic deploy, basic mobile validation |
 | v0.3 | Transactions | DELIVERED | INCOME, EXPENSE, TRANSFER; accounts, benefits, categories, CRUD, basic filters, balance, status |
-| v0.4 | Households and Sharing | IN_PROGRESS | households, household_members, financial_access_grants, VIEW, MANAGE, non-transitivity, created_by/updated_by, complete policies |
+| v0.4 | Households and Sharing | DELIVERED | households, household_members, financial_access_grants, VIEW, MANAGE, non-transitivity, created_by/updated_by, complete policies |
 | v0.5 | Dashboard | PENDING | Incomes, expenses, balance, benefits, periods, person, household, shared view, charts, summary cards |
 | v0.6 | Credit Cards and Invoices | PENDING | Cards, limit, closing day, due day, purchases, invoices, competence rule, double-counting prevention |
 | v0.7 | Installments | PENDING | Installment purchases, installment generation, current and future installments, commitment, filters |
@@ -37,7 +37,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.3 architectural analysis | v0.3 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.3.md`; approved on 2026-09-06 |
 | v0.3 implementation | v0.3 | DELIVERED | Migrations, screens and tests; hosted `db push` applied and production validated on 2026-09-06 |
 | v0.4 architectural analysis | v0.4 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.4.md`; approved on 2026-09-06 |
-| v0.4 implementation | v0.4 | IN_PROGRESS | Households, grants, authorization functions, complete policies, real context selector, Grupos and Compartilhamento pages delivered; hosted `db push` applied on 2026-09-06; production validation with two users pending |
+| v0.4 implementation | v0.4 | DELIVERED | Households, grants, authorization functions, complete policies, real context selector, Grupos and Compartilhamento pages; hosted `db push` applied on 2026-09-06; production walkthrough with two users deferred |
+| v0.5 — Dashboard | v0.5 | PENDING | Starts with an architectural analysis for approval |
 
 ## Features
 
@@ -54,8 +55,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | FEAT-009 | Row Level Security | v0.2 | DELIVERED | v0.1 policies applied to the hosted project and verified through the API |
 | FEAT-010 | Cloudflare Pages deploy | v0.2 | DELIVERED | Automatic deploy of `main` to https://baru-budget.pages.dev with security headers and SPA fallback |
 | FEAT-011 | Transactions | v0.3 | DELIVERED | INCOME, EXPENSE, TRANSFER; CRUD, month filters, derived balances, derived OVERDUE, kind-aware status labels |
-| FEAT-012 | Households | v0.4 | IN_PROGRESS | households, household_members, ADMIN/MEMBER roles, household-tagged transactions, household context; implemented locally |
-| FEAT-013 | Financial access grants | v0.4 | IN_PROGRESS | VIEW and MANAGE permissions, non-transitive, owner-only management, shared context; implemented locally |
+| FEAT-012 | Households | v0.4 | DELIVERED | households, household_members, ADMIN/MEMBER roles, household-tagged transactions, household context |
+| FEAT-013 | Financial access grants | v0.4 | DELIVERED | VIEW and MANAGE permissions, non-transitive, owner-only management, shared context |
 | FEAT-014 | Dashboard | v0.5 | PENDING | Summary cards, charts, context switching |
 | FEAT-015 | Credit cards and invoices | v0.6 | PENDING | Closing and due day rules, invoice payment as transfer |
 | FEAT-016 | Installments | v0.7 | PENDING | Installment generation and tracking |
@@ -99,4 +100,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-06 — v0.4 Households and Sharing implemented and deployed (4 migrations applied to the hosted project, 357 pgTAP assertions, 133 Vitest tests); production validation with two users pending.
+2026-09-06 — v0.4 Households and Sharing delivered (production walkthrough with two users deferred by the administrator). Next: v0.5 Dashboard.
