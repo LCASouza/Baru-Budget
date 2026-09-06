@@ -1,0 +1,57 @@
+<main class="login">
+  <section class="login__card bb-card">
+    <header class="login__brand">
+      <span class="login__logo" aria-hidden="true"><mat-icon>savings</mat-icon></span>
+      <h1 class="login__title">Baru Budget</h1>
+      <p class="login__subtitle">Gestão financeira pessoal e familiar</p>
+    </header>
+
+    <form class="login__form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <mat-form-field appearance="outline">
+        <mat-label>E-mail</mat-label>
+        <input
+          matInput
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          inputmode="email"
+        />
+        @if (form.controls.email.hasError('required')) {
+          <mat-error>Informe o e-mail.</mat-error>
+        } @else if (form.controls.email.hasError('email')) {
+          <mat-error>E-mail inválido.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Senha</mat-label>
+        <input
+          matInput
+          [type]="hidePassword() ? 'password' : 'text'"
+          formControlName="password"
+          autocomplete="current-password"
+        />
+        <button
+          matIconButton
+          matSuffix
+          type="button"
+          (click)="togglePassword()"
+          [attr.aria-label]="hidePassword() ? 'Mostrar senha' : 'Ocultar senha'"
+        >
+          <mat-icon>{{ hidePassword() ? 'visibility' : 'visibility_off' }}</mat-icon>
+        </button>
+        <mat-error>Informe a senha.</mat-error>
+      </mat-form-field>
+
+      @if (errorMessage(); as message) {
+        <p class="login__error" role="alert">{{ message }}</p>
+      }
+
+      <button matButton="filled" type="submit" class="login__submit" [disabled]="submitting()">
+        {{ submitting() ? 'Entrando…' : 'Entrar' }}
+      </button>
+    </form>
+
+    <p class="login__hint">Acesso restrito. As contas são criadas pelo administrador.</p>
+  </section>
+</main>

@@ -1,4 +1,5 @@
 import { Route, Routes } from '@angular/router';
+import { authGuard, guestGuard } from './core/auth/auth.guard';
 import { Shell } from './core/layout/shell/shell';
 import { NAV_ITEMS, NavItem } from './core/navigation/nav-items';
 
@@ -25,8 +26,15 @@ function placeholderRoute(path: string, description: string, plannedVersion: str
 
 export const routes: Routes = [
   {
+    path: 'login',
+    title: 'Entrar',
+    canActivate: [guestGuard],
+    loadComponent: () => import('./features/auth/login-page/login-page').then((m) => m.LoginPage),
+  },
+  {
     path: '',
     component: Shell,
+    canActivate: [authGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {

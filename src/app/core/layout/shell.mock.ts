@@ -1,9 +1,3 @@
-export interface MockUser {
-  readonly displayName: string;
-  readonly email: string;
-  readonly initials: string;
-}
-
 export type FinancialContextKind = 'personal' | 'household' | 'shared';
 
 export interface FinancialContextOption {
@@ -12,12 +6,6 @@ export interface FinancialContextOption {
   readonly kind: FinancialContextKind;
   readonly icon: string;
 }
-
-export const MOCK_USER: MockUser = {
-  displayName: 'Lucas',
-  email: 'lucas@exemplo.com',
-  initials: 'L',
-};
 
 export const MOCK_CONTEXTS: readonly FinancialContextOption[] = [
   { id: 'me', label: 'Minhas finanças', kind: 'personal', icon: 'person' },

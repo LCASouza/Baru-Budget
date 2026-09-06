@@ -2,7 +2,7 @@
 
 Personal and family finance management web application.
 
-Current state: v0.1 (Foundation) — local Supabase schema with RLS, Supabase client and environments on top of the approved visual prototype. The interface still shows mock data until authentication (v0.2) and transactions (v0.3) are implemented. See `docs/PROJECT_STATUS.md` for the roadmap.
+Current state: v0.2 (Auth, RLS and Deploy) — e-mail and password login with protected routes on top of the v0.1 schema. The dashboard still shows mock data until transactions (v0.3) are implemented. See `docs/PROJECT_STATUS.md` for the roadmap.
 
 ## Stack
 
@@ -28,6 +28,8 @@ npm run lint       # ESLint
 npm run build      # production build in dist/baru-budget
 ```
 
+Local login: `supabase/seed.sql` creates the development user `dev@baru.local` with password `baru-dev-123` (local stack only; sign-ups are disabled).
+
 Database workflow:
 
 ```bash
@@ -43,5 +45,5 @@ Project documentation lives exclusively in `docs/*.md`:
 - `docs/MASTER_PROMPT.md` — product specification and rules
 - `docs/DOCUMENTATION_POLICY.md` — documentation governance
 - `docs/PROJECT_STATUS.md` — roadmap, features, bugs and technical debt
-- `docs/ARCHITECTURE_ANALYSIS_V0.1.md` — approved architecture for v0.1
+- `docs/ARCHITECTURE_ANALYSIS_V0.1.md`, `docs/ARCHITECTURE_ANALYSIS_V0.2.md` — approved architecture per version
 - `docs/versions/` — one file per version

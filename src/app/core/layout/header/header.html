@@ -42,19 +42,19 @@
       [matMenuTriggerFor]="userMenu"
       aria-label="Usuário"
     >
-      <span class="header__initials">{{ user.initials }}</span>
+      <span class="header__initials">{{ currentProfile.initials() }}</span>
     </button>
     <mat-menu #userMenu="matMenu">
       <div class="header__user">
-        <strong>{{ user.displayName }}</strong>
-        <span>{{ user.email }}</span>
+        <strong>{{ currentProfile.displayName() }}</strong>
+        <span>{{ currentProfile.email() }}</span>
       </div>
       <mat-divider />
-      <button mat-menu-item>
+      <button mat-menu-item routerLink="/settings">
         <mat-icon>person</mat-icon>
         <span>Perfil</span>
       </button>
-      <button mat-menu-item>
+      <button mat-menu-item (click)="signOut()">
         <mat-icon>logout</mat-icon>
         <span>Sair</span>
       </button>
