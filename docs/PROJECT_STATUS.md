@@ -2,9 +2,9 @@
 
 ## Current Version
 
-**v0.13 — Mobile UX and Hardening** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V0.13.md`); implementation complete and `main` deployed. No migration was needed. Manual verification and the production check are pending. Version file: `versions/v0.13.md`. Audit: `UX_AUDIT_V0.13.md`. The production checks of v0.4 to v0.12 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
+**v1.0 — Stable** (IN_PROGRESS). The architectural analysis is delivered in `ARCHITECTURE_ANALYSIS_V1.0.md`; implementation starts after its approval. Version file: `versions/v1.0.md`. The production checks of v0.4 to v0.13 are listed there as the completion criteria of this version. The production checks of v0.4 to v0.12 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
 
-Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.12 (`versions/v0.1.md` to `versions/v0.12.md`).
+Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.13 (`versions/v0.1.md` to `versions/v0.13.md`).
 
 ## Roadmap
 
@@ -22,8 +22,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.10 | Loans | DELIVERED | Principal, interest, installments, outstanding balance, calculations, math tests |
 | v0.11 | Financings | DELIVERED | Asset value, down payment, financed amount, interest, installments, outstanding balance, double-counting prevention |
 | v0.12 | Baru Budget Excel Format v1 | DELIVERED | Schema version 1, export, import, standardized workbook, stable IDs, preview, validation, merge by UUID, backup |
-| v0.13 | Mobile UX and Hardening | IN_PROGRESS | Full mobile review, responsiveness, empty states, loading, accessibility, errors, performance, permission and RLS review |
-| v1.0 | Stable | PENDING | Security review, full RLS review, final test suite, documentation, CI, stable deploy, validated backup and import/export |
+| v0.13 | Mobile UX and Hardening | DELIVERED | Full mobile review, responsiveness, empty states, loading, accessibility, errors, performance, permission and RLS review |
+| v1.0 | Stable | IN_PROGRESS | Security review, full RLS review, final test suite, documentation, CI, stable deploy, validated backup and import/export |
 
 ## Current Work
 
@@ -55,7 +55,9 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.12 architectural analysis | v0.12 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.12.md`; approved on 2026-09-07 |
 | v0.12 implementation | v0.12 | DELIVERED | Declarative workbook contract, export, preview, merge by UUID, backup; no migration; production check deferred |
 | v0.13 architectural analysis | v0.13 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.13.md`; approved on 2026-09-07 |
-| v0.13 implementation | v0.13 | IN_PROGRESS | UX audit, mobile lists, shared state contract, keyboard access, pagination, RLS matrix; manual verification pending |
+| v0.13 implementation | v0.13 | DELIVERED | UX audit, mobile lists, shared state contract, keyboard access, pagination, RLS matrix; manual verification deferred |
+| v1.0 architectural analysis | v1.0 | DELIVERED | `ARCHITECTURE_ANALYSIS_V1.0.md`; awaiting approval |
+| v1.0 implementation | v1.0 | PENDING | CI, security review, view isolation, documentation, release note |
 
 ## Features
 
@@ -83,7 +85,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | FEAT-020 | Settlements | v0.9 | DELIVERED | Settlement as a transaction kind with direction, derived balances, receivables and payables |
 | FEAT-021 | Loans | v0.10 | DELIVERED | Simple interest and Price with documented conversions, idempotent schedule, derived outstanding balance, disbursement out of income |
 | FEAT-022 | Financings | v0.11 | DELIVERED | Price and SAC with documented conversions, generated financed amount, idempotent schedule, derived outstanding balance, asset value never recorded |
-| FEAT-024 | Mobile UX and Hardening | v0.13 | IN_PROGRESS | Screen audit, mobile lists, shared loading/error/empty contract, keyboard access, focus and reduced motion, pagination, RLS matrix |
+| FEAT-025 | Stable release | v1.0 | IN_PROGRESS | CI, security review, view isolation and function surface tests, architecture documentation, validated backup |
+| FEAT-024 | Mobile UX and Hardening | v0.13 | DELIVERED | Screen audit, mobile lists, shared loading/error/empty contract, keyboard access, focus and reduced motion, pagination, RLS matrix |
 | FEAT-023 | Baru Budget Excel Format v1 | v0.12 | DELIVERED | Frozen schema version 1, paginated export, mandatory preview, merge by UUID, absence never deletes, backup |
 
 ## Bugs
@@ -118,4 +121,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-07 — v0.13 Mobile UX and Hardening implemented and deployed (no migration, 941 pgTAP assertions, 392 Vitest tests, DEBT-002 closed); manual verification and production check pending.
+2026-09-07 — v0.13 delivered (manual verification and production check deferred by the administrator). v1.0 Stable started: architectural analysis delivered, awaiting approval before implementation.
