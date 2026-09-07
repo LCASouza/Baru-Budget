@@ -1,0 +1,60 @@
+# The gate. Before this existed a push with a failing test published anyway,
+# because Cloudflare Pages builds from `main` on its own. This workflow does not
+# publish: it gives the branch a signal, and protecting `main` with it is a
+# setting on GitHub.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Lint, build and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Unit tests
+        run: npm test
+
+      # The database tests are the slowest step and the most valuable: they are
+      # what proves row level security and every financial rule.
+      - name: Set up the Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start the local database
+        run: supabase start -x realtime,storage-api,imgproxy,studio,inbucket,edge-runtime,logflare,vector,supavisor
+
+      - name: Database tests
+        run: npm run test:db
+
+      - name: Stop the local database
+        if: always()
+        run: supabase stop --no-backup

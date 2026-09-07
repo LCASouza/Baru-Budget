@@ -2,7 +2,11 @@
 
 Personal and family finance management web application.
 
-Current state: v0.10 (Loans) — loans with explicit interest models, generated schedules and derived outstanding balances, on top of the v0.9 splitting and settlements, v0.8 recurrences, v0.7 installments, v0.6 cards, the dashboard, transactions, households and sharing, deployed at https://baru-budget.pages.dev. See `docs/PROJECT_STATUS.md` for the roadmap.
+Current state: v1.0 (Stable), deployed at https://baru-budget.pages.dev.
+
+Transactions, accounts and categories; households and sharing with VIEW and MANAGE; a dashboard; credit cards with derived invoices; instalments; fixed expenses and recurring incomes; expense splitting and settlements between people; loans and financings with explicit interest models; and the Baru Budget Excel Format for backup, editing and re-import.
+
+Read `docs/ARCHITECTURE.md` for how it works and `docs/PROJECT_STATUS.md` for the roadmap.
 
 ## Stack
 
@@ -40,6 +44,14 @@ npm run db:stop
 
 Hosted project: `npx supabase db push` applies pending migrations before the frontend is deployed.
 
+## Continuous integration
+
+`.github/workflows/ci.yml` runs lint, build, unit tests and database tests on every push and pull request to `main`. It does not publish: Cloudflare Pages builds from `main` on its own, and the workflow is the signal that the branch is sound.
+
+## Security
+
+The Angular interface is not a security authority. Every read and write goes through PostgREST with the user's session, and row level security decides each row. The keys in `src/environments/` are publishable keys, public by design; no private key or service role key is versioned. See `docs/SECURITY_REVIEW_V1.0.md`.
+
 ## Documentation
 
 Project documentation lives exclusively in `docs/*.md`:
@@ -47,5 +59,8 @@ Project documentation lives exclusively in `docs/*.md`:
 - `docs/MASTER_PROMPT.md` — product specification and rules
 - `docs/DOCUMENTATION_POLICY.md` — documentation governance
 - `docs/PROJECT_STATUS.md` — roadmap, features, bugs and technical debt
-- `docs/ARCHITECTURE_ANALYSIS_V0.1.md` to `V0.10.md` — approved architecture per version
+- `docs/ARCHITECTURE.md` — how the system works
+- `docs/ARCHITECTURE_ANALYSIS_V0.1.md` to `V1.0.md` — the approved architecture of each version, kept as the history of the decisions
+- `docs/SECURITY_REVIEW_V1.0.md` — the v1.0 security review
+- `docs/UX_AUDIT_V0.13.md` — the screen audit that scoped v0.13
 - `docs/versions/` — one file per version

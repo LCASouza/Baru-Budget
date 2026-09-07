@@ -2,7 +2,7 @@
 // enforced by Row Level Security.
 export const environment = {
   production: true,
-  appVersion: '0.13.0',
+  appVersion: '1.0.0',
   supabaseUrl: 'https://uvzlswkeishisajbaajy.supabase.co',
   supabasePublishableKey: 'sb_publishable_dCjY60sHYk5vf4GjPfYh9A_EBb8UWo7',
 };
