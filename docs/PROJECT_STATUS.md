@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**v0.6 — Credit Cards and Invoices** (IN_PROGRESS). Architectural analysis approved on 2026-09-06 (`ARCHITECTURE_ANALYSIS_V0.6.md`); implementation complete locally, hosted migrations and production check pending. Version file: `versions/v0.6.md`. The v0.5 production check is deferred (see `versions/v0.5.md`). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
+**v0.6 — Credit Cards and Invoices** (IN_PROGRESS). Architectural analysis approved on 2026-09-06 (`ARCHITECTURE_ANALYSIS_V0.6.md`); implementation complete, migrations applied to the hosted project and `main` deployed; production check pending. Version file: `versions/v0.6.md`. The v0.5 production check is deferred (see `versions/v0.5.md`). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
 
 Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.5 (`versions/v0.1.md` to `versions/v0.5.md`).
 
@@ -41,7 +41,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.5 architectural analysis | v0.5 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.5.md`; approved on 2026-09-06 |
 | v0.5 implementation | v0.5 | DELIVERED | Monthly totals view, dashboard store, real cards, charts and lists by context and period; hosted `db push` applied on 2026-09-06; production check deferred |
 | v0.6 architectural analysis | v0.6 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.6.md`; approved on 2026-09-06 |
-| v0.6 implementation | v0.6 | IN_PROGRESS | Credit cards, invoice competence rule, card purchases, invoice payments, cards pages done locally; hosted `db push` and production check pending |
+| v0.6 implementation | v0.6 | IN_PROGRESS | Credit cards, invoice competence rule, card purchases, invoice payments, cards pages delivered; hosted `db push` applied on 2026-09-06; production check pending |
 
 ## Features
 
@@ -103,4 +103,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-06 — v0.6 Credit Cards and Invoices implemented locally (3 migrations, 465 pgTAP assertions, 192 Vitest tests); hosted migrations and production check pending.
+2026-09-06 — v0.6 Credit Cards and Invoices implemented and deployed (3 migrations applied to the hosted project, 465 pgTAP assertions, 192 Vitest tests); production check pending.
