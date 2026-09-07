@@ -2,9 +2,9 @@
 
 ## Current Version
 
-**v0.7 — Installments** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V0.7.md`); implementation complete, migrations applied to the hosted project and `main` deployed; production check pending. Version file: `versions/v0.7.md`. The production checks of v0.4, v0.5 and v0.6 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
+**v0.8 — Recurrences** (IN_PROGRESS). The architectural analysis is delivered in `ARCHITECTURE_ANALYSIS_V0.8.md`; implementation starts after its approval. Version file: `versions/v0.8.md`. The production checks of v0.4 to v0.7 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
 
-Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.6 (`versions/v0.1.md` to `versions/v0.6.md`).
+Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.7 (`versions/v0.1.md` to `versions/v0.7.md`).
 
 ## Roadmap
 
@@ -16,8 +16,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.4 | Households and Sharing | DELIVERED | households, household_members, financial_access_grants, VIEW, MANAGE, non-transitivity, created_by/updated_by, complete policies |
 | v0.5 | Dashboard | DELIVERED | Incomes, expenses, balance, benefits, periods, person, household, shared view, charts, summary cards |
 | v0.6 | Credit Cards and Invoices | DELIVERED | Cards, limit, closing day, due day, purchases, invoices, competence rule, double-counting prevention |
-| v0.7 | Installments | IN_PROGRESS | Installment purchases, installment generation, current and future installments, commitment, filters |
-| v0.8 | Recurrences | PENDING | Fixed expenses, recurring incomes, competence generation, monthly instance editing, recurring templates |
+| v0.7 | Installments | DELIVERED | Installment purchases, installment generation, current and future installments, commitment, filters |
+| v0.8 | Recurrences | IN_PROGRESS | Fixed expenses, recurring incomes, competence generation, monthly instance editing, recurring templates |
 | v0.9 | Allocations and Settlements | PENDING | transaction_allocations, payer vs. responsible, amounts owed, settlements, receivables, payables |
 | v0.10 | Loans | PENDING | Principal, interest, installments, outstanding balance, calculations, math tests |
 | v0.11 | Financings | PENDING | Asset value, down payment, financed amount, interest, installments, outstanding balance, double-counting prevention |
@@ -43,7 +43,9 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.6 architectural analysis | v0.6 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.6.md`; approved on 2026-09-06 |
 | v0.6 implementation | v0.6 | DELIVERED | Credit cards, invoice competence rule, card purchases, invoice payments, cards pages; hosted `db push` applied on 2026-09-06; production check deferred |
 | v0.7 architectural analysis | v0.7 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.7.md`; approved on 2026-09-07 |
-| v0.7 implementation | v0.7 | IN_PROGRESS | Installment generation in the database, installments page, commitment, filters delivered; hosted `db push` applied on 2026-09-07; production check pending |
+| v0.7 implementation | v0.7 | DELIVERED | Installment generation in the database, installments page, commitment, filters; hosted `db push` applied on 2026-09-07; production check deferred |
+| v0.8 architectural analysis | v0.8 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.8.md`; awaiting approval |
+| v0.8 implementation | v0.8 | PENDING | Fixed expense and recurring income templates, competence generation, recurrences page |
 
 ## Features
 
@@ -64,9 +66,9 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | FEAT-013 | Financial access grants | v0.4 | DELIVERED | VIEW and MANAGE permissions, non-transitive, owner-only management, shared context |
 | FEAT-014 | Dashboard | v0.5 | DELIVERED | Real summary cards, six-month chart with adaptive scale, expenses by category and by person, pending and recent lists, by context and period |
 | FEAT-015 | Credit cards and invoices | v0.6 | DELIVERED | Cards with limit, closing and due days; invoice competence rule stored per purchase; invoices derived with status; payment as transfer |
-| FEAT-016 | Installments | v0.7 | IN_PROGRESS | Generation in the database, one instalment per invoice or month, progress, commitment and filters; implemented locally |
-| FEAT-017 | Fixed expenses | v0.8 | PENDING | Recurring expense templates with editable monthly instances |
-| FEAT-018 | Recurring incomes | v0.8 | PENDING | Recurring income templates |
+| FEAT-016 | Installments | v0.7 | DELIVERED | Generation in the database, one instalment per invoice or month, progress, commitment and filters |
+| FEAT-017 | Fixed expenses | v0.8 | IN_PROGRESS | Recurring expense templates with editable monthly instances |
+| FEAT-018 | Recurring incomes | v0.8 | IN_PROGRESS | Recurring income templates |
 | FEAT-019 | Transaction allocations | v0.9 | PENDING | Payer vs. responsible, amounts owed |
 | FEAT-020 | Settlements | v0.9 | PENDING | Payments between users, receivables and payables |
 | FEAT-021 | Loans | v0.10 | PENDING | Explicit interest models, outstanding balance |
@@ -105,4 +107,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-07 — v0.7 Installments implemented and deployed (2 migrations applied to the hosted project, 540 pgTAP assertions, 220 Vitest tests); production check pending.
+2026-09-07 — v0.7 delivered (production check deferred by the administrator). v0.8 Recurrences started: architectural analysis delivered, awaiting approval before implementation.
