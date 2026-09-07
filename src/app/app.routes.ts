@@ -1,4 +1,4 @@
-import { Route, Routes } from '@angular/router';
+import { Routes } from '@angular/router';
 import { authGuard, guestGuard } from './core/auth/auth.guard';
 import { Shell } from './core/layout/shell/shell';
 import { NAV_ITEMS, NavItem } from './core/navigation/nav-items';
@@ -9,19 +9,6 @@ function navItem(path: string): NavItem {
     throw new Error(`Unknown navigation path: ${path}`);
   }
   return item;
-}
-
-function placeholderRoute(path: string, description: string, plannedVersion: string): Route {
-  const item = navItem(path);
-  return {
-    path: path.slice(1),
-    title: item.label,
-    data: { title: item.label, icon: item.icon, description, plannedVersion },
-    loadComponent: () =>
-      import('./shared/components/feature-placeholder/feature-placeholder').then(
-        (m) => m.FeaturePlaceholder,
-      ),
-  };
 }
 
 export const routes: Routes = [
@@ -114,11 +101,22 @@ export const routes: Routes = [
             (m) => m.LoanDetailPage,
           ),
       },
-      placeholderRoute(
-        '/financings',
-        'Financiamentos com valor do bem, entrada, parcelas e saldo devedor.',
-        'v0.11',
-      ),
+      {
+        path: 'financings',
+        title: navItem('/financings').label,
+        loadComponent: () =>
+          import('./features/financings/financings-page/financings-page').then(
+            (m) => m.FinancingsPage,
+          ),
+      },
+      {
+        path: 'financings/:id',
+        title: 'Financiamento',
+        loadComponent: () =>
+          import('./features/financings/financing-detail-page/financing-detail-page').then(
+            (m) => m.FinancingDetailPage,
+          ),
+      },
       {
         path: 'settlements',
         title: navItem('/settlements').label,

@@ -1,0 +1,181 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Editar financiamento' : 'Novo financiamento' }}</h2>
+
+<mat-dialog-content>
+  <form class="financing-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <mat-form-field appearance="outline">
+      <mat-label>Descrição</mat-label>
+      <input matInput formControlName="description" placeholder="Ex.: Financiamento do carro" maxlength="120" />
+      @if (form.controls.description.hasError('required')) {
+        <mat-error>Informe a descrição.</mat-error>
+      }
+    </mat-form-field>
+
+    <div class="financing-form__row">
+      <mat-form-field appearance="outline">
+        <mat-label>Instituição</mat-label>
+        <input matInput formControlName="institution" placeholder="Opcional" maxlength="80" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Conta</mat-label>
+        <mat-select formControlName="accountId">
+          @for (account of accounts(); track account.id) {
+            <mat-option [value]="account.id">{{ account.name }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.accountId.hasError('required')) {
+          <mat-error>Selecione a conta.</mat-error>
+        }
+      </mat-form-field>
+    </div>
+
+    <div class="financing-form__row">
+      <mat-form-field appearance="outline" floatLabel="always">
+        <mat-label>Valor do bem</mat-label>
+        <span matTextPrefix>R$&nbsp;</span>
+        <input matInput formControlName="assetValue" inputmode="decimal" placeholder="0,00" />
+        @if (form.controls.assetValue.invalid) {
+          <mat-error>Informe um valor maior que zero.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" floatLabel="always">
+        <mat-label>Entrada</mat-label>
+        <span matTextPrefix>R$&nbsp;</span>
+        <input matInput formControlName="downPayment" inputmode="decimal" placeholder="0,00" />
+        @if (form.controls.downPayment.invalid) {
+          <mat-error>Informe um valor válido.</mat-error>
+        } @else if (form.hasError('downPaymentTooHigh')) {
+          <mat-error>A entrada precisa ser menor que o valor do bem.</mat-error>
+        }
+      </mat-form-field>
+    </div>
+
+    <div class="financing-form__row">
+      <mat-form-field appearance="outline">
+        <mat-label>Sistema de amortização</mat-label>
+        <mat-select formControlName="system">
+          @for (system of systems; track system) {
+            <mat-option [value]="system">{{ systemLabels[system] }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint>{{ systemDescriptions[form.controls.system.value] }}</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Parcelas</mat-label>
+        <input matInput type="number" formControlName="installmentCount" min="1" max="480" />
+        @if (form.controls.installmentCount.invalid) {
+          <mat-error>Entre 1 e 480 parcelas.</mat-error>
+        }
+      </mat-form-field>
+    </div>
+
+    <div class="financing-form__row">
+      <mat-form-field appearance="outline" floatLabel="always">
+        <mat-label>Taxa de juros</mat-label>
+        <input matInput formControlName="interestRate" inputmode="decimal" placeholder="0,00" />
+        <span matTextSuffix>%</span>
+        @if (form.controls.interestRate.invalid) {
+          <mat-error>Informe uma taxa entre 0 e 100.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Período da taxa</mat-label>
+        <mat-select formControlName="interestPeriod">
+          @for (period of periods; track period) {
+            <mat-option [value]="period">{{ periodLabels[period] }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    @if (preview(); as preview) {
+      <div class="financing-form__preview">
+        <mat-icon>calculate</mat-icon>
+        <div>
+          <strong>
+            {{ preview.count }}x de {{ preview.first | currency }}
+            @if (preview.varies) {
+              · última de {{ preview.last | currency }}
+            }
+          </strong>
+          <span>
+            Financiado {{ preview.financed | currency }} · juros {{ preview.interest | currency }} ·
+            total desembolsado {{ preview.total | currency }}
+          </span>
+          <span class="financing-form__rule">
+            Só a entrada e as parcelas viram lançamento. O valor do bem não é lançado.
+          </span>
+        </div>
+      </div>
+    }
+
+    <div class="financing-form__row">
+      <mat-form-field appearance="outline">
+        <mat-label>Data da aquisição</mat-label>
+        <input matInput formControlName="acquisitionDate" [matDatepicker]="acquisitionPicker" />
+        <mat-datepicker-toggle matIconSuffix [for]="acquisitionPicker" />
+        <mat-datepicker #acquisitionPicker />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Primeira parcela</mat-label>
+        <input matInput formControlName="firstDueDate" [matDatepicker]="duePicker" />
+        <mat-datepicker-toggle matIconSuffix [for]="duePicker" />
+        <mat-datepicker #duePicker />
+        @if (form.controls.firstDueDate.hasError('required')) {
+          <mat-error>Informe o vencimento da primeira parcela.</mat-error>
+        }
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Categoria das parcelas</mat-label>
+      <mat-select formControlName="categoryId">
+        @for (category of expenseCategories(); track category.id) {
+          <mat-option [value]="category.id">{{ category.name }}</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.categoryId.hasError('required')) {
+        <mat-error>Selecione a categoria.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Categoria da entrada</mat-label>
+      <mat-select formControlName="downPaymentCategoryId">
+        <mat-option value="">Mesma categoria das parcelas</mat-option>
+        @for (category of expenseCategories(); track category.id) {
+          <mat-option [value]="category.id">{{ category.name }}</mat-option>
+        }
+      </mat-select>
+      <mat-hint>A entrada é a única despesa da aquisição.</mat-hint>
+    </mat-form-field>
+
+    @if (showHouseholdField()) {
+      <mat-form-field appearance="outline">
+        <mat-label>Grupo</mat-label>
+        <mat-select formControlName="householdId">
+          <mat-option value="">Pessoal</mat-option>
+          @for (household of householdOptions(); track household.id) {
+            <mat-option [value]="household.id">{{ household.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+
+    <mat-form-field appearance="outline">
+      <mat-label>Observações</mat-label>
+      <textarea matInput formControlName="notes" rows="2" maxlength="1000"></textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button matButton mat-dialog-close type="button">Cancelar</button>
+  <button matButton="filled" type="button" (click)="save()" [disabled]="submitting()">
+    {{ submitting() ? 'Salvando…' : 'Salvar' }}
+  </button>
+</mat-dialog-actions>

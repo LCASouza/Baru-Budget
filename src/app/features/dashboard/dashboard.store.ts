@@ -8,6 +8,7 @@ import { AccountsStore } from '../accounts/accounts.store';
 import { CardsStore } from '../cards/cards.store';
 import { InstallmentsStore } from '../installments/installments.store';
 import { SettlementsStore } from '../settlements/settlements.store';
+import { FinancingsStore } from '../financings/financings.store';
 import { LoansStore } from '../loans/loans.store';
 import { TransactionsStore } from '../transactions/transactions.store';
 import {
@@ -36,6 +37,7 @@ export class DashboardStore {
   private readonly installments = inject(InstallmentsStore);
   private readonly settlements = inject(SettlementsStore);
   private readonly loans = inject(LoansStore);
+  private readonly financings = inject(FinancingsStore);
 
   // Six-month window ending at the selected month; the current month itself comes
   // from the transactions already loaded for the page.
@@ -141,6 +143,16 @@ export class DashboardStore {
           icon: 'account_balance',
           tone: 'payable',
           hint: `${loanRemaining} ${loanRemaining === 1 ? 'parcela restante' : 'parcelas restantes'}`,
+        });
+      }
+      const financingRemaining = this.financings.remainingCount();
+      if (financingRemaining > 0) {
+        cards.push({
+          label: 'Financiamentos',
+          amount: this.financings.totalRemaining(),
+          icon: 'house',
+          tone: 'payable',
+          hint: `${financingRemaining} ${financingRemaining === 1 ? 'parcela restante' : 'parcelas restantes'}`,
         });
       }
       const remainingInstallments = this.installments.remainingCount();

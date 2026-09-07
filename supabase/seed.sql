@@ -387,3 +387,43 @@ begin
    where loan_id = loan and loan_installment_number in (1, 2);
 end;
 $$;
+
+-- A SAC financing with a down payment, schedule generated and the first
+-- instalment paid.
+do $$
+declare
+  dev_user  uuid := (select id from auth.users where email = 'dev@baru.local');
+  bank      uuid;
+  category  uuid;
+  financing uuid;
+begin
+  perform set_config(
+    'request.jwt.claims',
+    json_build_object('sub', dev_user, 'role', 'authenticated')::text,
+    true
+  );
+
+  select id into bank from public.accounts where owner_user_id = dev_user and name = 'Conta corrente';
+  insert into public.categories (owner_user_id, kind, name, created_by, updated_by)
+  values (dev_user, 'EXPENSE', 'Financiamentos', dev_user, dev_user)
+  on conflict do nothing;
+  select id into category from public.categories
+   where owner_user_id = dev_user and kind = 'EXPENSE' and name = 'Financiamentos';
+
+  insert into public.financings (
+    owner_user_id, description, institution, account_id, category_id,
+    asset_value, down_payment, interest_rate, interest_period, system,
+    installment_count, acquisition_date, first_due_date, created_by, updated_by
+  )
+  values (
+    dev_user, 'Financiamento do carro', 'Banco', bank, category,
+    60000.00, 15000.00, 1.0, 'MONTHLY', 'SAC', 48,
+    (date_trunc('month', current_date) - interval '1 month' + interval '11 day')::date,
+    (date_trunc('month', current_date) + interval '14 day')::date,
+    dev_user, dev_user
+  )
+  returning id into financing;
+
+  perform public.generate_financing_schedule(financing);
+end;
+$$;

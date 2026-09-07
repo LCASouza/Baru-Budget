@@ -59,6 +59,42 @@ describe('dashboard-summary', () => {
     });
   });
 
+  it('counts a financing as expenses only, never as income', () => {
+    const financing = buildTransactionViews(
+      [
+        makeTransaction({
+          id: 'entry',
+          kind: 'EXPENSE',
+          description: 'Financiamento do carro',
+          amount: 15000,
+          category_id: 'cat-home',
+          date: '2026-09-05',
+          financing_id: 'fin-1',
+        }),
+        makeTransaction({
+          id: 'fin-1-1',
+          kind: 'EXPENSE',
+          description: 'Financiamento do carro',
+          amount: 1387.5,
+          category_id: 'cat-home',
+          status: 'PENDING',
+          due_date: '2026-09-10',
+          date: '2026-09-10',
+          financing_id: 'fin-1',
+          financing_installment_number: 1,
+        }),
+      ],
+      new Map([['cat-home', makeCategory({ id: 'cat-home', name: 'Moradia' })]]),
+      new Map([['acc-bank', makeAccount()]]),
+      TODAY,
+      new Map([['u1', 'Alice']]),
+    );
+    const summary = summarizeDashboard(financing);
+    expect(summary.income).toBe(0);
+    expect(summary.expense).toBe(16387.5);
+    expect(summary.pending).toBe(1387.5);
+  });
+
   it('groups expenses by category, ignoring transfers and cancelled entries', () => {
     expect(spendingByCategory(views)).toEqual([
       { name: 'Moradia', amount: 2150 },

@@ -300,6 +300,138 @@ export type Database = {
           },
         ]
       }
+      financings: {
+        Row: {
+          account_id: string
+          acquisition_date: string
+          asset_value: number
+          category_id: string
+          created_at: string
+          created_by: string
+          description: string
+          down_payment: number
+          down_payment_category_id: string | null
+          financed_amount: number
+          first_due_date: string
+          household_id: string | null
+          id: string
+          installment_count: number
+          institution: string | null
+          interest_period: Database["public"]["Enums"]["interest_period"]
+          interest_rate: number
+          notes: string | null
+          owner_user_id: string
+          system: Database["public"]["Enums"]["financing_system"]
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          account_id: string
+          acquisition_date: string
+          asset_value: number
+          category_id: string
+          created_at?: string
+          created_by?: string
+          description: string
+          down_payment?: number
+          down_payment_category_id?: string | null
+          financed_amount?: number
+          first_due_date: string
+          household_id?: string | null
+          id?: string
+          installment_count: number
+          institution?: string | null
+          interest_period?: Database["public"]["Enums"]["interest_period"]
+          interest_rate: number
+          notes?: string | null
+          owner_user_id: string
+          system: Database["public"]["Enums"]["financing_system"]
+          updated_at?: string
+          updated_by?: string
+        }
+        Update: {
+          account_id?: string
+          acquisition_date?: string
+          asset_value?: number
+          category_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string
+          down_payment?: number
+          down_payment_category_id?: string | null
+          financed_amount?: number
+          first_due_date?: string
+          household_id?: string | null
+          id?: string
+          installment_count?: number
+          institution?: string | null
+          interest_period?: Database["public"]["Enums"]["interest_period"]
+          interest_rate?: number
+          notes?: string | null
+          owner_user_id?: string
+          system?: Database["public"]["Enums"]["financing_system"]
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financings_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "account_balances"
+            referencedColumns: ["account_id"]
+          },
+          {
+            foreignKeyName: "financings_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financings_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financings_down_payment_category_id_fkey"
+            columns: ["down_payment_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financings_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financings_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financings_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fixed_expenses: {
         Row: {
           account_id: string | null
@@ -856,6 +988,8 @@ export type Database = {
           description: string
           destination_account_id: string | null
           due_date: string | null
+          financing_id: string | null
+          financing_installment_number: number | null
           fixed_expense_id: string | null
           household_id: string | null
           id: string
@@ -889,6 +1023,8 @@ export type Database = {
           description: string
           destination_account_id?: string | null
           due_date?: string | null
+          financing_id?: string | null
+          financing_installment_number?: number | null
           fixed_expense_id?: string | null
           household_id?: string | null
           id?: string
@@ -922,6 +1058,8 @@ export type Database = {
           description?: string
           destination_account_id?: string | null
           due_date?: string | null
+          financing_id?: string | null
+          financing_installment_number?: number | null
           fixed_expense_id?: string | null
           household_id?: string | null
           id?: string
@@ -998,6 +1136,13 @@ export type Database = {
             columns: ["destination_account_id"]
             isOneToOne: false
             referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_financing_id_fkey"
+            columns: ["financing_id"]
+            isOneToOne: false
+            referencedRelation: "financings"
             referencedColumns: ["id"]
           },
           {
@@ -1223,6 +1368,26 @@ export type Database = {
         }
         Returns: string
       }
+      financing_installment_amounts: {
+        Args: {
+          p_count: number
+          p_financed: number
+          p_monthly_rate: number
+          p_system: Database["public"]["Enums"]["financing_system"]
+        }
+        Returns: number[]
+      }
+      financing_monthly_rate: {
+        Args: {
+          p_period: Database["public"]["Enums"]["interest_period"]
+          p_rate: number
+        }
+        Returns: number
+      }
+      generate_financing_schedule: {
+        Args: { p_financing_id: string; p_with_down_payment?: boolean }
+        Returns: number
+      }
       generate_loan_schedule: {
         Args: { p_loan_id: string; p_with_disbursement?: boolean }
         Returns: number
@@ -1296,6 +1461,7 @@ export type Database = {
       access_permission: "VIEW" | "MANAGE"
       account_type: "BANK" | "CASH" | "BENEFIT" | "OTHER"
       category_kind: "INCOME" | "EXPENSE"
+      financing_system: "PRICE" | "SAC"
       household_member_status: "ACTIVE" | "INACTIVE"
       household_role: "ADMIN" | "MEMBER"
       interest_period: "MONTHLY" | "YEARLY"
@@ -1437,6 +1603,7 @@ export const Constants = {
       access_permission: ["VIEW", "MANAGE"],
       account_type: ["BANK", "CASH", "BENEFIT", "OTHER"],
       category_kind: ["INCOME", "EXPENSE"],
+      financing_system: ["PRICE", "SAC"],
       household_member_status: ["ACTIVE", "INACTIVE"],
       household_role: ["ADMIN", "MEMBER"],
       interest_period: ["MONTHLY", "YEARLY"],

@@ -65,6 +65,8 @@ export function makeTransaction(overrides: Partial<Transaction> = {}): Transacti
     settlement_direction: null,
     loan_id: null,
     loan_installment_number: null,
+    financing_id: null,
+    financing_installment_number: null,
     household_id: null,
     notes: null,
     created_at: NOW,

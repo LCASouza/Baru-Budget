@@ -1,0 +1,115 @@
+<section class="financings">
+  <div class="financings__summary">
+    @for (card of cards(); track card.label) {
+      <app-summary-card [data]="card" />
+    }
+  </div>
+
+  <article class="bb-card">
+    <header class="bb-card__head">
+      <div>
+        <h3 class="bb-card__title">Financiamentos</h3>
+        <p class="bb-card__subtitle">
+          O valor do bem não vira lançamento. Só a entrada e as parcelas saem da conta.
+        </p>
+      </div>
+      @if (store.canManage()) {
+        <button matButton="filled" (click)="openForm()">
+          <mat-icon>add</mat-icon>
+          Novo financiamento
+        </button>
+      }
+    </header>
+
+    @if (store.isLoading() && !store.loaded()) {
+      <mat-progress-bar mode="indeterminate" />
+    } @else if (store.error()) {
+      <app-empty-state
+        icon="error_outline"
+        title="Não foi possível carregar os financiamentos"
+        description="Verifique a conexão e tente novamente."
+      >
+        <button matButton="outlined" (click)="store.reload()">Tentar novamente</button>
+      </app-empty-state>
+    } @else if (store.views().length === 0) {
+      <app-empty-state
+        icon="house"
+        title="Nenhum financiamento cadastrado"
+        description="Cadastre o valor do bem, a entrada, a taxa e o sistema para acompanhar as parcelas e o saldo devedor."
+      >
+        @if (store.canManage()) {
+          <button matButton="filled" (click)="openForm()">Cadastrar financiamento</button>
+        }
+      </app-empty-state>
+    } @else {
+      <ul class="financing-list">
+        @for (view of store.views(); track view.financing.id) {
+          <li class="financing">
+            <span class="financing__icon">
+              <mat-icon>house</mat-icon>
+            </span>
+            <div class="financing__info">
+              <span class="financing__name">
+                <a [routerLink]="['/financings', view.financing.id]">{{ view.financing.description }}</a>
+              </span>
+              <span class="financing__meta">
+                @if (view.financing.institution) {
+                  {{ view.financing.institution }} ·
+                }
+                bem {{ view.financing.asset_value | currency }} · entrada
+                {{ view.financing.down_payment | currency }} · financiado
+                {{ view.financing.financed_amount | currency }}
+              </span>
+              <span class="financing__meta">
+                {{ view.financing.interest_rate / 100 | percent: '1.2-4' }}
+                {{ periodLabels[view.financing.interest_period] }} ·
+                {{ systemLabels[view.financing.system] }} ·
+                @if (view.generated) {
+                  {{ view.paidCount }}/{{ view.financing.installment_count }} pagas
+                  @if (view.next) {
+                    · próxima {{ view.next.date | date: 'dd/MM/yyyy' }} de {{ view.next.amount | currency }}
+                  }
+                } @else {
+                  cronograma ainda não gerado
+                }
+              </span>
+              <span class="financing__track">
+                <span class="financing__bar" [style.width.%]="view.progressPercent"></span>
+              </span>
+            </div>
+
+            <div class="financing__amounts">
+              <span class="financing__remaining bb-amount">{{ view.remainingTotal | currency }}</span>
+              <span class="financing__hint">a pagar</span>
+              <span class="financing__hint">saldo devedor {{ view.outstandingPrincipal | currency }}</span>
+            </div>
+
+            @if (store.canManage()) {
+              <button
+                matIconButton
+                [matMenuTriggerFor]="menu"
+                [attr.aria-label]="'Ações de ' + view.financing.description"
+              >
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="generate(view)">
+                  <mat-icon>playlist_add</mat-icon>
+                  <span>{{ view.generated ? 'Completar cronograma' : 'Gerar cronograma' }}</span>
+                </button>
+                <button mat-menu-item (click)="openForm(view)">
+                  <mat-icon>edit</mat-icon>
+                  <span>Editar</span>
+                </button>
+                <button mat-menu-item (click)="remove(view)">
+                  <mat-icon>delete</mat-icon>
+                  <span>Excluir</span>
+                </button>
+              </mat-menu>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </article>
+</section>

@@ -10,6 +10,7 @@ import { makeAccount, makeCategory, makeTransaction } from '../../testing/financ
 import { AccountsStore } from '../accounts/accounts.store';
 import { CardsStore } from '../cards/cards.store';
 import { SettlementsStore } from '../settlements/settlements.store';
+import { FinancingsStore } from '../financings/financings.store';
 import { LoansStore } from '../loans/loans.store';
 import { InstallmentsStore } from '../installments/installments.store';
 import { buildTransactionViews } from '../transactions/transaction.model';
@@ -71,6 +72,14 @@ describe('DashboardStore', () => {
         },
         {
           provide: LoansStore,
+          useValue: {
+            totalRemaining: signal(0),
+            remainingCount: signal(0),
+            reload: vi.fn(),
+          },
+        },
+        {
+          provide: FinancingsStore,
           useValue: {
             totalRemaining: signal(0),
             remainingCount: signal(0),

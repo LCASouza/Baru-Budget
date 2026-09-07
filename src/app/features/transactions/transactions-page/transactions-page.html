@@ -212,6 +212,16 @@
                             }
                           </span>
                         }
+                        @if (view.transaction.financing_id) {
+                          <span class="tx-row__installment">
+                            Financiamento
+                            @if (view.transaction.financing_installment_number) {
+                              {{ view.transaction.financing_installment_number }}
+                            } @else {
+                              · entrada
+                            }
+                          </span>
+                        }
                       </span>
                       <span class="tx-row__meta">
                         @if (isHousehold()) {
