@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**v1.0 — Stable** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V1.0.md`); implementation complete, the hardening migration applied to the hosted project and `main` deployed. The ten deferred production checks listed in `versions/v1.0.md` are the remaining completion criteria and only the administrator can close them. Security review: `SECURITY_REVIEW_V1.0.md`. Architecture: `ARCHITECTURE.md`. The production checks of v0.4 to v0.12 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
+**v1.0 — Stable** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V1.0.md`); implementation complete, the hardening migration applied to the hosted project and `main` deployed. The ten deferred production checks listed in `versions/v1.0.md` are the remaining completion criteria and only the administrator can close them. Security review: `SECURITY_REVIEW_V1.0.md`. Architecture: `ARCHITECTURE.md`.
 
 Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.13 (`versions/v0.1.md` to `versions/v0.13.md`).
 
