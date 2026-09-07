@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**v0.9 — Allocations and Settlements** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V0.9.md`), including the documented decision to model a settlement as a SETTLEMENT transaction instead of a separate table; implementation complete locally, hosted migrations and production check pending. Version file: `versions/v0.9.md`. The production checks of v0.4 to v0.8 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
+**v0.9 — Allocations and Settlements** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V0.9.md`), including the documented decision to model a settlement as a SETTLEMENT transaction instead of a separate table; implementation complete, migrations applied to the hosted project and `main` deployed; production check pending. Version file: `versions/v0.9.md`. The production checks of v0.4 to v0.8 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
 
 Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.8 (`versions/v0.1.md` to `versions/v0.8.md`).
 
@@ -47,7 +47,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.8 architectural analysis | v0.8 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.8.md`; approved on 2026-09-07 |
 | v0.8 implementation | v0.8 | DELIVERED | Templates, idempotent generation and recurrences page; hosted `db push` applied on 2026-09-07; production check deferred |
 | v0.9 architectural analysis | v0.9 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.9.md`; approved on 2026-09-07 |
-| v0.9 implementation | v0.9 | IN_PROGRESS | Allocations with a backend invariant, settlements and balances done locally; hosted `db push` and production check pending |
+| v0.9 implementation | v0.9 | IN_PROGRESS | Allocations with a backend invariant, settlements and balances delivered; hosted `db push` applied on 2026-09-07; production check pending |
 
 ## Features
 
@@ -109,4 +109,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-07 — v0.9 Allocations and Settlements implemented locally (3 migrations, 692 pgTAP assertions, 260 Vitest tests); hosted migrations and production check pending.
+2026-09-07 — v0.9 Allocations and Settlements implemented and deployed (3 migrations applied to the hosted project, 692 pgTAP assertions, 260 Vitest tests); production check pending.
