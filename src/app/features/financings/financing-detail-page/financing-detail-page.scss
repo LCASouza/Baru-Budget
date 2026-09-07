@@ -57,53 +57,6 @@
   }
 }
 
-.schedule {
-  overflow-x: auto;
-}
-
-.schedule__table {
-  width: 100%;
-  border-collapse: collapse;
-  font: var(--mat-sys-body-small);
-
-  th {
-    text-align: left;
-    padding: 8px 10px;
-    color: var(--mat-sys-on-surface-variant);
-    font: var(--mat-sys-label-medium);
-    white-space: nowrap;
-  }
-
-  td {
-    padding: 8px 10px;
-    border-top: 1px solid var(--bb-card-border);
-    white-space: nowrap;
-  }
-}
-
-.schedule__number {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.schedule__row--paid {
-  color: var(--mat-sys-on-surface-variant);
-}
-
-.schedule__row--clickable {
-  cursor: pointer;
-
-  &:hover {
-    background: var(--mat-sys-surface-container);
-  }
-}
-
-.schedule__difference {
-  display: block;
-  font: var(--mat-sys-label-small);
-  color: var(--mat-sys-error);
-}
-
 .acquisition {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));

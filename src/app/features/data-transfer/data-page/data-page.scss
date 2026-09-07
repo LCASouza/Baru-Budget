@@ -78,35 +78,6 @@
   background: color-mix(in srgb, var(--mat-sys-error) 16%, transparent);
 }
 
-.preview__table {
-  overflow-x: auto;
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font: var(--mat-sys-body-small);
-  }
-
-  th {
-    text-align: left;
-    padding: 8px 10px;
-    color: var(--mat-sys-on-surface-variant);
-    font: var(--mat-sys-label-medium);
-    white-space: nowrap;
-  }
-
-  td {
-    padding: 8px 10px;
-    border-top: 1px solid var(--bb-card-border);
-    white-space: nowrap;
-  }
-}
-
-.preview__number {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
 .preview__invalid {
   font: var(--mat-sys-body-small);
 
