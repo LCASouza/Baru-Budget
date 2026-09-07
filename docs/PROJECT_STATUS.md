@@ -2,9 +2,9 @@
 
 ## Current Version
 
-**v0.10 — Loans** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V0.10.md`); implementation complete, migrations applied to the hosted project and `main` deployed; production check pending. Version file: `versions/v0.10.md`. The production checks of v0.4 to v0.9 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
+**v0.11 — Financings** (IN_PROGRESS). The architectural analysis is delivered in `ARCHITECTURE_ANALYSIS_V0.11.md`; implementation starts after its approval. Version file: `versions/v0.11.md`. The production checks of v0.4 to v0.10 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
 
-Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.9 (`versions/v0.1.md` to `versions/v0.9.md`).
+Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.10 (`versions/v0.1.md` to `versions/v0.10.md`).
 
 ## Roadmap
 
@@ -19,8 +19,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.7 | Installments | DELIVERED | Installment purchases, installment generation, current and future installments, commitment, filters |
 | v0.8 | Recurrences | DELIVERED | Fixed expenses, recurring incomes, competence generation, monthly instance editing, recurring templates |
 | v0.9 | Allocations and Settlements | DELIVERED | transaction_allocations, payer vs. responsible, amounts owed, settlements, receivables, payables |
-| v0.10 | Loans | IN_PROGRESS | Principal, interest, installments, outstanding balance, calculations, math tests |
-| v0.11 | Financings | PENDING | Asset value, down payment, financed amount, interest, installments, outstanding balance, double-counting prevention |
+| v0.10 | Loans | DELIVERED | Principal, interest, installments, outstanding balance, calculations, math tests |
+| v0.11 | Financings | IN_PROGRESS | Asset value, down payment, financed amount, interest, installments, outstanding balance, double-counting prevention |
 | v0.12 | Baru Budget Excel Format v1 | PENDING | Schema version 1, export, import, standardized workbook, stable IDs, preview, validation, merge by UUID, backup |
 | v0.13 | Mobile UX and Hardening | PENDING | Full mobile review, responsiveness, empty states, loading, accessibility, errors, performance, permission and RLS review |
 | v1.0 | Stable | PENDING | Security review, full RLS review, final test suite, documentation, CI, stable deploy, validated backup and import/export |
@@ -49,7 +49,9 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.9 architectural analysis | v0.9 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.9.md`; approved on 2026-09-07 |
 | v0.9 implementation | v0.9 | DELIVERED | Allocations with a backend invariant, settlements and balances; hosted `db push` applied on 2026-09-07; production check deferred |
 | v0.10 architectural analysis | v0.10 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.10.md`; approved on 2026-09-07 |
-| v0.10 implementation | v0.10 | IN_PROGRESS | Loans with explicit interest models, schedule generation and derived balances delivered; hosted `db push` applied on 2026-09-07; production check pending |
+| v0.10 implementation | v0.10 | DELIVERED | Loans with explicit interest models, schedule generation and derived balances; hosted `db push` applied on 2026-09-07; production check deferred |
+| v0.11 architectural analysis | v0.11 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.11.md`; awaiting approval |
+| v0.11 implementation | v0.11 | PENDING | Financings with Price and SAC, down payment as the only acquisition expense |
 
 ## Features
 
@@ -75,8 +77,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | FEAT-018 | Recurring incomes | v0.8 | DELIVERED | Templates in their own table, generated as pending on the receipt day |
 | FEAT-019 | Transaction allocations | v0.9 | DELIVERED | Payer vs. responsible, sum invariant in the database, counterparty visibility |
 | FEAT-020 | Settlements | v0.9 | DELIVERED | Settlement as a transaction kind with direction, derived balances, receivables and payables |
-| FEAT-021 | Loans | v0.10 | IN_PROGRESS | Simple interest and Price with documented conversions, idempotent schedule, derived outstanding balance, disbursement out of income; implemented locally |
-| FEAT-022 | Financings | v0.11 | PENDING | Asset value, down payment, financed amount, outstanding balance |
+| FEAT-021 | Loans | v0.10 | DELIVERED | Simple interest and Price with documented conversions, idempotent schedule, derived outstanding balance, disbursement out of income |
+| FEAT-022 | Financings | v0.11 | IN_PROGRESS | Asset value, down payment, financed amount, outstanding balance |
 | FEAT-023 | Baru Budget Excel Format v1 | v0.12 | PENDING | Export, import, preview, merge by UUID, backup |
 
 ## Bugs
@@ -111,4 +113,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-07 — v0.10 Loans implemented and deployed (2 migrations applied to the hosted project, 771 pgTAP assertions, 284 Vitest tests); production check pending.
+2026-09-07 — v0.10 delivered (production check deferred by the administrator). v0.11 Financings started: architectural analysis delivered, awaiting approval before implementation.
