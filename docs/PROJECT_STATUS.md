@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**v1.0 — Stable** (IN_PROGRESS). The architectural analysis is delivered in `ARCHITECTURE_ANALYSIS_V1.0.md`; implementation starts after its approval. Version file: `versions/v1.0.md`. The production checks of v0.4 to v0.13 are listed there as the completion criteria of this version. The production checks of v0.4 to v0.12 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
+**v1.0 — Stable** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V1.0.md`); implementation complete, the hardening migration applied to the hosted project and `main` deployed. The ten deferred production checks listed in `versions/v1.0.md` are the remaining completion criteria and only the administrator can close them. Security review: `SECURITY_REVIEW_V1.0.md`. Architecture: `ARCHITECTURE.md`. The production checks of v0.4 to v0.12 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
 
 Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.13 (`versions/v0.1.md` to `versions/v0.13.md`).
 
@@ -56,8 +56,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.12 implementation | v0.12 | DELIVERED | Declarative workbook contract, export, preview, merge by UUID, backup; no migration; production check deferred |
 | v0.13 architectural analysis | v0.13 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.13.md`; approved on 2026-09-07 |
 | v0.13 implementation | v0.13 | DELIVERED | UX audit, mobile lists, shared state contract, keyboard access, pagination, RLS matrix; manual verification deferred |
-| v1.0 architectural analysis | v1.0 | DELIVERED | `ARCHITECTURE_ANALYSIS_V1.0.md`; awaiting approval |
-| v1.0 implementation | v1.0 | PENDING | CI, security review, view isolation, documentation, release note |
+| v1.0 architectural analysis | v1.0 | DELIVERED | `ARCHITECTURE_ANALYSIS_V1.0.md`; approved on 2026-09-07 |
+| v1.0 implementation | v1.0 | IN_PROGRESS | CI, security review, view isolation, documentation; the ten deferred production checks remain open |
 
 ## Features
 
@@ -85,7 +85,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | FEAT-020 | Settlements | v0.9 | DELIVERED | Settlement as a transaction kind with direction, derived balances, receivables and payables |
 | FEAT-021 | Loans | v0.10 | DELIVERED | Simple interest and Price with documented conversions, idempotent schedule, derived outstanding balance, disbursement out of income |
 | FEAT-022 | Financings | v0.11 | DELIVERED | Price and SAC with documented conversions, generated financed amount, idempotent schedule, derived outstanding balance, asset value never recorded |
-| FEAT-025 | Stable release | v1.0 | IN_PROGRESS | CI, security review, view isolation and function surface tests, architecture documentation, validated backup |
+| FEAT-025 | Stable release | v1.0 | IN_PROGRESS | CI, security review, view isolation and function surface tests, architecture documentation; validated backup pending |
 | FEAT-024 | Mobile UX and Hardening | v0.13 | DELIVERED | Screen audit, mobile lists, shared loading/error/empty contract, keyboard access, focus and reduced motion, pagination, RLS matrix |
 | FEAT-023 | Baru Budget Excel Format v1 | v0.12 | DELIVERED | Frozen schema version 1, paginated export, mandatory preview, merge by UUID, absence never deletes, backup |
 
@@ -95,6 +95,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 |---|---|---|---|---|---|
 | BUG-001 | Cloudflare Pages build failed: `.node-version` set to `24` resolved to Node 24.13.1, below the Angular CLI minimum of 24.15.0 | v0.2 | FIXED | v0.2 | `.node-version` pinned to 24.18.0; `engines.node` added to package.json |
 | BUG-002 | Form field hints and errors overlapped the next field (fixed one-line subscript area) and the account and category dialogs opened too narrow | v0.3 | FIXED | v0.3 | Global `subscriptSizing: 'dynamic'`, shorter hints, 16px form gap, grid rows aligned to the top, explicit dialog widths |
+| BUG-003 | Six trigger functions kept the default execute grant; a direct call already failed, so nothing was exposed | v1.0 | FIXED | v1.0 | Found by the security review; `20260907230100_function_grants.sql` revokes them and `security_surface.test.sql` guards it |
 
 ## Technical Debt
 
@@ -121,4 +122,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-07 — v0.13 delivered (manual verification and production check deferred by the administrator). v1.0 Stable started: architectural analysis delivered, awaiting approval before implementation.
+2026-09-07 — v1.0 Stable implemented and deployed: continuous integration, security review with one hardening finding fixed, function surface and view isolation tests (34 pgTAP files, 973 assertions), architecture documentation. The ten deferred production checks are the remaining criteria.
