@@ -1,0 +1,17 @@
+@if (showLoading()) {
+  <mat-progress-bar mode="indeterminate" />
+} @else if (showError()) {
+  <app-empty-state icon="error_outline" [title]="errorTitle()" [description]="errorDescription()">
+    <button matButton="outlined" (click)="retry.emit()">Tentar novamente</button>
+  </app-empty-state>
+} @else if (showEmpty()) {
+  <app-empty-state
+    [icon]="emptyIcon()"
+    [title]="emptyTitle()"
+    [description]="emptyDescription()"
+  >
+    <ng-content select="[emptyAction]" />
+  </app-empty-state>
+} @else {
+  <ng-content />
+}

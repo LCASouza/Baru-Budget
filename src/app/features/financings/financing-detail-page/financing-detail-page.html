@@ -4,154 +4,115 @@
     Financiamentos
   </a>
 
-  @if (store.isLoading() && !store.loaded()) {
-    <mat-progress-bar mode="indeterminate" />
-  } @else if (!view()) {
-    <article class="bb-card">
-      <app-empty-state
-        icon="search_off"
-        title="Financiamento não encontrado"
-        description="Ele pode ter sido excluído ou pertencer a outro contexto financeiro."
-      >
-        <a matButton="filled" routerLink="/financings">Voltar para financiamentos</a>
-      </app-empty-state>
-    </article>
-  } @else {
-    <header class="detail__head bb-card">
-      <div>
-        <h2 class="detail__name">{{ view()!.financing.description }}</h2>
-        <p class="detail__meta">
-          @if (view()!.financing.institution) {
-            {{ view()!.financing.institution }} ·
-          }
-          {{ view()!.financing.financed_amount | currency }} em
-          {{ view()!.financing.installment_count }}x ·
-          {{ view()!.financing.interest_rate / 100 | percent: '1.2-4' }}
-          {{ periodLabels[view()!.financing.interest_period] }} ·
-          {{ systemLabels[view()!.financing.system] }}
-        </p>
-        <p class="detail__meta">
-          Conta {{ view()!.accountName }} · categoria {{ view()!.categoryName }}
-        </p>
-      </div>
-      <dl class="detail__totals">
-        <div>
-          <dt>Total a pagar</dt>
-          <dd class="bb-amount">{{ view()!.remainingTotal | currency }}</dd>
-        </div>
-        <div>
-          <dt>Saldo devedor</dt>
-          <dd class="bb-amount">{{ view()!.outstandingPrincipal | currency }}</dd>
-        </div>
-        <div>
-          <dt>Juros do contrato</dt>
-          <dd class="bb-amount">{{ view()!.totalInterest | currency }}</dd>
-        </div>
-      </dl>
-    </header>
+  <app-async-state
+    [loading]="store.isLoading()"
+    [loaded]="store.loaded()"
+    [error]="store.error()"
+    [empty]="store.loaded() && !view()"
+    errorTitle="Não foi possível carregar o financiamento"
+    emptyIcon="search_off"
+    emptyTitle="Financiamento não encontrado"
+    emptyDescription="Ele pode ter sido excluído ou pertencer a outro contexto financeiro."
+    (retry)="store.reload()"
+  >
+    <a matButton="filled" routerLink="/financings" emptyAction>Voltar para financiamentos</a>
 
-    <article class="bb-card">
-      <header class="bb-card__head">
+    @if (view(); as view) {
+      <header class="detail__head bb-card">
         <div>
-          <h3 class="bb-card__title">Aquisição</h3>
-          <p class="bb-card__subtitle">
-            O valor do bem é contexto, não movimentação. Se ele fosse lançado, a compra e as
-            parcelas contariam o mesmo dinheiro duas vezes.
+          <h2 class="detail__name">{{ view.financing.description }}</h2>
+          <p class="detail__meta">
+            @if (view.financing.institution) {
+              {{ view.financing.institution }} ·
+            }
+            {{ view.financing.financed_amount | currency }} em
+            {{ view.financing.installment_count }}x ·
+            {{ view.financing.interest_rate / 100 | percent: '1.2-4' }}
+            {{ periodLabels[view.financing.interest_period] }} ·
+            {{ systemLabels[view.financing.system] }}
           </p>
+          <p class="detail__meta">Conta {{ view.accountName }} · categoria {{ view.categoryName }}</p>
         </div>
+        <dl class="detail__totals">
+          <div>
+            <dt>Total a pagar</dt>
+            <dd class="bb-amount">{{ view.remainingTotal | currency }}</dd>
+          </div>
+          <div>
+            <dt>Saldo devedor</dt>
+            <dd class="bb-amount">{{ view.outstandingPrincipal | currency }}</dd>
+          </div>
+          <div>
+            <dt>Juros do contrato</dt>
+            <dd class="bb-amount">{{ view.totalInterest | currency }}</dd>
+          </div>
+        </dl>
       </header>
 
-      <dl class="acquisition">
-        <div>
-          <dt>Valor do bem</dt>
-          <dd class="bb-amount">{{ view()!.financing.asset_value | currency }}</dd>
-          <span class="acquisition__note">não é lançamento</span>
-        </div>
-        <div>
-          <dt>Entrada</dt>
-          <dd class="bb-amount">{{ view()!.financing.down_payment | currency }}</dd>
-          <span class="acquisition__note">
-            @if (view()!.downPaymentTransaction) {
-              lançada em
-              {{ view()!.downPaymentTransaction!.date | date: 'dd/MM/yyyy' }}
-            } @else if (view()!.financing.down_payment > 0) {
-              ainda não lançada
-            } @else {
-              sem entrada
-            }
-          </span>
-        </div>
-        <div>
-          <dt>Valor financiado</dt>
-          <dd class="bb-amount">{{ view()!.financing.financed_amount | currency }}</dd>
-          <span class="acquisition__note">pago pelo banco ao vendedor</span>
-        </div>
-        <div>
-          <dt>Total desembolsado</dt>
-          <dd class="bb-amount">{{ view()!.totalToPay | currency }}</dd>
-          <span class="acquisition__note">entrada mais parcelas</span>
-        </div>
-      </dl>
-    </article>
+      <article class="bb-card">
+        <header class="bb-card__head">
+          <div>
+            <h3 class="bb-card__title">Aquisição</h3>
+            <p class="bb-card__subtitle">
+              O valor do bem é contexto, não movimentação. Se ele fosse lançado, a compra e as
+              parcelas contariam o mesmo dinheiro duas vezes.
+            </p>
+          </div>
+        </header>
 
-    <article class="bb-card">
-      <header class="bb-card__head">
-        <div>
-          <h3 class="bb-card__title">Tabela de amortização</h3>
-          <p class="bb-card__subtitle">
-            Total a pagar é o que ainda sai do bolso; saldo devedor é o valor financiado que falta
-            amortizar.
-            @if (hasDifferences()) {
-              Há parcelas lançadas com valor diferente do previsto.
-            }
-          </p>
-        </div>
-      </header>
+        <dl class="acquisition">
+          <div>
+            <dt>Valor do bem</dt>
+            <dd class="bb-amount">{{ view.financing.asset_value | currency }}</dd>
+            <span class="acquisition__note">não é lançamento</span>
+          </div>
+          <div>
+            <dt>Entrada</dt>
+            <dd class="bb-amount">{{ view.financing.down_payment | currency }}</dd>
+            <span class="acquisition__note">
+              @if (view.downPaymentTransaction) {
+                lançada em {{ downPaymentDate() }}
+              } @else if (view.financing.down_payment > 0) {
+                ainda não lançada
+              } @else {
+                sem entrada
+              }
+            </span>
+          </div>
+          <div>
+            <dt>Valor financiado</dt>
+            <dd class="bb-amount">{{ view.financing.financed_amount | currency }}</dd>
+            <span class="acquisition__note">pago pelo banco ao vendedor</span>
+          </div>
+          <div>
+            <dt>Total desembolsado</dt>
+            <dd class="bb-amount">{{ view.totalToPay | currency }}</dd>
+            <span class="acquisition__note">entrada mais parcelas</span>
+          </div>
+        </dl>
+      </article>
 
-      <div class="schedule">
-        <table class="schedule__table">
-          <thead>
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">Vencimento</th>
-              <th scope="col" class="schedule__number">Parcela</th>
-              <th scope="col" class="schedule__number">Juros</th>
-              <th scope="col" class="schedule__number">Amortização</th>
-              <th scope="col" class="schedule__number">Saldo</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (line of lines(); track line.number) {
-              <tr
-                class="schedule__row"
-                [class.schedule__row--paid]="line.paid"
-                [class.schedule__row--clickable]="line.transaction"
-                (click)="open(line.transaction)"
-              >
-                <td>{{ line.number }}</td>
-                <td>
-                  @if (line.transaction) {
-                    {{ line.transaction.date | date: 'dd/MM/yyyy' }}
-                  } @else {
-                    —
-                  }
-                </td>
-                <td class="schedule__number">
-                  {{ line.amount | currency }}
-                  @if (line.transaction && line.difference !== 0) {
-                    <span class="schedule__difference">
-                      lançado {{ line.transaction.amount | currency }}
-                    </span>
-                  }
-                </td>
-                <td class="schedule__number">{{ line.interest | currency }}</td>
-                <td class="schedule__number">{{ line.amortization | currency }}</td>
-                <td class="schedule__number">{{ line.balanceAfter | currency }}</td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    </article>
-  }
+      <article class="bb-card">
+        <header class="bb-card__head">
+          <div>
+            <h3 class="bb-card__title">Tabela de amortização</h3>
+            <p class="bb-card__subtitle">
+              Total a pagar é o que ainda sai do bolso; saldo devedor é o valor financiado que falta
+              amortizar.
+              @if (hasDifferences()) {
+                Há parcelas lançadas com valor diferente do previsto.
+              }
+            </p>
+          </div>
+        </header>
+
+        <app-data-rows
+          [columns]="columns"
+          [rows]="rows()"
+          caption="Parcela, juros, amortização e saldo por parcela"
+          (activate)="activate($event)"
+        />
+      </article>
+    }
+  </app-async-state>
 </section>

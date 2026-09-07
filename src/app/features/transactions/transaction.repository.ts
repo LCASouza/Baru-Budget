@@ -2,11 +2,12 @@ import { Injectable, inject } from '@angular/core';
 import { DateRange } from '../../core/period/period.model';
 import { toDataError } from '../../core/supabase/data-error';
 import { SUPABASE_CLIENT } from '../../core/supabase/supabase-client';
+import { PAGE_SIZE, readAllPages } from '../../shared/supabase/paginate';
 import { Transaction, TransactionInput } from './transaction.model';
 
-// PostgREST caps responses at 1000 rows; the limit is explicit so the cap is
-// deterministic together with the ordering.
-export const TRANSACTIONS_PAGE_LIMIT = 1000;
+// PostgREST answers at most one page per request, so the reader walks the pages.
+// A month is never truncated: a cut list would show wrong totals without warning.
+export const TRANSACTIONS_PAGE_LIMIT = PAGE_SIZE;
 
 /** Personal (or shared) transactions of an owner, or every transaction of a household. */
 export type TransactionScope =
@@ -18,23 +19,26 @@ export class TransactionRepository {
   private readonly client = inject(SUPABASE_CLIENT);
 
   async listByDateRange(range: DateRange, scope: TransactionScope): Promise<Transaction[]> {
-    let query = this.client
-      .from('transactions')
-      .select('*')
-      .gte('date', range.start)
-      .lte('date', range.end);
-    query =
-      scope.householdId !== undefined
-        ? query.eq('household_id', scope.householdId)
-        : query.eq('owner_user_id', scope.ownerId);
-    const { data, error } = await query
-      .order('date', { ascending: false })
-      .order('created_at', { ascending: false })
-      .limit(TRANSACTIONS_PAGE_LIMIT);
-    if (error) {
-      throw toDataError(error, 'Failed to load transactions');
-    }
-    return data;
+    // The query is built inside the page callback so each request is its own,
+    // instead of reusing a builder that has already been executed.
+    return readAllPages(
+      (from, to) => {
+        let query = this.client
+          .from('transactions')
+          .select('*')
+          .gte('date', range.start)
+          .lte('date', range.end);
+        query =
+          scope.householdId !== undefined
+            ? query.eq('household_id', scope.householdId)
+            : query.eq('owner_user_id', scope.ownerId);
+        return query
+          .order('date', { ascending: false })
+          .order('created_at', { ascending: false })
+          .range(from, to);
+      },
+      'Failed to load transactions',
+    );
   }
 
   async create(ownerUserId: string, input: TransactionInput): Promise<Transaction> {

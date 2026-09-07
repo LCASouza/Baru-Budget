@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, resource } from '@angular/core';
+import { Injectable, computed, inject, resource, signal } from '@angular/core';
 import { FinancialContextService } from '../../core/context/financial-context.service';
 import { AccountsStore } from '../accounts/accounts.store';
 import { CategoriesStore } from '../categories/categories.store';
@@ -13,8 +13,12 @@ export class LoansStore {
   private readonly accounts = inject(AccountsStore);
   private readonly categories = inject(CategoriesStore);
 
+  // Loading starts only when a consumer says it needs this data. The dashboard
+  // used to open every store at once, most of them for cards it may not show.
+  private readonly active = signal(false);
+
   private readonly dataResource = resource({
-    params: () => this.context.dataOwnerId() ?? undefined,
+    params: () => (this.active() ? (this.context.dataOwnerId() ?? undefined) : undefined),
     loader: async ({ params: ownerId }) => {
       const [loans, transactions] = await Promise.all([
         this.repository.listByOwner(ownerId),
@@ -74,6 +78,11 @@ export class LoansStore {
     this.reload();
     this.accounts.reloadBalances();
     return created;
+  }
+
+  /** Declares that this data is about to be shown. Idempotent. */
+  activate(): void {
+    this.active.set(true);
   }
 
   reload(): void {

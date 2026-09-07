@@ -44,6 +44,23 @@ describe('FinancingsStore', () => {
   let store: FinancingsStore;
 
   const settle = () => TestBed.inject(ApplicationRef).whenStable();
+  /** The store only loads once a consumer asks for it. */
+  const load = async () => {
+    store.activate();
+    await settle();
+  };
+
+  function providers() {
+    return [
+        {
+          provide: FinancialContextService,
+          useValue: { dataOwnerId: ownerId, canManage: signal(true) },
+        },
+        { provide: FinancingRepository, useValue: repository },
+        { provide: AccountsStore, useValue: { accounts: signal([makeAccount()]), reloadBalances } },
+        { provide: CategoriesStore, useValue: { visibleCategories: signal([makeCategory()]) } },
+    ];
+  }
 
   beforeEach(() => {
     ownerId.set('u1');
@@ -74,22 +91,19 @@ describe('FinancingsStore', () => {
       generateSchedule: vi.fn().mockResolvedValue(13),
     };
     reloadBalances = vi.fn();
-    TestBed.configureTestingModule({
-      providers: [
-        {
-          provide: FinancialContextService,
-          useValue: { dataOwnerId: ownerId, canManage: signal(true) },
-        },
-        { provide: FinancingRepository, useValue: repository },
-        { provide: AccountsStore, useValue: { accounts: signal([makeAccount()]), reloadBalances } },
-        { provide: CategoriesStore, useValue: { visibleCategories: signal([makeCategory()]) } },
-      ],
-    });
+    TestBed.configureTestingModule({ providers: providers() });
     store = TestBed.inject(FinancingsStore);
   });
 
-  it('loads the financings of the context owner with their transactions', async () => {
+  it('loads nothing until a consumer asks for the data', async () => {
     await settle();
+    expect(repository.listByOwner).not.toHaveBeenCalled();
+    await load();
+    expect(repository.listByOwner).toHaveBeenCalledWith('u1');
+  });
+
+  it('loads the financings of the context owner with their transactions', async () => {
+    await load();
     expect(repository.listByOwner).toHaveBeenCalledWith('u1');
     expect(repository.listTransactions).toHaveBeenCalledWith('u1');
     expect(store.views()).toHaveLength(1);
@@ -99,7 +113,7 @@ describe('FinancingsStore', () => {
   });
 
   it('totals what is still to pay and what is still owed', async () => {
-    await settle();
+    await load();
     expect(store.totalRemaining()).toBe(100);
     expect(store.remainingCount()).toBe(1);
     expect(store.outstandingPrincipal()).toBe(1100);
@@ -107,7 +121,7 @@ describe('FinancingsStore', () => {
   });
 
   it('generates the schedule and refreshes the account balances', async () => {
-    await settle();
+    await load();
     await expect(store.generateSchedule('fin-1')).resolves.toBe(13);
     await settle();
     expect(repository.generateSchedule).toHaveBeenCalledWith('fin-1', true);
@@ -116,7 +130,7 @@ describe('FinancingsStore', () => {
   });
 
   it('creates, updates and deletes financings', async () => {
-    await settle();
+    await load();
     const input = {
       description: 'Novo',
       institution: null,
@@ -143,7 +157,7 @@ describe('FinancingsStore', () => {
   });
 
   it('clears after logout', async () => {
-    await settle();
+    await load();
     ownerId.set(null);
     await settle();
     expect(store.views()).toEqual([]);

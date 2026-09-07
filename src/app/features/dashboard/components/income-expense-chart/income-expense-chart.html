@@ -14,7 +14,7 @@
     class="chart__svg"
     [attr.viewBox]="viewBox()"
     role="img"
-    aria-label="Receitas e despesas por mês"
+    [attr.aria-label]="summary()"
   >
     @for (tick of ticks(); track tick.label) {
       <line

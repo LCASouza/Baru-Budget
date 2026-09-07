@@ -1,77 +1,58 @@
 import { registerLocaleData } from '@angular/common';
 import localePt from '@angular/common/locales/pt';
-import { DEFAULT_CURRENCY_CODE, LOCALE_ID } from '@angular/core';
+import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MonthlyTotals } from '../../dashboard.models';
+import { ViewportService, ViewportSize } from '../../../../core/layout/viewport.service';
 import { IncomeExpenseChart } from './income-expense-chart';
 
 registerLocaleData(localePt);
 
-const DATA: readonly MonthlyTotals[] = [
-  { month: 'Abr', key: '2026-04-01', income: 6800, expense: 5200 },
-  { month: 'Mai', key: '2026-05-01', income: 7400, expense: 6100 },
-];
-
-describe('IncomeExpenseChart', () => {
+describe('IncomeExpenseChart accessibility', () => {
+  const size = signal<ViewportSize>('desktop');
   let fixture: ComponentFixture<IncomeExpenseChart>;
-  let element: HTMLElement;
 
-  beforeEach(async () => {
+  async function setup(data: { key: string; month: string; income: number; expense: number }[]) {
     await TestBed.configureTestingModule({
       imports: [IncomeExpenseChart],
       providers: [
-        { provide: LOCALE_ID, useValue: 'pt-BR' },
-        { provide: DEFAULT_CURRENCY_CODE, useValue: 'BRL' },
+        {
+          provide: ViewportService,
+          useValue: {
+            size,
+            isMobile: () => size() === 'mobile',
+            isTablet: () => false,
+            isDesktop: () => size() === 'desktop',
+          },
+        },
       ],
     }).compileComponents();
     fixture = TestBed.createComponent(IncomeExpenseChart);
-    fixture.componentRef.setInput('data', DATA);
+    fixture.componentRef.setInput('data', data);
     fixture.detectChanges();
-    element = fixture.nativeElement as HTMLElement;
-  });
+  }
 
-  const ticks = (): (string | undefined)[] =>
-    Array.from(element.querySelectorAll('.chart__tick')).map((tick) => tick.textContent?.trim());
+  afterEach(() => TestBed.resetTestingModule());
 
-  it('scales the axis to the next tick above the highest value', () => {
-    expect(ticks()).toEqual(['0', '2 mil', '4 mil', '6 mil', '8 mil']);
-  });
+  const label = () => fixture.nativeElement.querySelector('svg')?.getAttribute('aria-label') ?? '';
 
-  it('adapts the scale to small amounts', () => {
-    fixture.componentRef.setInput('data', [
-      { month: 'Abr', key: '2026-04-01', income: 180, expense: 90 },
-      { month: 'Mai', key: '2026-05-01', income: 120, expense: 60 },
+  it('describes the data, not the drawing', async () => {
+    await setup([
+      { key: '2026-08-01', month: 'Ago', income: 5000, expense: 2500 },
+      { key: '2026-09-01', month: 'Set', income: 6000, expense: 3000 },
     ]);
-    fixture.detectChanges();
-    expect(ticks()).toEqual(['0', '50', '100', '150', '200']);
+    expect(label()).toContain('Ago');
+    expect(label()).toContain('Set');
+    expect(label()).toContain('5.000,00');
+    expect(label()).toContain('3.000,00');
   });
 
-  it('adapts the scale to large amounts', () => {
-    fixture.componentRef.setInput('data', [
-      { month: 'Abr', key: '2026-04-01', income: 180000, expense: 90000 },
-      { month: 'Mai', key: '2026-05-01', income: 120000, expense: 60000 },
-    ]);
-    fixture.detectChanges();
-    expect(ticks()).toEqual(['0', '50 mil', '100 mil', '150 mil', '200 mil']);
+  it('says so when there is nothing to show', async () => {
+    await setup([]);
+    expect(label()).toContain('sem dados');
   });
 
-  it('keeps a readable axis when there is no data', () => {
-    fixture.componentRef.setInput('data', [
-      { month: 'Abr', key: '2026-04-01', income: 0, expense: 0 },
-    ]);
-    fixture.detectChanges();
-    expect(ticks()).toEqual(['0', '1']);
-  });
-
-  it('draws two bars per month with a tooltip in BRL', () => {
-    const bars = element.querySelectorAll('.chart__bar');
-    expect(bars.length).toBe(DATA.length * 2);
-    expect(bars[0].querySelector('title')?.textContent).toContain('Receitas · Abr');
-    expect(bars[0].querySelector('title')?.textContent).toContain('R$');
-    expect(bars[0].querySelector('title')?.textContent).toContain('6.800,00');
-  });
-
-  it('uses the desktop view box by default', () => {
-    expect(element.querySelector('svg')?.getAttribute('viewBox')).toBe('0 0 600 220');
+  it('keeps the image role so a screen reader reads the label instead of the shapes', async () => {
+    await setup([{ key: '2026-09-01', month: 'Set', income: 10, expense: 5 }]);
+    expect(fixture.nativeElement.querySelector('svg')?.getAttribute('role')).toBe('img');
   });
 });

@@ -14,7 +14,11 @@ import { FinancingFormData, FinancingFormDialog } from './financing-form-dialog'
 describe('FinancingFormDialog', () => {
   let fixture: ComponentFixture<FinancingFormDialog>;
   let component: FinancingFormDialog;
-  let store: { create: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn> };
+  let store: {
+    create: ReturnType<typeof vi.fn>;
+    update: ReturnType<typeof vi.fn>;
+    activate: ReturnType<typeof vi.fn>;
+  };
   let dialogRef: { close: ReturnType<typeof vi.fn> };
 
   const form = () => (component as unknown as { form: FinancingFormDialog['form'] }).form;
@@ -25,6 +29,7 @@ describe('FinancingFormDialog', () => {
     store = {
       create: vi.fn().mockResolvedValue('fin-2'),
       update: vi.fn().mockResolvedValue(undefined),
+      activate: vi.fn(),
     };
     dialogRef = { close: vi.fn() };
     await TestBed.configureTestingModule({

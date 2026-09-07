@@ -1,4 +1,4 @@
-import { Injectable, computed, inject, resource } from '@angular/core';
+import { Injectable, computed, effect, inject, resource } from '@angular/core';
 import { FinancialContextService } from '../../core/context/financial-context.service';
 import { PeriodService } from '../../core/period/period.service';
 import { monthRange, shiftMonth } from '../../core/period/period.model';
@@ -62,6 +62,16 @@ export class DashboardStore {
   });
 
   readonly isHousehold = computed(() => this.context.householdId() !== null);
+
+  // The commitment cards only exist outside a household context, so the stores
+  // behind them are asked for their data only when the home will show them.
+  private readonly activateCommitments = effect(() => {
+    if (!this.isHousehold()) {
+      this.loans.activate();
+      this.financings.activate();
+    }
+  });
+
   readonly canManage = this.context.canManage;
   readonly hasAccounts = computed(() => this.accounts.accounts().length > 0);
 

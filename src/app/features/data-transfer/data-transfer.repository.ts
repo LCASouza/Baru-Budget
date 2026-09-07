@@ -1,10 +1,9 @@
 import { Injectable, inject } from '@angular/core';
-import { PostgrestError } from '@supabase/supabase-js';
 import { toDataError } from '../../core/supabase/data-error';
 import { SUPABASE_CLIENT } from '../../core/supabase/supabase-client';
+import { readAllPages } from '../../shared/supabase/paginate';
 import { DatabaseRow, ExportableTable, OwnedTable, SharedTable } from './workbook-schema';
 
-const PAGE_SIZE = 1000;
 const WRITE_BATCH = 200;
 
 /**
@@ -18,31 +17,19 @@ export class DataTransferRepository {
 
   /** Reads a whole table in pages, so a backup is never truncated. */
   async listOwned(table: OwnedTable, ownerId: string): Promise<DatabaseRow[]> {
-    return this.paginate((from, to) =>
-      this.client.from(table).select('*').eq('owner_user_id', ownerId).range(from, to),
+    return readAllPages<DatabaseRow>(
+      (from, to) =>
+        this.client.from(table).select('*').eq('owner_user_id', ownerId).range(from, to),
+      `Failed to read ${table}`,
     );
   }
 
   /** Reads a table without an owner column: row level security is the filter. */
   async listVisible(table: SharedTable): Promise<DatabaseRow[]> {
-    return this.paginate((from, to) => this.client.from(table).select('*').range(from, to));
-  }
-
-  private async paginate(
-    page: (from: number, to: number) => PromiseLike<{ data: unknown; error: unknown }>,
-  ): Promise<DatabaseRow[]> {
-    const rows: DatabaseRow[] = [];
-    for (let from = 0; ; from += PAGE_SIZE) {
-      const { data, error } = await page(from, from + PAGE_SIZE - 1);
-      if (error) {
-        throw toDataError(error as PostgrestError, 'Failed to read the workbook data');
-      }
-      const batch = (data ?? []) as DatabaseRow[];
-      rows.push(...batch);
-      if (batch.length < PAGE_SIZE) {
-        return rows;
-      }
-    }
+    return readAllPages<DatabaseRow>(
+      (from, to) => this.client.from(table).select('*').range(from, to),
+      `Failed to read ${table}`,
+    );
   }
 
   /** Writes in batches and returns how many rows the database accepted. */

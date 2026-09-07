@@ -4,19 +4,20 @@
     Cartões
   </a>
 
-  @if (store.isLoading() && !store.loaded()) {
-    <mat-progress-bar mode="indeterminate" />
-  } @else if (!summary()) {
-    <article class="bb-card">
-      <app-empty-state
-        icon="credit_card_off"
-        title="Cartão não encontrado"
-        description="Ele pode ter sido excluído ou pertencer a outro contexto financeiro."
-      >
-        <a matButton="filled" routerLink="/cards">Voltar para cartões</a>
-      </app-empty-state>
-    </article>
-  } @else {
+  <app-async-state
+    [loading]="store.isLoading()"
+    [loaded]="store.loaded()"
+    [error]="store.error()"
+    [empty]="store.loaded() && !summary()"
+    errorTitle="Não foi possível carregar o cartão"
+    emptyIcon="credit_card_off"
+    emptyTitle="Cartão não encontrado"
+    emptyDescription="Ele pode ter sido excluído ou pertencer a outro contexto financeiro."
+    (retry)="store.reload()"
+  >
+    <a matButton="filled" routerLink="/cards" emptyAction>Voltar para cartões</a>
+
+    @if (summary()) {
     <header class="detail__head bb-card">
       <div>
         <h2 class="detail__name">{{ summary()!.card.name }}</h2>
@@ -136,5 +137,6 @@
         }
       </div>
     }
-  }
+    }
+  </app-async-state>
 </section>

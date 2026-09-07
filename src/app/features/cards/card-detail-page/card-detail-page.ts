@@ -7,6 +7,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { RouterLink } from '@angular/router';
 import { FinancialContextService } from '../../../core/context/financial-context.service';
 import { ViewportService } from '../../../core/layout/viewport.service';
+import { AsyncState } from '../../../shared/components/async-state/async-state';
 import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import { CategoriesStore } from '../../categories/categories.store';
 import { openTransactionDialog } from '../../transactions/open-transaction-dialog';
@@ -32,6 +33,7 @@ interface InvoiceLine {
     MatIconModule,
     MatProgressBarModule,
     EmptyState,
+    AsyncState,
   ],
   templateUrl: './card-detail-page.html',
   styleUrl: './card-detail-page.scss',

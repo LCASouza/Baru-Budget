@@ -80,7 +80,7 @@
           {{ store.fileName() }}
         </p>
 
-        <div class="preview__totals">
+        <div class="preview__totals" aria-live="polite">
           <span class="preview__total preview__total--new">
             <strong>{{ plan.created }}</strong> novos
           </span>
@@ -107,30 +107,7 @@
           </p>
         }
 
-        <div class="preview__table">
-          <table>
-            <thead>
-              <tr>
-                <th scope="col">Aba</th>
-                <th scope="col" class="preview__number">Novos</th>
-                <th scope="col" class="preview__number">Atualizados</th>
-                <th scope="col" class="preview__number">Sem alteração</th>
-                <th scope="col" class="preview__number">Inválidos</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (sheet of sheets(); track sheet.sheetName) {
-                <tr>
-                  <td>{{ sheet.sheetName }}</td>
-                  <td class="preview__number">{{ sheet.created }}</td>
-                  <td class="preview__number">{{ sheet.updated }}</td>
-                  <td class="preview__number">{{ sheet.unchanged }}</td>
-                  <td class="preview__number">{{ sheet.invalid }}</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-        </div>
+        <app-data-rows [columns]="previewColumns" [rows]="previewRows()" />
 
         @if (invalidLines().length > 0) {
           <details class="preview__invalid">

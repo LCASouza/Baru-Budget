@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { DataColumn, DataRow, DataRows } from '../../../shared/components/data-rows/data-rows';
 import { DataTransferStore } from '../data-transfer.store';
 import { PlannedRow, SheetPlan } from '../import-plan';
 import { ABSENCE_NOTICE } from '../workbook-info';
@@ -16,7 +17,7 @@ interface InvalidLine {
 
 @Component({
   selector: 'app-data-page',
-  imports: [DecimalPipe, MatButtonModule, MatIconModule, MatProgressBarModule],
+  imports: [DecimalPipe, MatButtonModule, MatIconModule, MatProgressBarModule, DataRows],
   templateUrl: './data-page.html',
   styleUrl: './data-page.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -26,11 +27,31 @@ export class DataPage {
   private readonly snackBar = inject(MatSnackBar);
 
   protected readonly schemaVersion = SCHEMA_VERSION;
+  protected readonly previewColumns: readonly DataColumn[] = [
+    { key: 'sheet', label: 'Aba' },
+    { key: 'created', label: 'Novos', numeric: true },
+    { key: 'updated', label: 'Atualizados', numeric: true },
+    { key: 'unchanged', label: 'Sem alteração', numeric: true },
+    { key: 'invalid', label: 'Inválidos', numeric: true },
+  ];
   protected readonly absenceNotice = ABSENCE_NOTICE;
 
   /** Sheets worth showing: the ones the file actually mentions. */
   protected readonly sheets = computed<readonly SheetPlan[]>(
     () => this.store.plan()?.sheets.filter((sheet) => sheet.rows.length > 0) ?? [],
+  );
+
+  protected readonly previewRows = computed<readonly DataRow[]>(() =>
+    this.sheets().map((sheet) => ({
+      id: sheet.sheetName,
+      cells: [
+        { key: 'sheet', text: sheet.sheetName },
+        { key: 'created', text: String(sheet.created) },
+        { key: 'updated', text: String(sheet.updated) },
+        { key: 'unchanged', text: String(sheet.unchanged) },
+        { key: 'invalid', text: String(sheet.invalid) },
+      ],
+    })),
   );
 
   protected readonly invalidLines = computed<readonly InvalidLine[]>(() =>

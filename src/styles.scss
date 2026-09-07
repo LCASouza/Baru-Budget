@@ -83,3 +83,32 @@ body {
   --mat-button-filled-container-color: var(--mat-sys-error);
   --mat-button-filled-label-text-color: var(--mat-sys-on-error);
 }
+
+// Focus has to stay visible on custom surfaces, where the theme ring does not
+// reach. Only keyboard focus is decorated, so a pointer click stays quiet.
+:focus-visible {
+  outline: 2px solid var(--mat-sys-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+// A row that behaves like a button is reachable and operable by keyboard.
+.bb-row-button {
+  cursor: pointer;
+
+  &:hover {
+    background: var(--mat-sys-surface-container);
+  }
+}
+
+// Someone who asked the system for less movement gets none.
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

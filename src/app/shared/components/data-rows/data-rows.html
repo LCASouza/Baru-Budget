@@ -1,0 +1,65 @@
+@if (isMobile()) {
+  <ul class="rows">
+    @for (row of rows(); track row.id) {
+      <li
+        class="rows__card"
+        [class.rows__card--muted]="row.muted"
+        [class.bb-row-button]="row.actionable"
+        [attr.role]="row.actionable ? 'button' : null"
+        [attr.tabindex]="row.actionable ? 0 : null"
+        (click)="onActivate(row)"
+        (keydown.enter)="onActivate(row)"
+        (keydown.space)="onActivate(row); $event.preventDefault()"
+      >
+        @for (cell of cellsFor(row, mobileColumns()); track cell.key) {
+          <div class="rows__field">
+            <span class="rows__label">{{ labelOf(cell.key) }}</span>
+            <span class="rows__value" [class.bb-amount]="isNumeric(cell.key)">
+              {{ cell.text }}
+              @if (cell.note) {
+                <small class="rows__note">{{ cell.note }}</small>
+              }
+            </span>
+          </div>
+        }
+      </li>
+    }
+  </ul>
+} @else {
+  <div class="rows__scroll">
+    <table class="rows__table">
+      @if (caption()) {
+        <caption class="rows__caption">{{ caption() }}</caption>
+      }
+      <thead>
+        <tr>
+          @for (column of columns(); track column.key) {
+            <th scope="col" [class.rows__number]="column.numeric">{{ column.label }}</th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of rows(); track row.id) {
+          <tr
+            [class.rows__row--muted]="row.muted"
+            [class.bb-row-button]="row.actionable"
+            [attr.role]="row.actionable ? 'button' : null"
+            [attr.tabindex]="row.actionable ? 0 : null"
+            (click)="onActivate(row)"
+            (keydown.enter)="onActivate(row)"
+            (keydown.space)="onActivate(row); $event.preventDefault()"
+          >
+            @for (cell of cellsFor(row, columns()); track cell.key) {
+              <td [class.rows__number]="isNumeric(cell.key)">
+                {{ cell.text }}
+                @if (cell.note) {
+                  <span class="rows__note">{{ cell.note }}</span>
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

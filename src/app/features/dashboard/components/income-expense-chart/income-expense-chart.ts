@@ -1,5 +1,6 @@
 import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { displayAmount } from '../../../../shared/format/display';
 import { ViewportService } from '../../../../core/layout/viewport.service';
 import { formatTickLabel, niceTickStep } from '../../dashboard-summary';
 import { MonthlyTotals } from '../../dashboard.models';
@@ -94,6 +95,24 @@ export class IncomeExpenseChart {
       ticks.push({ y: yFor(value, max), label: formatTickLabel(value) });
     }
     return ticks;
+  });
+
+  /**
+   * A chart is invisible to a screen reader without text. This describes the
+   * data, not the drawing, so the numbers reach anyone who cannot see the bars.
+   */
+  protected readonly summary = computed(() => {
+    const data = this.data();
+    if (data.length === 0) {
+      return 'Gráfico de receitas e despesas sem dados no período.';
+    }
+    const months = data
+      .map(
+        (item) =>
+          `${item.month}: receitas ${displayAmount(item.income)}, despesas ${displayAmount(item.expense)}`,
+      )
+      .join('; ');
+    return `Receitas e despesas por mês. ${months}.`;
   });
 
   protected readonly groups = computed<BarGroup[]>(() => {

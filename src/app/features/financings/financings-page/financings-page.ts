@@ -115,4 +115,9 @@ export class FinancingsPage {
       );
     }
   }
+
+  /** The store loads on demand, so the screen that shows it asks for it. */
+  constructor() {
+    this.store.activate();
+  }
 }

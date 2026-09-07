@@ -42,6 +42,8 @@ describe('DashboardStore', () => {
   let listMonthlyTotals: ReturnType<typeof vi.fn>;
   let reloadTransactions: ReturnType<typeof vi.fn>;
   let store: DashboardStore;
+  let loansStore: { activate: ReturnType<typeof vi.fn> } & Record<string, unknown>;
+  let financingsStore: { activate: ReturnType<typeof vi.fn> } & Record<string, unknown>;
   let period: PeriodService;
 
   const settle = () => TestBed.inject(ApplicationRef).whenStable();
@@ -50,6 +52,18 @@ describe('DashboardStore', () => {
   beforeEach(() => {
     ownerId.set('u1');
     householdId.set(null);
+    loansStore = {
+      totalRemaining: signal(0),
+      remainingCount: signal(0),
+      reload: vi.fn(),
+      activate: vi.fn(),
+    };
+    financingsStore = {
+      totalRemaining: signal(0),
+      remainingCount: signal(0),
+      reload: vi.fn(),
+      activate: vi.fn(),
+    };
     listMonthlyTotals = vi.fn().mockResolvedValue([
       { month: '2026-09-01', kind: 'INCOME', total: 5000 },
       { month: '2026-09-01', kind: 'EXPENSE', total: 480 },
@@ -72,19 +86,11 @@ describe('DashboardStore', () => {
         },
         {
           provide: LoansStore,
-          useValue: {
-            totalRemaining: signal(0),
-            remainingCount: signal(0),
-            reload: vi.fn(),
-          },
+          useValue: loansStore,
         },
         {
           provide: FinancingsStore,
-          useValue: {
-            totalRemaining: signal(0),
-            remainingCount: signal(0),
-            reload: vi.fn(),
-          },
+          useValue: financingsStore,
         },
         {
           provide: InstallmentsStore,
@@ -213,5 +219,23 @@ describe('DashboardStore', () => {
     ownerId.set('u2');
     await settle();
     expect(store.error()).toBeTruthy();
+  });
+
+  it('asks the commitment stores for their data only outside a household', async () => {
+    await settle();
+    expect(loansStore.activate).toHaveBeenCalled();
+    expect(financingsStore.activate).toHaveBeenCalled();
+  });
+
+  it('stops asking for them once the context becomes a household', async () => {
+    await settle();
+    loansStore.activate.mockClear();
+    financingsStore.activate.mockClear();
+
+    householdId.set('h1');
+    await settle();
+
+    expect(loansStore.activate).not.toHaveBeenCalled();
+    expect(financingsStore.activate).not.toHaveBeenCalled();
   });
 });

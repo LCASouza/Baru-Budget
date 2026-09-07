@@ -25,4 +25,24 @@ describe('data-error', () => {
     expect(describeDataError(new DataError('x', '23505'), { fallback: 'Falhou.' })).toBe('Falhou.');
     expect(describeDataError(undefined, { fallback: 'Falhou.' })).toBe('Falhou.');
   });
+
+  it('never leaks a database code into what the user reads', () => {
+    const codes = ['23505', '23503', '23514', '42501', '22P02', 'PGRST205'];
+    for (const code of codes) {
+      const shown = describeDataError(new DataError(`Failed: ${code} detail`, code), {
+        unique: 'Já existe um registro com esse nome.',
+        inUse: 'Este registro está em uso.',
+        fallback: 'Não foi possível concluir a operação.',
+      });
+      expect(shown, code).not.toContain(code);
+      expect(shown, code).not.toContain('Failed');
+    }
+  });
+
+  it('gives a message for anything thrown, including a non-error', () => {
+    const messages = { fallback: 'Não foi possível concluir a operação.' };
+    expect(describeDataError('texto solto', messages)).toBe(messages.fallback);
+    expect(describeDataError(null, messages)).toBe(messages.fallback);
+    expect(describeDataError({ code: '23505' }, messages)).toBe(messages.fallback);
+  });
 });
