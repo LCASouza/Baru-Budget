@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**v0.7 — Installments** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V0.7.md`); implementation complete locally, hosted migrations and production check pending. Version file: `versions/v0.7.md`. The production checks of v0.4, v0.5 and v0.6 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
+**v0.7 — Installments** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V0.7.md`); implementation complete, migrations applied to the hosted project and `main` deployed; production check pending. Version file: `versions/v0.7.md`. The production checks of v0.4, v0.5 and v0.6 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
 
 Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.6 (`versions/v0.1.md` to `versions/v0.6.md`).
 
@@ -43,7 +43,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.6 architectural analysis | v0.6 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.6.md`; approved on 2026-09-06 |
 | v0.6 implementation | v0.6 | DELIVERED | Credit cards, invoice competence rule, card purchases, invoice payments, cards pages; hosted `db push` applied on 2026-09-06; production check deferred |
 | v0.7 architectural analysis | v0.7 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.7.md`; approved on 2026-09-07 |
-| v0.7 implementation | v0.7 | IN_PROGRESS | Installment generation in the database, installments page, commitment, filters done locally; hosted `db push` and production check pending |
+| v0.7 implementation | v0.7 | IN_PROGRESS | Installment generation in the database, installments page, commitment, filters delivered; hosted `db push` applied on 2026-09-07; production check pending |
 
 ## Features
 
@@ -105,4 +105,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-07 — v0.7 Installments implemented locally (2 migrations, 540 pgTAP assertions, 220 Vitest tests); hosted migrations and production check pending.
+2026-09-07 — v0.7 Installments implemented and deployed (2 migrations applied to the hosted project, 540 pgTAP assertions, 220 Vitest tests); production check pending.
