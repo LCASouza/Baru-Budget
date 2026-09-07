@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**v0.8 — Recurrences** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V0.8.md`); implementation complete locally, hosted migrations and production check pending. Version file: `versions/v0.8.md`. The production checks of v0.4 to v0.7 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
+**v0.8 — Recurrences** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V0.8.md`); implementation complete, migrations applied to the hosted project and `main` deployed; production check pending. Version file: `versions/v0.8.md`. The production checks of v0.4 to v0.7 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
 
 Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.7 (`versions/v0.1.md` to `versions/v0.7.md`).
 
@@ -45,7 +45,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.7 architectural analysis | v0.7 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.7.md`; approved on 2026-09-07 |
 | v0.7 implementation | v0.7 | DELIVERED | Installment generation in the database, installments page, commitment, filters; hosted `db push` applied on 2026-09-07; production check deferred |
 | v0.8 architectural analysis | v0.8 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.8.md`; approved on 2026-09-07 |
-| v0.8 implementation | v0.8 | IN_PROGRESS | Templates, idempotent generation and recurrences page done locally; hosted `db push` and production check pending |
+| v0.8 implementation | v0.8 | IN_PROGRESS | Templates, idempotent generation and recurrences page delivered; hosted `db push` applied on 2026-09-07; production check pending |
 
 ## Features
 
@@ -107,4 +107,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-07 — v0.8 Recurrences implemented locally (2 migrations, 619 pgTAP assertions, 237 Vitest tests); hosted migrations and production check pending.
+2026-09-07 — v0.8 Recurrences implemented and deployed (2 migrations applied to the hosted project, 619 pgTAP assertions, 237 Vitest tests); production check pending.
