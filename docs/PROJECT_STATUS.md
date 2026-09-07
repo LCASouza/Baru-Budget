@@ -96,6 +96,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | BUG-001 | Cloudflare Pages build failed: `.node-version` set to `24` resolved to Node 24.13.1, below the Angular CLI minimum of 24.15.0 | v0.2 | FIXED | v0.2 | `.node-version` pinned to 24.18.0; `engines.node` added to package.json |
 | BUG-002 | Form field hints and errors overlapped the next field (fixed one-line subscript area) and the account and category dialogs opened too narrow | v0.3 | FIXED | v0.3 | Global `subscriptSizing: 'dynamic'`, shorter hints, 16px form gap, grid rows aligned to the top, explicit dialog widths |
 | BUG-003 | Six trigger functions kept the default execute grant; a direct call already failed, so nothing was exposed | v1.0 | FIXED | v1.0 | Found by the security review; `20260907230100_function_grants.sql` revokes them and `security_surface.test.sql` guards it |
+| BUG-004 | Creating a household failed from the application with a row level security error: the client reads the new row back in the same call, and the trigger that makes the creator a member runs after that read | v0.4 | FIXED | v1.0 | Found by end-to-end testing against production; creation goes through `create_household`, guarded by `households.test.sql` and `household.repository.spec.ts` |
 
 ## Technical Debt
 
@@ -122,4 +123,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-07 — v1.0 Stable implemented and deployed: continuous integration, security review with one hardening finding fixed, function surface and view isolation tests (34 pgTAP files, 973 assertions), architecture documentation. The ten deferred production checks are the remaining criteria.
+2026-09-07 — v1.0 Stable implemented and deployed. End-to-end testing against production found BUG-004, a blocking defect in household creation, now fixed. The ten deferred production checks are the remaining criteria.

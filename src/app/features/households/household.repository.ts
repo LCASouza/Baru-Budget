@@ -33,16 +33,18 @@ export class HouseholdRepository {
     return data.map(toHousehold);
   }
 
+  /**
+   * Creation goes through a function because the membership that makes the
+   * creator a member is written by an AFTER INSERT trigger: a plain
+   * `insert ... select()` is checked against the read policy before that
+   * trigger fires, and the creator cannot yet see the row.
+   */
   async create(name: string): Promise<Household> {
-    const { data, error } = await this.client
-      .from('households')
-      .insert({ name })
-      .select('*')
-      .single();
+    const { data, error } = await this.client.rpc('create_household', { p_name: name });
     if (error) {
       throw toDataError(error, 'Failed to create household');
     }
-    return data;
+    return data as Household;
   }
 
   async rename(id: string, name: string): Promise<void> {

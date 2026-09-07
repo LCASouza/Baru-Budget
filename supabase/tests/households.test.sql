@@ -16,6 +16,38 @@ select lives_ok(
   'user creates a household'
 );
 select is((select role from public.household_members where household_id = 'dddddddd-0000-4000-8000-000000000001' and user_id = '11111111-1111-1111-1111-111111111111'), 'ADMIN'::public.household_role, 'creator becomes ADMIN');
+
+-- The client never inserts blind: it asks for the row back. A plain
+-- `insert ... returning` cannot work here, because the select policy is checked
+-- before the AFTER trigger makes the creator a member, so creation goes through
+-- a function that reads the row after the membership exists.
+select throws_ok(
+  $$ insert into public.households (name) values ('Com returning') returning id $$,
+  '42501', null, 'a bare insert with returning is still refused, which is why the function exists'
+);
+select lives_ok(
+  $$ select public.create_household('Pela função') $$,
+  'create_household returns the household it just created'
+);
+select is(
+  (select (public.create_household('Outra')).name),
+  'Outra',
+  'and the returned row carries the name'
+);
+select is(
+  (select count(*)::int from public.household_members m
+    join public.households h on h.id = m.household_id
+   where h.name = 'Pela função' and m.user_id = '11111111-1111-1111-1111-111111111111' and m.role = 'ADMIN'),
+  1,
+  'the creator is already an admin member of it'
+);
+set local role anon;
+select throws_ok(
+  $$ select public.create_household('Anônima') $$,
+  '42501', null, 'anon cannot create a household'
+);
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}', true);
 select is((select created_by from public.households where id = 'dddddddd-0000-4000-8000-000000000001'), '11111111-1111-1111-1111-111111111111'::uuid, 'created_by is the creator');
 select lives_ok(
   $$ insert into public.households (id, name, created_by) values ('dddddddd-0000-4000-8000-00000000000f', 'Forged', '22222222-2222-2222-2222-222222222222') $$,

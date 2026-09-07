@@ -1353,6 +1353,23 @@ export type Database = {
         Args: { p_transaction: string }
         Returns: undefined
       }
+      create_household: {
+        Args: { p_name: string }
+        Returns: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          updated_at: string
+          updated_by: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "households"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       create_installment_purchase: {
         Args: {
           p_account_id?: string
