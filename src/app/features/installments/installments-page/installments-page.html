@@ -1,0 +1,140 @@
+<section class="installments">
+  <div class="installments__summary">
+    @for (card of cards(); track card.label) {
+      <app-summary-card [data]="card" />
+    }
+  </div>
+
+  @if (store.isLoading() && !store.loaded()) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else if (store.error()) {
+    <article class="bb-card">
+      <app-empty-state
+        icon="error_outline"
+        title="Não foi possível carregar as parcelas"
+        description="Verifique a conexão e tente novamente."
+      >
+        <button matButton="outlined" (click)="store.reload()">Tentar novamente</button>
+      </app-empty-state>
+    </article>
+  } @else if (store.views().length === 0) {
+    <article class="bb-card">
+      <app-empty-state
+        icon="date_range"
+        title="Nenhuma compra parcelada"
+        description="Ao registrar uma saída, informe o número de parcelas para acompanhar o comprometimento aqui."
+      />
+    </article>
+  } @else {
+    @if (store.commitmentByMonth().length > 0) {
+      <article class="bb-card">
+        <header class="bb-card__head">
+          <div>
+            <h3 class="bb-card__title">Próximos meses</h3>
+            <p class="bb-card__subtitle">Parcelas ainda a vencer</p>
+          </div>
+        </header>
+        <ul class="months">
+          @for (month of store.commitmentByMonth(); track month.month) {
+            <li class="months__row">
+              <span class="months__label">{{ month.label }}</span>
+              <span class="months__amount bb-amount">{{ month.amount | currency }}</span>
+            </li>
+          }
+        </ul>
+      </article>
+    }
+
+    <article class="bb-card">
+      <header class="bb-card__head">
+        <div>
+          <h3 class="bb-card__title">Parcelamentos</h3>
+          <p class="bb-card__subtitle">{{ filtered().length }} de {{ store.views().length }}</p>
+        </div>
+        <div class="installments__filters">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Origem</mat-label>
+            <mat-select [ngModel]="origin()" (ngModelChange)="origin.set($event)">
+              <mat-option value="ALL">Todas</mat-option>
+              <mat-option value="CARD">Cartão</mat-option>
+              <mat-option value="ACCOUNT">Conta</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Situação</mat-label>
+            <mat-select [ngModel]="status()" (ngModelChange)="status.set($event)">
+              <mat-option value="ONGOING">Em andamento</mat-option>
+              <mat-option value="DONE">Concluídos</mat-option>
+              <mat-option value="ALL">Todos</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </header>
+
+      @if (filtered().length === 0) {
+        <app-empty-state icon="filter_list_off" title="Nenhum parcelamento para os filtros" />
+      } @else {
+        <ul class="purchases">
+          @for (purchase of filtered(); track purchase.id) {
+            <li class="purchase">
+              <button type="button" class="purchase__head" (click)="store.toggle(purchase.id)">
+                <span class="purchase__icon">
+                  <mat-icon>{{ purchase.creditCardId ? 'credit_card' : 'account_balance' }}</mat-icon>
+                </span>
+                <span class="purchase__info">
+                  <span class="purchase__name">{{ purchase.description }}</span>
+                  <span class="purchase__meta">
+                    {{ purchase.originName }} · {{ purchase.settledCount }}/{{ purchase.recordedCount }} ·
+                    {{ purchase.installmentAmount | currency }} por parcela
+                  </span>
+                </span>
+                <span class="purchase__amounts">
+                  <span class="purchase__remaining bb-amount">{{ purchase.remainingAmount | currency }}</span>
+                  <span class="purchase__total">de {{ purchase.totalAmount | currency }}</span>
+                </span>
+                <mat-icon class="purchase__caret">
+                  {{ store.expanded() === purchase.id ? 'expand_less' : 'expand_more' }}
+                </mat-icon>
+              </button>
+
+              <span class="purchase__track">
+                <span class="purchase__bar" [style.width.%]="purchase.progressPercent"></span>
+              </span>
+
+              @if (store.expanded() === purchase.id) {
+                <div class="purchase__detail">
+                  @if (store.groupLoading()) {
+                    <mat-progress-bar mode="indeterminate" />
+                  } @else {
+                    <ul class="parcels">
+                      @for (parcel of store.groupInstallments(); track parcel.id) {
+                        <li>
+                          <button type="button" class="parcel" (click)="open(parcel)">
+                            <span class="parcel__number" [class.parcel__number--future]="isFuture(parcel)">
+                              {{ parcel.installment_number }}/{{ parcel.installment_count }}
+                            </span>
+                            <span class="parcel__competence">
+                              {{ competenceOf(parcel) | date: 'MM/yyyy' }}
+                            </span>
+                            <span class="parcel__status">{{ statusOf(parcel) }}</span>
+                            <span class="parcel__amount bb-amount">{{ parcel.amount | currency }}</span>
+                          </button>
+                        </li>
+                      }
+                    </ul>
+                  }
+                  @if (context.canManage()) {
+                    <button matButton class="purchase__delete" (click)="removeGroup(purchase)">
+                      <mat-icon>delete</mat-icon>
+                      Excluir parcelamento
+                    </button>
+                  }
+                </div>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </article>
+  }
+</section>

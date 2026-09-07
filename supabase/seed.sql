@@ -227,3 +227,38 @@ begin
    where credit_card_id = card and kind = 'EXPENSE' and invoice_due_date = paid_due;
 end;
 $$;
+
+-- Installment purchases for the development user: one on the card and one as a
+-- payment booklet on the current account.
+do $$
+declare
+  dev_user constant uuid := '00000000-0000-4000-8000-000000000001';
+  card     uuid;
+  bank     uuid;
+  cat_shop uuid;
+begin
+  select id into card     from public.credit_cards where owner_user_id = dev_user and name = 'Cartão principal';
+  select id into bank     from public.accounts     where owner_user_id = dev_user and name = 'Conta corrente';
+  select id into cat_shop from public.categories   where owner_user_id = dev_user and kind = 'EXPENSE' and name = 'Compras';
+
+  -- create_installment_purchase fills the audit columns from the authenticated
+  -- user; the seed runs without a session, so it announces one.
+  perform set_config(
+    'request.jwt.claims',
+    json_build_object('sub', dev_user, 'role', 'authenticated')::text,
+    true
+  );
+
+  perform public.create_installment_purchase(
+    dev_user, 'Notebook', 4200.00, 12,
+    (date_trunc('month', current_date) + interval '5 day')::date,
+    cat_shop, card, null, null, null
+  );
+
+  perform public.create_installment_purchase(
+    dev_user, 'Geladeira', 1800.00, 4,
+    (date_trunc('month', current_date) - interval '1 month' + interval '9 day')::date,
+    cat_shop, null, bank, null, null
+  );
+end;
+$$;

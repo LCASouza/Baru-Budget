@@ -108,7 +108,12 @@
                         <mat-icon>{{ line.isPayment ? 'payments' : 'shopping_bag' }}</mat-icon>
                       </span>
                       <span class="invoice-line__info">
-                        <span class="invoice-line__name">{{ line.transaction.description }}</span>
+                        <span class="invoice-line__name">
+                          {{ line.transaction.description }}
+                          @if (line.transaction.installment_number) {
+                            ({{ line.transaction.installment_number }}/{{ line.transaction.installment_count }})
+                          }
+                        </span>
                         <span class="invoice-line__meta">
                           {{ line.transaction.date | date: 'dd/MM/yyyy' }}
                           @if (line.categoryName) {

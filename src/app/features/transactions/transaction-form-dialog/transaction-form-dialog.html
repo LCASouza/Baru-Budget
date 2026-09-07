@@ -76,7 +76,7 @@
 
     <div class="tx-form__row">
       <mat-form-field appearance="outline" floatLabel="always">
-        <mat-label>Valor</mat-label>
+        <mat-label>{{ isSplit() ? 'Valor total' : 'Valor' }}</mat-label>
         <span matTextPrefix>R$&nbsp;</span>
         <input matInput formControlName="amount" inputmode="decimal" placeholder="0,00" />
         @if (form.controls.amount.invalid) {
@@ -213,6 +213,37 @@
       }
     }
 
+    @if (canSplit()) {
+      <mat-form-field appearance="outline">
+        <mat-label>Parcelar em</mat-label>
+        <mat-select formControlName="installmentCount">
+          @for (count of installmentOptions; track count) {
+            <mat-option [value]="count">
+              {{ count === 1 ? 'À vista' : count + 'x' }}
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      @if (installmentPreview(); as preview) {
+        <p class="tx-form__preview">
+          <mat-icon>receipt_long</mat-icon>
+          <span>
+            {{ preview.count }}x de {{ preview.otherAmount | currency }}
+            @if (preview.differs) {
+              · primeira de {{ preview.firstAmount | currency }}
+            }
+            ·
+            @if (preview.firstLabel) {
+              a partir da {{ preview.firstLabel }}
+            } @else {
+              a partir de {{ preview.firstCompetence | date: 'dd/MM/yyyy' }}
+            }
+          </span>
+        </p>
+      }
+    }
+
     <div class="tx-form__row">
       <mat-form-field appearance="outline">
         <mat-label>Status</mat-label>
@@ -268,6 +299,17 @@
       <mat-icon>delete</mat-icon>
       Excluir
     </button>
+    @if (installmentGroupId) {
+      <button
+        matButton
+        class="tx-form__delete"
+        type="button"
+        (click)="removeInstallmentGroup()"
+        [disabled]="submitting()"
+      >
+        Excluir parcelamento
+      </button>
+    }
   }
   <span class="tx-form__spacer"></span>
   <button matButton mat-dialog-close type="button">{{ readonly ? 'Fechar' : 'Cancelar' }}</button>

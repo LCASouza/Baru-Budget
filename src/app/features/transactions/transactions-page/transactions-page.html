@@ -189,7 +189,14 @@
                       <mat-icon>{{ view.cardName ? 'credit_card' : kindIcons[view.transaction.kind] }}</mat-icon>
                     </span>
                     <span class="tx-row__info">
-                      <span class="tx-row__name">{{ view.transaction.description }}</span>
+                      <span class="tx-row__name">
+                        {{ view.transaction.description }}
+                        @if (view.transaction.installment_number) {
+                          <span class="tx-row__installment">
+                            {{ view.transaction.installment_number }}/{{ view.transaction.installment_count }}
+                          </span>
+                        }
+                      </span>
                       <span class="tx-row__meta">
                         @if (isHousehold()) {
                           {{ view.ownerName ?? 'Membro' }}{{ view.categoryName ? ' · ' + view.categoryName : '' }}

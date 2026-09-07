@@ -65,11 +65,14 @@ export const routes: Routes = [
             (m) => m.CardDetailPage,
           ),
       },
-      placeholderRoute(
-        '/installments',
-        'Compras parceladas com parcela atual, parcelas restantes e comprometimento futuro.',
-        'v0.7',
-      ),
+      {
+        path: 'installments',
+        title: navItem('/installments').label,
+        loadComponent: () =>
+          import('./features/installments/installments-page/installments-page').then(
+            (m) => m.InstallmentsPage,
+          ),
+      },
       placeholderRoute(
         '/fixed-expenses',
         'Gastos recorrentes com competência mensal editável sem alterar o modelo original.',

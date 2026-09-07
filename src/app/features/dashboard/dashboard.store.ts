@@ -6,6 +6,7 @@ import { todayIso } from '../../shared/dates/iso-date';
 import { SummaryCardData } from '../../shared/components/summary-card/summary-card';
 import { AccountsStore } from '../accounts/accounts.store';
 import { CardsStore } from '../cards/cards.store';
+import { InstallmentsStore } from '../installments/installments.store';
 import { TransactionsStore } from '../transactions/transactions.store';
 import {
   buildMonthlySeries,
@@ -30,6 +31,7 @@ export class DashboardStore {
   private readonly transactions = inject(TransactionsStore);
   private readonly accounts = inject(AccountsStore);
   private readonly cardsStore = inject(CardsStore);
+  private readonly installments = inject(InstallmentsStore);
 
   // Six-month window ending at the selected month; the current month itself comes
   // from the transactions already loaded for the page.
@@ -125,6 +127,16 @@ export class DashboardStore {
           icon: 'credit_card',
           tone: 'payable',
           hint: `${invoices.length} ${invoices.length === 1 ? 'fatura vence' : 'faturas vencem'} no período`,
+        });
+      }
+      const remainingInstallments = this.installments.remainingCount();
+      if (remainingInstallments > 0) {
+        cards.push({
+          label: 'Parcelas futuras',
+          amount: this.installments.totalRemaining(),
+          icon: 'event_repeat',
+          tone: 'payable',
+          hint: `${remainingInstallments} ${remainingInstallments === 1 ? 'parcela a vencer' : 'parcelas a vencer'}`,
         });
       }
       cards.push(

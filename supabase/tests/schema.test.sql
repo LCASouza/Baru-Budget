@@ -61,6 +61,16 @@ select has_index('public', 'transactions', 'transactions_destination_account_idx
 select has_view('public', 'account_balances', 'account_balances view exists');
 select has_view('public', 'monthly_transaction_totals', 'monthly_transaction_totals view exists');
 select has_view('public', 'credit_card_invoices', 'credit_card_invoices view exists');
+select has_view('public', 'installment_purchases', 'installment_purchases view exists');
+select has_column('public', 'installment_purchases', 'remaining_count', 'installment_purchases.remaining_count exists');
+select has_column('public', 'installment_purchases', 'remaining_amount', 'installment_purchases.remaining_amount exists');
+select has_column('public', 'transactions', 'installment_group_id', 'transactions.installment_group_id exists');
+select has_column('public', 'transactions', 'installment_number', 'transactions.installment_number exists');
+select has_column('public', 'transactions', 'installment_count', 'transactions.installment_count exists');
+select has_index('public', 'transactions', 'transactions_installment_idx', 'transactions has the installment index');
+select has_function('public', 'split_installment_amounts', array['numeric', 'integer'], 'split_installment_amounts exists');
+select has_function('public', 'shift_month_day', array['date', 'integer'], 'shift_month_day exists');
+select has_function('public', 'create_installment_purchase', 'create_installment_purchase exists');
 select has_column('public', 'credit_card_invoices', 'invoice_due_date', 'credit_card_invoices.invoice_due_date exists');
 select has_column('public', 'credit_card_invoices', 'total', 'credit_card_invoices.total exists');
 select has_column('public', 'credit_card_invoices', 'paid', 'credit_card_invoices.paid exists');

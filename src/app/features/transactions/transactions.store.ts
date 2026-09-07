@@ -5,6 +5,8 @@ import { PeriodService } from '../../core/period/period.service';
 import { todayIso } from '../../shared/dates/iso-date';
 import { AccountsStore } from '../accounts/accounts.store';
 import { CardsStore } from '../cards/cards.store';
+import { InstallmentPurchaseInput } from '../installments/installment.repository';
+import { InstallmentsStore } from '../installments/installments.store';
 import { CategoriesStore } from '../categories/categories.store';
 import {
   EMPTY_FILTERS,
@@ -26,6 +28,7 @@ export class TransactionsStore {
   private readonly accounts = inject(AccountsStore);
   private readonly categories = inject(CategoriesStore);
   private readonly cards = inject(CardsStore);
+  private readonly installments = inject(InstallmentsStore);
 
   private readonly filtersState = signal<TransactionFilters>(EMPTY_FILTERS);
 
@@ -117,6 +120,17 @@ export class TransactionsStore {
 
   async remove(id: string): Promise<void> {
     await this.repository.remove(id);
+    this.afterMutation();
+  }
+
+  /** Generates every instalment of a purchase in the database, in one call. */
+  async createInstallments(input: Omit<InstallmentPurchaseInput, 'ownerUserId'>): Promise<void> {
+    await this.installments.create(input);
+    this.afterMutation();
+  }
+
+  async removeInstallmentGroup(groupId: string): Promise<void> {
+    await this.installments.removeGroup(groupId);
     this.afterMutation();
   }
 

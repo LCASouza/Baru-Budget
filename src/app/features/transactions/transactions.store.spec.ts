@@ -6,6 +6,7 @@ import { PeriodService } from '../../core/period/period.service';
 import { makeAccount, makeCategory, makeTransaction } from '../../testing/finance-fixtures';
 import { AccountsStore } from '../accounts/accounts.store';
 import { CardsStore } from '../cards/cards.store';
+import { InstallmentsStore } from '../installments/installments.store';
 import { CategoriesStore } from '../categories/categories.store';
 import { TransactionRepository } from './transaction.repository';
 import { TransactionsStore } from './transactions.store';
@@ -54,6 +55,16 @@ describe('TransactionsStore', () => {
           },
         },
         { provide: TransactionRepository, useValue: repository },
+        {
+          provide: InstallmentsStore,
+          useValue: {
+            totalRemaining: signal(0),
+            remainingCount: signal(0),
+            create: vi.fn(),
+            removeGroup: vi.fn(),
+            reload: vi.fn(),
+          },
+        },
         {
           provide: CardsStore,
           useValue: {

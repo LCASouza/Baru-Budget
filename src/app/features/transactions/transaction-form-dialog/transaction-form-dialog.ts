@@ -24,7 +24,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
-import { DatePipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { FinancialContextService } from '../../../core/context/financial-context.service';
 import { PaymentMethod } from '../../../core/finance/payment-method';
 import {
@@ -41,6 +41,11 @@ import { AccountsStore } from '../../accounts/accounts.store';
 import { CategoriesStore } from '../../categories/categories.store';
 import { CardsStore } from '../../cards/cards.store';
 import { invoiceDueDateFor, invoiceLabel } from '../../cards/invoice';
+import {
+  MAX_INSTALLMENTS,
+  cardInstallmentDueDates,
+  splitInstallmentAmounts,
+} from '../../installments/installment';
 import { TransactionFormData, TransactionFormResult } from '../open-transaction-dialog';
 import { SupportedTransactionKind, TransactionInput } from '../transaction.model';
 import { TransactionsStore } from '../transactions.store';
@@ -69,6 +74,7 @@ function amountValidator(control: AbstractControl<string>): ValidationErrors | n
   imports: [
     ReactiveFormsModule,
     RouterLink,
+    CurrencyPipe,
     DatePipe,
     MatDialogModule,
     MatButtonModule,
@@ -129,6 +135,7 @@ export class TransactionFormDialog {
     invoiceDueDate: [
       this.transaction?.invoice_due_date ?? this.invoicePayment?.invoiceDueDate ?? '',
     ],
+    installmentCount: this.formBuilder.control<number>(1),
     householdId: [this.transaction?.household_id ?? this.context.householdId() ?? ''],
     status: this.formBuilder.control<TransactionStatus>(this.transaction?.status ?? 'PAID'),
     dueDate: this.formBuilder.control<Date | null>(
@@ -152,6 +159,12 @@ export class TransactionFormDialog {
   private readonly selectedDate = toSignal(this.form.controls.date.valueChanges, {
     initialValue: this.form.controls.date.value,
   });
+  private readonly installmentCount = toSignal(this.form.controls.installmentCount.valueChanges, {
+    initialValue: this.form.controls.installmentCount.value,
+  });
+  private readonly amountValue = toSignal(this.form.controls.amount.valueChanges, {
+    initialValue: this.form.controls.amount.value,
+  });
 
   protected readonly isTransfer = computed(() => this.kind() === 'TRANSFER');
   protected readonly usesCard = computed(() => this.method() === 'CARD');
@@ -163,6 +176,41 @@ export class TransactionFormDialog {
   protected readonly isPending = computed(
     () => this.status() === 'PENDING' && !this.isCardPurchase(),
   );
+
+  // Instalments exist only when creating an expense; editing one instalment never
+  // changes the others.
+  protected readonly canSplit = computed(() => !this.isEdit && this.kind() === 'EXPENSE');
+  protected readonly isSplit = computed(() => this.canSplit() && this.installmentCount() > 1);
+  protected readonly installmentOptions = Array.from(
+    { length: MAX_INSTALLMENTS },
+    (_, index) => index + 1,
+  );
+  protected readonly installmentGroupId = this.transaction?.installment_group_id ?? null;
+
+  protected readonly installmentPreview = computed(() => {
+    const count = this.installmentCount();
+    const total = parseAmountInput(this.amountValue() ?? '');
+    const date = this.selectedDate();
+    if (!this.isSplit() || total === null || total <= 0 || !date) {
+      return null;
+    }
+    const amounts = splitInstallmentAmounts(total, count);
+    if (amounts.length === 0) {
+      return null;
+    }
+    const card = this.usesCard() ? this.cardsStore.byId().get(this.selectedCardId()) : undefined;
+    const firstCompetence = card
+      ? cardInstallmentDueDates(toIsoDate(date), card.closing_day, card.due_day, 1)[0]
+      : toIsoDate(date);
+    return {
+      count,
+      firstAmount: amounts[0],
+      otherAmount: amounts[amounts.length - 1],
+      differs: amounts[0] !== amounts[amounts.length - 1],
+      firstCompetence,
+      firstLabel: card ? invoiceLabel(firstCompetence) : null,
+    };
+  });
 
   protected readonly statusOptions = computed(() => {
     const statuses = this.isCardPurchase() ? CARD_PURCHASE_STATUSES : TRANSACTION_STATUSES;
@@ -343,6 +391,21 @@ export class TransactionFormDialog {
     const input = this.toInput();
     this.submitting.set(true);
     try {
+      if (this.isSplit()) {
+        await this.store.createInstallments({
+          description: input.description,
+          totalAmount: input.amount,
+          installmentCount: this.form.controls.installmentCount.value,
+          date: input.date,
+          categoryId: input.categoryId as string,
+          creditCardId: input.creditCardId,
+          accountId: input.accountId,
+          householdId: input.householdId,
+          notes: input.notes,
+        });
+        this.dialogRef.close('saved');
+        return;
+      }
       if (this.transaction) {
         await this.store.update(this.transaction.id, input);
       } else {
@@ -381,6 +444,36 @@ export class TransactionFormDialog {
     } catch (error) {
       this.snackBar.open(
         describeDataError(error, { fallback: 'Não foi possível excluir a movimentação.' }),
+        'OK',
+        { duration: 5000 },
+      );
+    } finally {
+      this.submitting.set(false);
+    }
+  }
+
+  protected async removeInstallmentGroup(): Promise<void> {
+    const groupId = this.installmentGroupId;
+    if (!groupId || this.submitting() || this.readonly) {
+      return;
+    }
+    const confirmed = await confirmAction(this.dialog, {
+      title: 'Excluir parcelamento',
+      message: `Todas as ${this.transaction?.installment_count} parcelas de "${this.transaction?.description}" serão excluídas, inclusive as já lançadas.`,
+      confirmLabel: 'Excluir tudo',
+      danger: true,
+    });
+    if (!confirmed) {
+      return;
+    }
+
+    this.submitting.set(true);
+    try {
+      await this.store.removeInstallmentGroup(groupId);
+      this.dialogRef.close('deleted');
+    } catch (error) {
+      this.snackBar.open(
+        describeDataError(error, { fallback: 'Não foi possível excluir o parcelamento.' }),
         'OK',
         { duration: 5000 },
       );

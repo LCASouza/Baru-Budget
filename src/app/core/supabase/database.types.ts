@@ -445,6 +445,9 @@ export type Database = {
           due_date: string | null
           household_id: string | null
           id: string
+          installment_count: number | null
+          installment_group_id: string | null
+          installment_number: number | null
           invoice_due_date: string | null
           kind: Database["public"]["Enums"]["transaction_kind"]
           notes: string | null
@@ -466,6 +469,9 @@ export type Database = {
           due_date?: string | null
           household_id?: string | null
           id?: string
+          installment_count?: number | null
+          installment_group_id?: string | null
+          installment_number?: number | null
           invoice_due_date?: string | null
           kind: Database["public"]["Enums"]["transaction_kind"]
           notes?: string | null
@@ -487,6 +493,9 @@ export type Database = {
           due_date?: string | null
           household_id?: string | null
           id?: string
+          installment_count?: number | null
+          installment_group_id?: string | null
+          installment_number?: number | null
           invoice_due_date?: string | null
           kind?: Database["public"]["Enums"]["transaction_kind"]
           notes?: string | null
@@ -605,6 +614,60 @@ export type Database = {
           },
         ]
       }
+      installment_purchases: {
+        Row: {
+          account_id: string | null
+          category_id: string | null
+          credit_card_id: string | null
+          description: string | null
+          first_competence: string | null
+          id: string | null
+          installment_count: number | null
+          last_competence: string | null
+          owner_user_id: string | null
+          recorded_count: number | null
+          remaining_amount: number | null
+          remaining_count: number | null
+          total_amount: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "account_balances"
+            referencedColumns: ["account_id"]
+          },
+          {
+            foreignKeyName: "transactions_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_credit_card_id_fkey"
+            columns: ["credit_card_id"]
+            isOneToOne: false
+            referencedRelation: "credit_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_transaction_totals: {
         Row: {
           household_id: string | null
@@ -639,6 +702,21 @@ export type Database = {
         Args: { category: string }
         Returns: boolean
       }
+      create_installment_purchase: {
+        Args: {
+          p_account_id?: string
+          p_category_id: string
+          p_credit_card_id?: string
+          p_date: string
+          p_description: string
+          p_household_id?: string
+          p_installment_count: number
+          p_notes?: string
+          p_owner_user_id: string
+          p_total_amount: number
+        }
+        Returns: string
+      }
       invoice_due_date_for: {
         Args: { closing_day: number; due_day: number; purchase_date: string }
         Returns: string
@@ -664,6 +742,14 @@ export type Database = {
         Returns: undefined
       }
       shares_household_with: { Args: { other: string }; Returns: boolean }
+      shift_month_day: {
+        Args: { months: number; reference: string }
+        Returns: string
+      }
+      split_installment_amounts: {
+        Args: { count: number; total: number }
+        Returns: number[]
+      }
     }
     Enums: {
       access_permission: "VIEW" | "MANAGE"

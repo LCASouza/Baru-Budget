@@ -6,6 +6,7 @@ import { provideNativeDateAdapter } from '@angular/material/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { provideRouter } from '@angular/router';
+import { of } from 'rxjs';
 import { vi } from 'vitest';
 import { FinancialContext, PERSONAL_CONTEXT } from '../../../core/context/financial-context.model';
 import { FinancialContextService } from '../../../core/context/financial-context.service';
@@ -14,6 +15,7 @@ import { makeAccount, makeCategory, makeTransaction } from '../../../testing/fin
 import { AccountsStore } from '../../accounts/accounts.store';
 import { CategoriesStore } from '../../categories/categories.store';
 import { CardsStore } from '../../cards/cards.store';
+import { InstallmentsStore } from '../../installments/installments.store';
 import { CreditCard } from '../../cards/card.model';
 import { TransactionFormData } from '../open-transaction-dialog';
 import { TransactionsStore } from '../transactions.store';
@@ -24,7 +26,7 @@ registerLocaleData(localePt);
 describe('TransactionFormDialog', () => {
   let fixture: ComponentFixture<TransactionFormDialog>;
   let component: TransactionFormDialog;
-  let store: { create: ReturnType<typeof vi.fn>; update: ReturnType<typeof vi.fn>; remove: ReturnType<typeof vi.fn> };
+  let store: Record<'create' | 'update' | 'remove' | 'createInstallments' | 'removeInstallmentGroup', ReturnType<typeof vi.fn>>;
   let dialogRef: { close: ReturnType<typeof vi.fn> };
   let snackBar: { open: ReturnType<typeof vi.fn> };
   const accounts = signal([
@@ -105,6 +107,8 @@ describe('TransactionFormDialog', () => {
       create: vi.fn().mockResolvedValue(undefined),
       update: vi.fn().mockResolvedValue(undefined),
       remove: vi.fn().mockResolvedValue(undefined),
+      createInstallments: vi.fn().mockResolvedValue(undefined),
+      removeInstallmentGroup: vi.fn().mockResolvedValue(undefined),
     };
     dialogRef = { close: vi.fn() };
     snackBar = { open: vi.fn() };
@@ -115,11 +119,21 @@ describe('TransactionFormDialog', () => {
         provideNativeDateAdapter(),
         { provide: MatDialogRef, useValue: dialogRef },
         { provide: MAT_DIALOG_DATA, useValue: data },
-        { provide: MatDialog, useValue: { open: vi.fn() } },
+        { provide: MatDialog, useValue: { open: vi.fn(() => ({ afterClosed: () => of(true) })) } },
         { provide: MatSnackBar, useValue: snackBar },
         { provide: TransactionsStore, useValue: store },
         { provide: FinancialContextService, useValue: contextService },
         { provide: CardsStore, useValue: cardsService },
+        {
+          provide: InstallmentsStore,
+          useValue: {
+            totalRemaining: signal(0),
+            remainingCount: signal(0),
+            create: vi.fn(),
+            removeGroup: vi.fn(),
+            reload: vi.fn(),
+          },
+        },
         { provide: ProfileRepository, useValue: { findManyByIds } },
         {
           provide: AccountsStore,
@@ -139,6 +153,15 @@ describe('TransactionFormDialog', () => {
         },
       ],
     }).compileComponents();
+    // MatDialogModule provides MatDialog inside the component injector, so the
+    // confirmation double has to be added there.
+    TestBed.overrideComponent(TransactionFormDialog, {
+      add: {
+        providers: [
+          { provide: MatDialog, useValue: { open: () => ({ afterClosed: () => of(true) }) } },
+        ],
+      },
+    });
     fixture = TestBed.createComponent(TransactionFormDialog);
     component = fixture.componentInstance;
     fixture.detectChanges();
@@ -417,6 +440,100 @@ describe('TransactionFormDialog', () => {
     expect(form().controls.creditCardId.value).toBe('');
     expect(component['isCardPurchase']()).toBe(false);
     expect(form().controls.accountId.hasError('required')).toBe(true);
+  });
+
+  it('offers instalments only when creating an expense', async () => {
+    await setup();
+    expect(component['canSplit']()).toBe(true);
+    form().controls.kind.setValue('INCOME');
+    expect(component['canSplit']()).toBe(false);
+    form().controls.kind.setValue('TRANSFER');
+    expect(component['canSplit']()).toBe(false);
+
+    TestBed.resetTestingModule();
+    await setup({ transaction: makeTransaction() });
+    expect(component['canSplit']()).toBe(false);
+  });
+
+  it('previews the instalments of a card purchase', async () => {
+    cards.set([makeCard()]);
+    await setup();
+    form().controls.paymentMethod.setValue('CARD');
+    form().patchValue({ amount: '900', date: new Date(2026, 8, 10), creditCardId: 'card-1' });
+    form().controls.installmentCount.setValue(3);
+    expect(component['isSplit']()).toBe(true);
+    expect(component['installmentPreview']()).toEqual({
+      count: 3,
+      firstAmount: 300,
+      otherAmount: 300,
+      differs: false,
+      firstCompetence: '2026-10-05',
+      firstLabel: 'Fatura de Outubro 2026',
+    });
+  });
+
+  it('marks the bigger first instalment in the preview of an account purchase', async () => {
+    await setup();
+    form().patchValue({ amount: '100', date: new Date(2026, 8, 10) });
+    form().controls.installmentCount.setValue(3);
+    const preview = component['installmentPreview']()!;
+    expect(preview.firstAmount).toBe(33.34);
+    expect(preview.otherAmount).toBe(33.33);
+    expect(preview.differs).toBe(true);
+    expect(preview.firstCompetence).toBe('2026-09-10');
+    expect(preview.firstLabel).toBeNull();
+  });
+
+  it('creates an installment purchase instead of a single transaction', async () => {
+    cards.set([makeCard()]);
+    await setup();
+    form().controls.paymentMethod.setValue('CARD');
+    form().patchValue({
+      description: 'Notebook',
+      amount: '4.200,00',
+      date: new Date(2026, 8, 10),
+      categoryId: 'cat-food',
+      creditCardId: 'card-1',
+    });
+    form().controls.installmentCount.setValue(12);
+    await component['save']();
+    expect(store.createInstallments).toHaveBeenCalledWith({
+      description: 'Notebook',
+      totalAmount: 4200,
+      installmentCount: 12,
+      date: '2026-09-10',
+      categoryId: 'cat-food',
+      creditCardId: 'card-1',
+      accountId: null,
+      householdId: null,
+      notes: null,
+    });
+    expect(store.create).not.toHaveBeenCalled();
+    expect(dialogRef.close).toHaveBeenCalledWith('saved');
+  });
+
+  it('saves a single transaction when the instalment count is one', async () => {
+    await setup();
+    form().patchValue({ description: 'Luz', amount: '10', categoryId: 'cat-food', accountId: 'acc-bank' });
+    form().controls.installmentCount.setValue(1);
+    await component['save']();
+    expect(store.create).toHaveBeenCalled();
+    expect(store.createInstallments).not.toHaveBeenCalled();
+  });
+
+  it('deletes the whole installment purchase from an instalment', async () => {
+    await setup({
+      transaction: makeTransaction({
+        id: 'tx-i',
+        installment_group_id: 'g1',
+        installment_number: 2,
+        installment_count: 12,
+      }),
+    });
+    expect(component['installmentGroupId']).toBe('g1');
+    await component['removeInstallmentGroup']();
+    expect(store.removeInstallmentGroup).toHaveBeenCalledWith('g1');
+    expect(dialogRef.close).toHaveBeenCalledWith('deleted');
   });
 
   it('uses the initial kind passed by the caller', async () => {
