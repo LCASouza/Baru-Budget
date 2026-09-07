@@ -524,6 +524,132 @@ export type Database = {
           },
         ]
       }
+      loans: {
+        Row: {
+          account_id: string
+          category_id: string
+          created_at: string
+          created_by: string
+          description: string
+          disbursement_category_id: string | null
+          first_due_date: string
+          household_id: string | null
+          id: string
+          installment_count: number
+          interest_model: Database["public"]["Enums"]["loan_interest_model"]
+          interest_period: Database["public"]["Enums"]["interest_period"]
+          interest_rate: number
+          lender: string | null
+          notes: string | null
+          owner_user_id: string
+          principal: number
+          start_date: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          account_id: string
+          category_id: string
+          created_at?: string
+          created_by?: string
+          description: string
+          disbursement_category_id?: string | null
+          first_due_date: string
+          household_id?: string | null
+          id?: string
+          installment_count: number
+          interest_model: Database["public"]["Enums"]["loan_interest_model"]
+          interest_period?: Database["public"]["Enums"]["interest_period"]
+          interest_rate: number
+          lender?: string | null
+          notes?: string | null
+          owner_user_id: string
+          principal: number
+          start_date: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Update: {
+          account_id?: string
+          category_id?: string
+          created_at?: string
+          created_by?: string
+          description?: string
+          disbursement_category_id?: string | null
+          first_due_date?: string
+          household_id?: string | null
+          id?: string
+          installment_count?: number
+          interest_model?: Database["public"]["Enums"]["loan_interest_model"]
+          interest_period?: Database["public"]["Enums"]["interest_period"]
+          interest_rate?: number
+          lender?: string | null
+          notes?: string | null
+          owner_user_id?: string
+          principal?: number
+          start_date?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "loans_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "account_balances"
+            referencedColumns: ["account_id"]
+          },
+          {
+            foreignKeyName: "loans_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loans_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loans_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loans_disbursement_category_id_fkey"
+            columns: ["disbursement_category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loans_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loans_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "loans_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -738,6 +864,8 @@ export type Database = {
           installment_number: number | null
           invoice_due_date: string | null
           kind: Database["public"]["Enums"]["transaction_kind"]
+          loan_id: string | null
+          loan_installment_number: number | null
           notes: string | null
           owner_user_id: string
           recurrence_month: string | null
@@ -769,6 +897,8 @@ export type Database = {
           installment_number?: number | null
           invoice_due_date?: string | null
           kind: Database["public"]["Enums"]["transaction_kind"]
+          loan_id?: string | null
+          loan_installment_number?: number | null
           notes?: string | null
           owner_user_id: string
           recurrence_month?: string | null
@@ -800,6 +930,8 @@ export type Database = {
           installment_number?: number | null
           invoice_due_date?: string | null
           kind?: Database["public"]["Enums"]["transaction_kind"]
+          loan_id?: string | null
+          loan_installment_number?: number | null
           notes?: string | null
           owner_user_id?: string
           recurrence_month?: string | null
@@ -880,6 +1012,13 @@ export type Database = {
             columns: ["household_id"]
             isOneToOne: false
             referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
             referencedColumns: ["id"]
           },
           {
@@ -1084,6 +1223,10 @@ export type Database = {
         }
         Returns: string
       }
+      generate_loan_schedule: {
+        Args: { p_loan_id: string; p_with_disbursement?: boolean }
+        Returns: number
+      }
       generate_recurrences: {
         Args: { p_month: string; p_owner_user_id: string }
         Returns: number
@@ -1102,6 +1245,23 @@ export type Database = {
       is_household_member: { Args: { household: string }; Returns: boolean }
       last_day_of_month: { Args: { reference: string }; Returns: number }
       leave_household: { Args: { household: string }; Returns: undefined }
+      loan_installment_amounts: {
+        Args: {
+          p_count: number
+          p_model: Database["public"]["Enums"]["loan_interest_model"]
+          p_monthly_rate: number
+          p_principal: number
+        }
+        Returns: number[]
+      }
+      loan_monthly_rate: {
+        Args: {
+          p_model: Database["public"]["Enums"]["loan_interest_model"]
+          p_period: Database["public"]["Enums"]["interest_period"]
+          p_rate: number
+        }
+        Returns: number
+      }
       lookup_user_by_email: {
         Args: { email_address: string }
         Returns: {
@@ -1138,6 +1298,8 @@ export type Database = {
       category_kind: "INCOME" | "EXPENSE"
       household_member_status: "ACTIVE" | "INACTIVE"
       household_role: "ADMIN" | "MEMBER"
+      interest_period: "MONTHLY" | "YEARLY"
+      loan_interest_model: "SIMPLE" | "PRICE"
       recurrence_frequency: "MONTHLY" | "YEARLY"
       settlement_direction: "PAY" | "RECEIVE"
       transaction_kind: "INCOME" | "EXPENSE" | "TRANSFER" | "SETTLEMENT"
@@ -1277,6 +1439,8 @@ export const Constants = {
       category_kind: ["INCOME", "EXPENSE"],
       household_member_status: ["ACTIVE", "INACTIVE"],
       household_role: ["ADMIN", "MEMBER"],
+      interest_period: ["MONTHLY", "YEARLY"],
+      loan_interest_model: ["SIMPLE", "PRICE"],
       recurrence_frequency: ["MONTHLY", "YEARLY"],
       settlement_direction: ["PAY", "RECEIVE"],
       transaction_kind: ["INCOME", "EXPENSE", "TRANSFER", "SETTLEMENT"],

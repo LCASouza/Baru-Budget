@@ -9,10 +9,15 @@ const UNCATEGORIZED = 'Sem categoria';
 const UNKNOWN_MEMBER = 'Outro membro';
 const OTHERS = 'Outras';
 
-/** Incomes and expenses of the period; transfers and cancelled entries never count. */
+/**
+ * Incomes and expenses of the period. Transfers and cancelled entries never
+ * count, and money received from a loan increases cash without being income.
+ */
 export function summarizeDashboard(views: readonly TransactionView[]): DashboardSummary {
   const counted = views.filter((view) => view.transaction.status !== 'CANCELLED');
-  const incomes = counted.filter((view) => view.transaction.kind === 'INCOME');
+  const incomes = counted.filter(
+    (view) => view.transaction.kind === 'INCOME' && view.transaction.loan_id === null,
+  );
   const expenses = counted.filter((view) => view.transaction.kind === 'EXPENSE');
   const pending = expenses.filter((view) => view.transaction.status === 'PENDING');
   const income = sumAmounts(incomes.map((view) => view.transaction.amount));

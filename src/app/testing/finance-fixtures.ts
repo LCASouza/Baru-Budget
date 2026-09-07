@@ -63,6 +63,8 @@ export function makeTransaction(overrides: Partial<Transaction> = {}): Transacti
     recurrence_month: null,
     counterparty_user_id: null,
     settlement_direction: null,
+    loan_id: null,
+    loan_installment_number: null,
     household_id: null,
     notes: null,
     created_at: NOW,

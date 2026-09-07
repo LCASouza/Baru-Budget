@@ -1,0 +1,52 @@
+.loan-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 8px;
+  min-width: min(520px, 100%);
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.loan-form__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px;
+}
+
+.loan-form__preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+
+  div {
+    display: grid;
+    gap: 2px;
+  }
+
+  strong {
+    font: var(--mat-sys-title-medium);
+    font-weight: 600;
+  }
+
+  span {
+    font: var(--mat-sys-body-small);
+  }
+}
+
+@media (max-width: 599.98px) {
+  .loan-form {
+    min-width: 0;
+  }
+
+  .loan-form__row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

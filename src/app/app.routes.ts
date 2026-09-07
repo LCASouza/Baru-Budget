@@ -100,11 +100,20 @@ export const routes: Routes = [
           },
         ],
       },
-      placeholderRoute(
-        '/loans',
-        'Empréstimos com principal, juros, parcelas e saldo devedor.',
-        'v0.10',
-      ),
+      {
+        path: 'loans',
+        title: navItem('/loans').label,
+        loadComponent: () =>
+          import('./features/loans/loans-page/loans-page').then((m) => m.LoansPage),
+      },
+      {
+        path: 'loans/:id',
+        title: 'Empréstimo',
+        loadComponent: () =>
+          import('./features/loans/loan-detail-page/loan-detail-page').then(
+            (m) => m.LoanDetailPage,
+          ),
+      },
       placeholderRoute(
         '/financings',
         'Financiamentos com valor do bem, entrada, parcelas e saldo devedor.',

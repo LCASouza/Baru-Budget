@@ -75,7 +75,10 @@ export function summarizeTransactions(views: readonly TransactionView[]): Period
   const counted = views
     .map((view) => view.transaction)
     .filter((transaction) => transaction.status !== 'CANCELLED');
-  const income = sumAmounts(counted.filter((t) => t.kind === 'INCOME').map((t) => t.amount));
+  // Money received from a loan is cash, not income of the period.
+  const income = sumAmounts(
+    counted.filter((t) => t.kind === 'INCOME' && t.loan_id === null).map((t) => t.amount),
+  );
   const expense = sumAmounts(counted.filter((t) => t.kind === 'EXPENSE').map((t) => t.amount));
   return {
     income,

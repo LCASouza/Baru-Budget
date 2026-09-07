@@ -341,3 +341,49 @@ begin
      dev2_user, 'RECEIVE', dev_user, dev_user);
 end;
 $$;
+
+-- A Price loan for the development user, with the schedule generated and the
+-- first two instalments already paid.
+do $$
+declare
+  dev_user constant uuid := '00000000-0000-4000-8000-000000000001';
+  bank     uuid;
+  category uuid;
+  loan     uuid;
+begin
+  perform set_config(
+    'request.jwt.claims',
+    json_build_object('sub', dev_user, 'role', 'authenticated')::text,
+    true
+  );
+
+  select id into bank from public.accounts where owner_user_id = dev_user and name = 'Conta corrente';
+  insert into public.categories (owner_user_id, kind, name, created_by, updated_by)
+  values (dev_user, 'EXPENSE', 'Empréstimos', dev_user, dev_user)
+  on conflict do nothing;
+  select id into category from public.categories
+   where owner_user_id = dev_user and kind = 'EXPENSE' and name = 'Empréstimos';
+
+  insert into public.loans (
+    owner_user_id, description, lender, account_id, category_id, disbursement_category_id, principal,
+    interest_rate, interest_period, interest_model, installment_count,
+    start_date, first_due_date, created_by, updated_by
+  )
+  values (
+    dev_user, 'Empréstimo pessoal', 'Banco', bank, category,
+    (select id from public.categories where owner_user_id = dev_user and kind = 'INCOME' and name = 'Outros'),
+    10000.00,
+    1.5, 'MONTHLY', 'PRICE', 12,
+    (date_trunc('month', current_date) - interval '2 month' + interval '4 day')::date,
+    (date_trunc('month', current_date) - interval '1 month' + interval '9 day')::date,
+    dev_user, dev_user
+  )
+  returning id into loan;
+
+  perform public.generate_loan_schedule(loan);
+
+  update public.transactions
+     set status = 'PAID'
+   where loan_id = loan and loan_installment_number in (1, 2);
+end;
+$$;

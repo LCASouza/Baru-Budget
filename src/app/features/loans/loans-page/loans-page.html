@@ -1,0 +1,108 @@
+<section class="loans">
+  <div class="loans__summary">
+    @for (card of cards(); track card.label) {
+      <app-summary-card [data]="card" />
+    }
+  </div>
+
+  <article class="bb-card">
+    <header class="bb-card__head">
+      <div>
+        <h3 class="bb-card__title">Empréstimos</h3>
+        <p class="bb-card__subtitle">
+          O dinheiro recebido aumenta o saldo da conta e não entra nas receitas do mês.
+        </p>
+      </div>
+      @if (store.canManage()) {
+        <button matButton="filled" (click)="openForm()">
+          <mat-icon>add</mat-icon>
+          Novo empréstimo
+        </button>
+      }
+    </header>
+
+    @if (store.isLoading() && !store.loaded()) {
+      <mat-progress-bar mode="indeterminate" />
+    } @else if (store.error()) {
+      <app-empty-state
+        icon="error_outline"
+        title="Não foi possível carregar os empréstimos"
+        description="Verifique a conexão e tente novamente."
+      >
+        <button matButton="outlined" (click)="store.reload()">Tentar novamente</button>
+      </app-empty-state>
+    } @else if (store.views().length === 0) {
+      <app-empty-state
+        icon="handshake"
+        title="Nenhum empréstimo cadastrado"
+        description="Cadastre o principal, a taxa e o modelo de juros para acompanhar as parcelas e o saldo devedor."
+      >
+        @if (store.canManage()) {
+          <button matButton="filled" (click)="openForm()">Cadastrar empréstimo</button>
+        }
+      </app-empty-state>
+    } @else {
+      <ul class="loan-list">
+        @for (view of store.views(); track view.loan.id) {
+          <li class="loan">
+            <span class="loan__icon">
+              <mat-icon>account_balance</mat-icon>
+            </span>
+            <div class="loan__info">
+              <span class="loan__name">
+                <a [routerLink]="['/loans', view.loan.id]">{{ view.loan.description }}</a>
+              </span>
+              <span class="loan__meta">
+                @if (view.loan.lender) {
+                  {{ view.loan.lender }} ·
+                }
+                {{ view.loan.principal | currency }} ·
+                {{ view.loan.interest_rate / 100 | percent: '1.2-4' }} {{ periodLabels[view.loan.interest_period] }} ·
+                {{ modelLabels[view.loan.interest_model] }}
+              </span>
+              <span class="loan__meta">
+                @if (view.generated) {
+                  {{ view.paidCount }}/{{ view.loan.installment_count }} pagas
+                  @if (view.next) {
+                    · próxima {{ view.next.date | date: 'dd/MM/yyyy' }} de {{ view.next.amount | currency }}
+                  }
+                } @else {
+                  Cronograma ainda não gerado
+                }
+              </span>
+              <span class="loan__track">
+                <span class="loan__bar" [style.width.%]="view.progressPercent"></span>
+              </span>
+            </div>
+
+            <div class="loan__amounts">
+              <span class="loan__remaining bb-amount">{{ view.remainingTotal | currency }}</span>
+              <span class="loan__hint">a pagar</span>
+              <span class="loan__hint">saldo devedor {{ view.outstandingPrincipal | currency }}</span>
+            </div>
+
+            @if (store.canManage()) {
+              <button matIconButton [matMenuTriggerFor]="menu" [attr.aria-label]="'Ações de ' + view.loan.description">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+              <mat-menu #menu="matMenu">
+                <button mat-menu-item (click)="generate(view)">
+                  <mat-icon>playlist_add</mat-icon>
+                  <span>{{ view.generated ? 'Completar cronograma' : 'Gerar cronograma' }}</span>
+                </button>
+                <button mat-menu-item (click)="openForm(view)">
+                  <mat-icon>edit</mat-icon>
+                  <span>Editar</span>
+                </button>
+                <button mat-menu-item (click)="remove(view)">
+                  <mat-icon>delete</mat-icon>
+                  <span>Excluir</span>
+                </button>
+              </mat-menu>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </article>
+</section>

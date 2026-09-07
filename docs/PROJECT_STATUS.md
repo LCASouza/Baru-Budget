@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**v0.10 — Loans** (IN_PROGRESS). The architectural analysis is delivered in `ARCHITECTURE_ANALYSIS_V0.10.md`; implementation starts after its approval. Version file: `versions/v0.10.md`. The production checks of v0.4 to v0.9 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
+**v0.10 — Loans** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V0.10.md`); implementation complete locally, hosted migrations and production check pending. Version file: `versions/v0.10.md`. The production checks of v0.4 to v0.9 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
 
 Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.9 (`versions/v0.1.md` to `versions/v0.9.md`).
 
@@ -48,8 +48,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.8 implementation | v0.8 | DELIVERED | Templates, idempotent generation and recurrences page; hosted `db push` applied on 2026-09-07; production check deferred |
 | v0.9 architectural analysis | v0.9 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.9.md`; approved on 2026-09-07 |
 | v0.9 implementation | v0.9 | DELIVERED | Allocations with a backend invariant, settlements and balances; hosted `db push` applied on 2026-09-07; production check deferred |
-| v0.10 architectural analysis | v0.10 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.10.md`; awaiting approval |
-| v0.10 implementation | v0.10 | PENDING | Loans with explicit interest models, schedule generation, derived outstanding balance |
+| v0.10 architectural analysis | v0.10 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.10.md`; approved on 2026-09-07 |
+| v0.10 implementation | v0.10 | IN_PROGRESS | Loans with explicit interest models, schedule generation and derived balances done locally; hosted `db push` and production check pending |
 
 ## Features
 
@@ -75,7 +75,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | FEAT-018 | Recurring incomes | v0.8 | DELIVERED | Templates in their own table, generated as pending on the receipt day |
 | FEAT-019 | Transaction allocations | v0.9 | DELIVERED | Payer vs. responsible, sum invariant in the database, counterparty visibility |
 | FEAT-020 | Settlements | v0.9 | DELIVERED | Settlement as a transaction kind with direction, derived balances, receivables and payables |
-| FEAT-021 | Loans | v0.10 | IN_PROGRESS | Explicit interest models, outstanding balance |
+| FEAT-021 | Loans | v0.10 | IN_PROGRESS | Simple interest and Price with documented conversions, idempotent schedule, derived outstanding balance, disbursement out of income; implemented locally |
 | FEAT-022 | Financings | v0.11 | PENDING | Asset value, down payment, financed amount, outstanding balance |
 | FEAT-023 | Baru Budget Excel Format v1 | v0.12 | PENDING | Export, import, preview, merge by UUID, backup |
 
@@ -111,4 +111,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-07 — v0.9 delivered (production check deferred by the administrator). v0.10 Loans started: architectural analysis delivered, awaiting approval before implementation.
+2026-09-07 — v0.10 Loans implemented locally (2 migrations, 771 pgTAP assertions, 284 Vitest tests); hosted migrations and production check pending.

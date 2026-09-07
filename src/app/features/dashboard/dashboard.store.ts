@@ -8,6 +8,7 @@ import { AccountsStore } from '../accounts/accounts.store';
 import { CardsStore } from '../cards/cards.store';
 import { InstallmentsStore } from '../installments/installments.store';
 import { SettlementsStore } from '../settlements/settlements.store';
+import { LoansStore } from '../loans/loans.store';
 import { TransactionsStore } from '../transactions/transactions.store';
 import {
   buildMonthlySeries,
@@ -34,6 +35,7 @@ export class DashboardStore {
   private readonly cardsStore = inject(CardsStore);
   private readonly installments = inject(InstallmentsStore);
   private readonly settlements = inject(SettlementsStore);
+  private readonly loans = inject(LoansStore);
 
   // Six-month window ending at the selected month; the current month itself comes
   // from the transactions already loaded for the page.
@@ -129,6 +131,16 @@ export class DashboardStore {
           icon: 'credit_card',
           tone: 'payable',
           hint: `${invoices.length} ${invoices.length === 1 ? 'fatura vence' : 'faturas vencem'} no período`,
+        });
+      }
+      const loanRemaining = this.loans.remainingCount();
+      if (loanRemaining > 0) {
+        cards.push({
+          label: 'Empréstimos',
+          amount: this.loans.totalRemaining(),
+          icon: 'account_balance',
+          tone: 'payable',
+          hint: `${loanRemaining} ${loanRemaining === 1 ? 'parcela restante' : 'parcelas restantes'}`,
         });
       }
       const remainingInstallments = this.installments.remainingCount();
