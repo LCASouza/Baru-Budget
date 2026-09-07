@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**v0.10 — Loans** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V0.10.md`); implementation complete locally, hosted migrations and production check pending. Version file: `versions/v0.10.md`. The production checks of v0.4 to v0.9 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
+**v0.10 — Loans** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V0.10.md`); implementation complete, migrations applied to the hosted project and `main` deployed; production check pending. Version file: `versions/v0.10.md`. The production checks of v0.4 to v0.9 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
 
 Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.9 (`versions/v0.1.md` to `versions/v0.9.md`).
 
@@ -49,7 +49,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.9 architectural analysis | v0.9 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.9.md`; approved on 2026-09-07 |
 | v0.9 implementation | v0.9 | DELIVERED | Allocations with a backend invariant, settlements and balances; hosted `db push` applied on 2026-09-07; production check deferred |
 | v0.10 architectural analysis | v0.10 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.10.md`; approved on 2026-09-07 |
-| v0.10 implementation | v0.10 | IN_PROGRESS | Loans with explicit interest models, schedule generation and derived balances done locally; hosted `db push` and production check pending |
+| v0.10 implementation | v0.10 | IN_PROGRESS | Loans with explicit interest models, schedule generation and derived balances delivered; hosted `db push` applied on 2026-09-07; production check pending |
 
 ## Features
 
@@ -111,4 +111,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-07 — v0.10 Loans implemented locally (2 migrations, 771 pgTAP assertions, 284 Vitest tests); hosted migrations and production check pending.
+2026-09-07 — v0.10 Loans implemented and deployed (2 migrations applied to the hosted project, 771 pgTAP assertions, 284 Vitest tests); production check pending.
