@@ -1,0 +1,137 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Editar ' + typeLabel.toLowerCase() : 'Novo ' + typeLabel.toLowerCase() }}</h2>
+
+<mat-dialog-content>
+  <form class="recurrence-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <mat-form-field appearance="outline">
+      <mat-label>Descrição</mat-label>
+      <input matInput formControlName="description" [placeholder]="isExpense ? 'Ex.: Aluguel' : 'Ex.: Salário'" maxlength="120" />
+      @if (form.controls.description.hasError('required')) {
+        <mat-error>Informe a descrição.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Categoria</mat-label>
+      <mat-select formControlName="categoryId">
+        @for (category of categories(); track category.id) {
+          <mat-option [value]="category.id">{{ category.name }}</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.categoryId.hasError('required')) {
+        <mat-error>Selecione a categoria.</mat-error>
+      }
+    </mat-form-field>
+
+    @if (showMethodToggle()) {
+      <div class="recurrence-form__method">
+        <span class="recurrence-form__label">Debita em</span>
+        <mat-button-toggle-group formControlName="paymentMethod" hideSingleSelectionIndicator aria-label="Origem">
+          <mat-button-toggle value="ACCOUNT">
+            <mat-icon>account_balance</mat-icon>
+            Conta
+          </mat-button-toggle>
+          <mat-button-toggle value="CARD">
+            <mat-icon>credit_card</mat-icon>
+            Cartão
+          </mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    }
+
+    @if (usesCard()) {
+      <mat-form-field appearance="outline">
+        <mat-label>Cartão</mat-label>
+        <mat-select formControlName="creditCardId">
+          @for (card of cards(); track card.id) {
+            <mat-option [value]="card.id">{{ card.name }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.creditCardId.hasError('required')) {
+          <mat-error>Selecione o cartão.</mat-error>
+        }
+        <mat-hint>O lançamento cai na fatura correspondente.</mat-hint>
+      </mat-form-field>
+    } @else {
+      <mat-form-field appearance="outline">
+        <mat-label>Conta</mat-label>
+        <mat-select formControlName="accountId">
+          @for (account of accounts(); track account.id) {
+            <mat-option [value]="account.id">{{ account.name }}</mat-option>
+          }
+        </mat-select>
+        @if (form.controls.accountId.hasError('required')) {
+          <mat-error>Selecione a conta.</mat-error>
+        }
+      </mat-form-field>
+    }
+
+    <div class="recurrence-form__row">
+      <mat-form-field appearance="outline" floatLabel="always">
+        <mat-label>Valor sugerido</mat-label>
+        <span matTextPrefix>R$&nbsp;</span>
+        <input matInput formControlName="defaultAmount" inputmode="decimal" placeholder="0,00" />
+        @if (form.controls.defaultAmount.invalid) {
+          <mat-error>Informe um valor maior que zero.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>{{ isExpense ? 'Dia do vencimento' : 'Dia do recebimento' }}</mat-label>
+        <mat-select formControlName="day">
+          @for (day of days; track day) {
+            <mat-option [value]="day">{{ day }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="recurrence-form__row">
+      <mat-form-field appearance="outline">
+        <mat-label>Frequência</mat-label>
+        <mat-select formControlName="frequency">
+          @for (frequency of frequencies; track frequency) {
+            <mat-option [value]="frequency">{{ frequencyLabels[frequency] }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      @if (isYearly()) {
+        <mat-form-field appearance="outline">
+          <mat-label>Mês de referência</mat-label>
+          <mat-select formControlName="anchorMonth">
+            @for (month of months; track month.value) {
+              <mat-option [value]="month.value">{{ month.label }}</mat-option>
+            }
+          </mat-select>
+          @if (form.controls.anchorMonth.hasError('required')) {
+            <mat-error>Selecione o mês.</mat-error>
+          }
+        </mat-form-field>
+      }
+    </div>
+
+    @if (showHouseholdField()) {
+      <mat-form-field appearance="outline">
+        <mat-label>Grupo</mat-label>
+        <mat-select formControlName="householdId">
+          <mat-option value="">Pessoal</mat-option>
+          @for (household of householdOptions(); track household.id) {
+            <mat-option [value]="household.id">{{ household.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    }
+
+    <mat-form-field appearance="outline">
+      <mat-label>Observações</mat-label>
+      <textarea matInput formControlName="notes" rows="2" maxlength="1000"></textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button matButton mat-dialog-close type="button">Cancelar</button>
+  <button matButton="filled" type="button" (click)="save()" [disabled]="submitting()">
+    {{ submitting() ? 'Salvando…' : 'Salvar' }}
+  </button>
+</mat-dialog-actions>

@@ -1,0 +1,104 @@
+<article class="bb-card">
+  <header class="bb-card__head">
+    <div>
+      <h3 class="bb-card__title">{{ isExpense() ? 'Gastos fixos' : 'Receitas recorrentes' }}</h3>
+      <p class="bb-card__subtitle">
+        {{ period.label() }} · previsto {{ expected() | currency }}
+        @if (missing() > 0) {
+          · {{ missing() }} {{ missing() === 1 ? 'a gerar' : 'a gerar' }}
+        }
+      </p>
+    </div>
+    <div class="recurrence-list__actions">
+      @if (store.canManage()) {
+        <button matButton="outlined" (click)="generate()" [disabled]="missing() === 0 || store.isLoading()">
+          <mat-icon>playlist_add</mat-icon>
+          Gerar lançamentos do mês
+        </button>
+        <button matButton="filled" (click)="openForm()">
+          <mat-icon>add</mat-icon>
+          Novo
+        </button>
+      }
+    </div>
+  </header>
+
+  @if (store.isLoading() && !store.loaded()) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else if (store.error()) {
+    <app-empty-state
+      icon="error_outline"
+      title="Não foi possível carregar os modelos"
+      description="Verifique a conexão e tente novamente."
+    >
+      <button matButton="outlined" (click)="store.reload()">Tentar novamente</button>
+    </app-empty-state>
+  } @else if (views().length === 0) {
+    <app-empty-state
+      icon="event_repeat"
+      [title]="isExpense() ? 'Nenhum gasto fixo cadastrado' : 'Nenhuma receita recorrente cadastrada'"
+      [description]="isExpense() ? 'Cadastre aluguel, energia, internet e assinaturas para gerar os lançamentos de cada mês.' : 'Cadastre salário e benefícios para gerar os lançamentos de cada mês.'"
+    >
+      @if (store.canManage()) {
+        <button matButton="filled" (click)="openForm()">Cadastrar {{ typeLabel().toLowerCase() }}</button>
+      }
+    </app-empty-state>
+  } @else {
+    <ul class="recurrence-list">
+      @for (view of views(); track view.id) {
+        <li class="recurrence" [class.recurrence--inactive]="!view.active">
+          <span class="recurrence__icon" [class.recurrence__icon--income]="!isExpense()">
+            <mat-icon>{{ view.creditCardId ? 'credit_card' : isExpense() ? 'event_repeat' : 'payments' }}</mat-icon>
+          </span>
+          <div class="recurrence__info">
+            <span class="recurrence__name">{{ view.description }}</span>
+            <span class="recurrence__meta">
+              {{ view.categoryName ?? 'Sem categoria' }} · {{ view.originName }} ·
+              dia {{ view.day }} · {{ frequencyLabels[view.frequency] }}
+            </span>
+          </div>
+
+          <button
+            type="button"
+            class="recurrence__status"
+            [class]="'recurrence__status recurrence__status--' + view.status.toLowerCase()"
+            [disabled]="view.status !== 'GENERATED'"
+            (click)="openInstance(view)"
+          >
+            {{ statusLabels[view.status] }}
+            @if (view.status === 'GENERATED') {
+              <span class="recurrence__competence">{{ view.instance!.date | date: 'dd/MM' }}</span>
+            }
+          </button>
+
+          <span class="recurrence__amount bb-amount">
+            {{ (view.instance?.amount ?? view.defaultAmount) | currency }}
+            @if (view.instance && view.instance.amount !== view.defaultAmount) {
+              <span class="recurrence__suggested">sugerido {{ view.defaultAmount | currency }}</span>
+            }
+          </span>
+
+          @if (store.canManage()) {
+            <button matIconButton [matMenuTriggerFor]="menu" [attr.aria-label]="'Ações de ' + view.description">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu">
+              <button mat-menu-item (click)="openForm(view)">
+                <mat-icon>edit</mat-icon>
+                <span>Editar</span>
+              </button>
+              <button mat-menu-item (click)="toggleActive(view)">
+                <mat-icon>{{ view.active ? 'visibility_off' : 'visibility' }}</mat-icon>
+                <span>{{ view.active ? 'Desativar' : 'Ativar' }}</span>
+              </button>
+              <button mat-menu-item (click)="remove(view)">
+                <mat-icon>delete</mat-icon>
+                <span>Excluir</span>
+              </button>
+            </mat-menu>
+          }
+        </li>
+      }
+    </ul>
+  }
+</article>

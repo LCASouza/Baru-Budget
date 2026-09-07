@@ -1,0 +1,116 @@
+:host {
+  display: block;
+}
+
+.recurrence-list__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.recurrence-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.recurrence {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--bb-card-border);
+
+  &--inactive {
+    opacity: 0.6;
+  }
+}
+
+.recurrence__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  flex-shrink: 0;
+  background: color-mix(in srgb, var(--bb-chart-expense) 16%, transparent);
+  color: var(--bb-chart-expense);
+
+  &--income {
+    background: color-mix(in srgb, var(--bb-chart-income) 16%, transparent);
+    color: var(--bb-chart-income);
+  }
+}
+
+.recurrence__info {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.recurrence__name {
+  font: var(--mat-sys-body-large);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recurrence__meta {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recurrence__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--mat-sys-surface-container-high);
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-label-small);
+  white-space: nowrap;
+  cursor: default;
+
+  &--generated {
+    background: color-mix(in srgb, var(--bb-chart-income) 18%, transparent);
+    color: var(--bb-chart-income);
+    cursor: pointer;
+  }
+
+  &--missing {
+    background: var(--mat-sys-tertiary-container);
+    color: var(--mat-sys-on-tertiary-container);
+  }
+}
+
+.recurrence__competence {
+  opacity: 0.8;
+}
+
+.recurrence__amount {
+  display: grid;
+  justify-items: end;
+  font: var(--mat-sys-title-medium);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.recurrence__suggested {
+  font: var(--mat-sys-body-small);
+  font-weight: 400;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+@media (max-width: 767.98px) {
+  .recurrence__status {
+    display: none;
+  }
+}

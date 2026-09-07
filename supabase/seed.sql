@@ -262,3 +262,43 @@ begin
   );
 end;
 $$;
+
+-- Recurring templates for the development user, with the current month generated.
+do $$
+declare
+  dev_user constant uuid := '00000000-0000-4000-8000-000000000001';
+  bank     uuid;
+  card     uuid;
+  cat_home uuid;
+  cat_subs uuid;
+  cat_sal  uuid;
+  cat_ben  uuid;
+begin
+  select id into bank     from public.accounts     where owner_user_id = dev_user and name = 'Conta corrente';
+  select id into card     from public.credit_cards where owner_user_id = dev_user and name = 'Cartão principal';
+  select id into cat_home from public.categories   where owner_user_id = dev_user and kind = 'EXPENSE' and name = 'Moradia';
+  select id into cat_subs from public.categories   where owner_user_id = dev_user and kind = 'EXPENSE' and name = 'Assinaturas';
+  select id into cat_sal  from public.categories   where owner_user_id = dev_user and kind = 'INCOME'  and name = 'Salário';
+  select id into cat_ben  from public.categories   where owner_user_id = dev_user and kind = 'INCOME'  and name = 'Benefício';
+
+  insert into public.fixed_expenses
+    (owner_user_id, description, category_id, account_id, credit_card_id, default_amount, due_day, frequency, created_by, updated_by)
+  values
+    (dev_user, 'Aluguel',  cat_home, bank, null, 1850.00, 10, 'MONTHLY', dev_user, dev_user),
+    (dev_user, 'Internet', cat_home, bank, null,  120.00, 20, 'MONTHLY', dev_user, dev_user),
+    (dev_user, 'Streaming', cat_subs, null, card,   49.90,  8, 'MONTHLY', dev_user, dev_user);
+
+  insert into public.recurring_incomes
+    (owner_user_id, description, category_id, account_id, default_amount, receipt_day, frequency, created_by, updated_by)
+  values
+    (dev_user, 'Salário',          cat_sal, bank, 5400.00, 5, 'MONTHLY', dev_user, dev_user),
+    (dev_user, 'Vale alimentação', cat_ben, bank,  700.00, 5, 'MONTHLY', dev_user, dev_user);
+
+  perform set_config(
+    'request.jwt.claims',
+    json_build_object('sub', dev_user, 'role', 'authenticated')::text,
+    true
+  );
+  perform public.generate_recurrences(dev_user, date_trunc('month', current_date)::date);
+end;
+$$;

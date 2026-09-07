@@ -73,11 +73,33 @@ export const routes: Routes = [
             (m) => m.InstallmentsPage,
           ),
       },
-      placeholderRoute(
-        '/fixed-expenses',
-        'Gastos recorrentes com competência mensal editável sem alterar o modelo original.',
-        'v0.8',
-      ),
+      {
+        path: 'fixed-expenses',
+        title: navItem('/fixed-expenses').label,
+        loadComponent: () =>
+          import('./features/recurrences/recurrences-page/recurrences-page').then(
+            (m) => m.RecurrencesPage,
+          ),
+        children: [
+          { path: '', pathMatch: 'full', redirectTo: 'expenses' },
+          {
+            path: 'expenses',
+            data: { type: 'EXPENSE' },
+            loadComponent: () =>
+              import('./features/recurrences/recurrence-list-page/recurrence-list-page').then(
+                (m) => m.RecurrenceListPage,
+              ),
+          },
+          {
+            path: 'incomes',
+            data: { type: 'INCOME' },
+            loadComponent: () =>
+              import('./features/recurrences/recurrence-list-page/recurrence-list-page').then(
+                (m) => m.RecurrenceListPage,
+              ),
+          },
+        ],
+      },
       placeholderRoute(
         '/loans',
         'Empréstimos com principal, juros, parcelas e saldo devedor.',

@@ -1,0 +1,14 @@
+.recurrences {
+  display: grid;
+  gap: 20px;
+}
+
+mat-tab-nav-panel {
+  display: block;
+}
+
+@media (max-width: 767.98px) {
+  .recurrences {
+    gap: 16px;
+  }
+}

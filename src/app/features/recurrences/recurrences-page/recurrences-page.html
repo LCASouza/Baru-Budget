@@ -1,0 +1,16 @@
+<section class="recurrences">
+  @if (!viewport.isDesktop()) {
+    <app-period-filter [compact]="viewport.isMobile()" />
+  }
+
+  <nav mat-tab-nav-bar [tabPanel]="panel" aria-label="Tipos de recorrência">
+    @for (tab of tabs; track tab.path) {
+      <a mat-tab-link [routerLink]="tab.path" routerLinkActive #link="routerLinkActive" [active]="link.isActive">
+        {{ tab.label }}
+      </a>
+    }
+  </nav>
+  <mat-tab-nav-panel #panel>
+    <router-outlet />
+  </mat-tab-nav-panel>
+</section>

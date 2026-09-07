@@ -300,6 +300,123 @@ export type Database = {
           },
         ]
       }
+      fixed_expenses: {
+        Row: {
+          account_id: string | null
+          active: boolean
+          anchor_month: number | null
+          category_id: string
+          created_at: string
+          created_by: string
+          credit_card_id: string | null
+          default_amount: number
+          description: string
+          due_day: number
+          frequency: Database["public"]["Enums"]["recurrence_frequency"]
+          household_id: string | null
+          id: string
+          notes: string | null
+          owner_user_id: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          account_id?: string | null
+          active?: boolean
+          anchor_month?: number | null
+          category_id: string
+          created_at?: string
+          created_by?: string
+          credit_card_id?: string | null
+          default_amount: number
+          description: string
+          due_day: number
+          frequency?: Database["public"]["Enums"]["recurrence_frequency"]
+          household_id?: string | null
+          id?: string
+          notes?: string | null
+          owner_user_id: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Update: {
+          account_id?: string | null
+          active?: boolean
+          anchor_month?: number | null
+          category_id?: string
+          created_at?: string
+          created_by?: string
+          credit_card_id?: string | null
+          default_amount?: number
+          description?: string
+          due_day?: number
+          frequency?: Database["public"]["Enums"]["recurrence_frequency"]
+          household_id?: string | null
+          id?: string
+          notes?: string | null
+          owner_user_id?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fixed_expenses_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "account_balances"
+            referencedColumns: ["account_id"]
+          },
+          {
+            foreignKeyName: "fixed_expenses_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fixed_expenses_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fixed_expenses_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fixed_expenses_credit_card_id_fkey"
+            columns: ["credit_card_id"]
+            isOneToOne: false
+            referencedRelation: "credit_cards"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fixed_expenses_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fixed_expenses_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fixed_expenses_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       household_members: {
         Row: {
           created_at: string
@@ -431,6 +548,113 @@ export type Database = {
         }
         Relationships: []
       }
+      recurring_incomes: {
+        Row: {
+          account_id: string
+          active: boolean
+          anchor_month: number | null
+          category_id: string
+          created_at: string
+          created_by: string
+          default_amount: number
+          description: string
+          frequency: Database["public"]["Enums"]["recurrence_frequency"]
+          household_id: string | null
+          id: string
+          notes: string | null
+          owner_user_id: string
+          receipt_day: number
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          account_id: string
+          active?: boolean
+          anchor_month?: number | null
+          category_id: string
+          created_at?: string
+          created_by?: string
+          default_amount: number
+          description: string
+          frequency?: Database["public"]["Enums"]["recurrence_frequency"]
+          household_id?: string | null
+          id?: string
+          notes?: string | null
+          owner_user_id: string
+          receipt_day: number
+          updated_at?: string
+          updated_by?: string
+        }
+        Update: {
+          account_id?: string
+          active?: boolean
+          anchor_month?: number | null
+          category_id?: string
+          created_at?: string
+          created_by?: string
+          default_amount?: number
+          description?: string
+          frequency?: Database["public"]["Enums"]["recurrence_frequency"]
+          household_id?: string | null
+          id?: string
+          notes?: string | null
+          owner_user_id?: string
+          receipt_day?: number
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_incomes_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "account_balances"
+            referencedColumns: ["account_id"]
+          },
+          {
+            foreignKeyName: "recurring_incomes_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_incomes_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_incomes_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_incomes_household_id_fkey"
+            columns: ["household_id"]
+            isOneToOne: false
+            referencedRelation: "households"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_incomes_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_incomes_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           account_id: string | null
@@ -443,6 +667,7 @@ export type Database = {
           description: string
           destination_account_id: string | null
           due_date: string | null
+          fixed_expense_id: string | null
           household_id: string | null
           id: string
           installment_count: number | null
@@ -452,6 +677,8 @@ export type Database = {
           kind: Database["public"]["Enums"]["transaction_kind"]
           notes: string | null
           owner_user_id: string
+          recurrence_month: string | null
+          recurring_income_id: string | null
           status: Database["public"]["Enums"]["transaction_status"]
           updated_at: string
           updated_by: string
@@ -467,6 +694,7 @@ export type Database = {
           description: string
           destination_account_id?: string | null
           due_date?: string | null
+          fixed_expense_id?: string | null
           household_id?: string | null
           id?: string
           installment_count?: number | null
@@ -476,6 +704,8 @@ export type Database = {
           kind: Database["public"]["Enums"]["transaction_kind"]
           notes?: string | null
           owner_user_id: string
+          recurrence_month?: string | null
+          recurring_income_id?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
           updated_at?: string
           updated_by?: string
@@ -491,6 +721,7 @@ export type Database = {
           description?: string
           destination_account_id?: string | null
           due_date?: string | null
+          fixed_expense_id?: string | null
           household_id?: string | null
           id?: string
           installment_count?: number | null
@@ -500,6 +731,8 @@ export type Database = {
           kind?: Database["public"]["Enums"]["transaction_kind"]
           notes?: string | null
           owner_user_id?: string
+          recurrence_month?: string | null
+          recurring_income_id?: string | null
           status?: Database["public"]["Enums"]["transaction_status"]
           updated_at?: string
           updated_by?: string
@@ -555,6 +788,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "transactions_fixed_expense_id_fkey"
+            columns: ["fixed_expense_id"]
+            isOneToOne: false
+            referencedRelation: "fixed_expenses"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "transactions_household_id_fkey"
             columns: ["household_id"]
             isOneToOne: false
@@ -566,6 +806,13 @@ export type Database = {
             columns: ["owner_user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_recurring_income_id_fkey"
+            columns: ["recurring_income_id"]
+            isOneToOne: false
+            referencedRelation: "recurring_incomes"
             referencedColumns: ["id"]
           },
           {
@@ -696,6 +943,26 @@ export type Database = {
       }
     }
     Functions: {
+      assert_household_member: {
+        Args: { household: string; owner: string }
+        Returns: undefined
+      }
+      assert_owned_account: {
+        Args: { account: string; owner: string }
+        Returns: undefined
+      }
+      assert_owned_card: {
+        Args: { card: string; owner: string }
+        Returns: undefined
+      }
+      assert_owned_category: {
+        Args: {
+          category: string
+          expected: Database["public"]["Enums"]["category_kind"]
+          owner: string
+        }
+        Returns: undefined
+      }
       can_manage: { Args: { owner: string }; Returns: boolean }
       can_view: { Args: { owner: string }; Returns: boolean }
       category_used_in_my_households: {
@@ -716,6 +983,10 @@ export type Database = {
           p_total_amount: number
         }
         Returns: string
+      }
+      generate_recurrences: {
+        Args: { p_month: string; p_owner_user_id: string }
+        Returns: number
       }
       invoice_due_date_for: {
         Args: { closing_day: number; due_day: number; purchase_date: string }
@@ -757,6 +1028,7 @@ export type Database = {
       category_kind: "INCOME" | "EXPENSE"
       household_member_status: "ACTIVE" | "INACTIVE"
       household_role: "ADMIN" | "MEMBER"
+      recurrence_frequency: "MONTHLY" | "YEARLY"
       transaction_kind: "INCOME" | "EXPENSE" | "TRANSFER" | "SETTLEMENT"
       transaction_status: "PENDING" | "PAID" | "CANCELLED"
     }
@@ -894,6 +1166,7 @@ export const Constants = {
       category_kind: ["INCOME", "EXPENSE"],
       household_member_status: ["ACTIVE", "INACTIVE"],
       household_role: ["ADMIN", "MEMBER"],
+      recurrence_frequency: ["MONTHLY", "YEARLY"],
       transaction_kind: ["INCOME", "EXPENSE", "TRANSFER", "SETTLEMENT"],
       transaction_status: ["PENDING", "PAID", "CANCELLED"],
     },

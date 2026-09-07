@@ -196,6 +196,11 @@
                             {{ view.transaction.installment_number }}/{{ view.transaction.installment_count }}
                           </span>
                         }
+                        @if (view.transaction.fixed_expense_id) {
+                          <span class="tx-row__installment">Fixo</span>
+                        } @else if (view.transaction.recurring_income_id) {
+                          <span class="tx-row__installment">Recorrente</span>
+                        }
                       </span>
                       <span class="tx-row__meta">
                         @if (isHousehold()) {
