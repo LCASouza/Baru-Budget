@@ -1,0 +1,190 @@
+<section class="data">
+  <article class="bb-card">
+    <header class="bb-card__head">
+      <div>
+        <h3 class="bb-card__title">Backup e exportação</h3>
+        <p class="bb-card__subtitle">
+          Baixa tudo de {{ store.ownerLabel() }} no Baru Budget Excel Format, schema version
+          {{ schemaVersion }}. O mesmo arquivo serve para editar e reimportar.
+        </p>
+      </div>
+      <button matButton="filled" (click)="exportWorkbook()" [disabled]="store.exporting()">
+        <mat-icon>download</mat-icon>
+        {{ store.exporting() ? 'Gerando…' : 'Exportar' }}
+      </button>
+    </header>
+
+    @if (store.exporting()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+    @if (store.exportResult(); as result) {
+      <p class="data__note">
+        <mat-icon>check_circle</mat-icon>
+        {{ result.fileName }} com {{ result.rows | number }} registros.
+      </p>
+    }
+    @if (store.exportError(); as error) {
+      <p class="data__error"><mat-icon>error_outline</mat-icon> {{ error }}</p>
+    }
+  </article>
+
+  <article class="bb-card">
+    <header class="bb-card__head">
+      <div>
+        <h3 class="bb-card__title">Importação</h3>
+        <p class="bb-card__subtitle">{{ absenceNotice }}</p>
+      </div>
+      @if (store.canManage()) {
+        <button matButton="outlined" (click)="picker.click()" [disabled]="store.reading()">
+          <mat-icon>upload_file</mat-icon>
+          Escolher arquivo
+        </button>
+        <input
+          #picker
+          type="file"
+          class="data__picker"
+          accept=".xlsx"
+          (change)="choose($event)"
+        />
+      }
+    </header>
+
+    @if (!store.canManage()) {
+      <p class="data__note">
+        <mat-icon>lock</mat-icon>
+        Você tem permissão de leitura neste contexto e pode exportar, mas não importar.
+      </p>
+    }
+
+    @if (store.reading()) {
+      <mat-progress-bar mode="indeterminate" />
+    }
+
+    @if (store.importError(); as error) {
+      <p class="data__error"><mat-icon>error_outline</mat-icon> {{ error }}</p>
+    }
+
+    @if (store.compatibility(); as compatibility) {
+      @if (!compatibility.compatible) {
+        <p class="data__error">
+          <mat-icon>block</mat-icon>
+          {{ compatibility.reason }}
+        </p>
+      }
+    }
+
+    @if (store.plan(); as plan) {
+      <div class="preview">
+        <p class="preview__file">
+          <mat-icon>description</mat-icon>
+          {{ store.fileName() }}
+        </p>
+
+        <div class="preview__totals">
+          <span class="preview__total preview__total--new">
+            <strong>{{ plan.created }}</strong> novos
+          </span>
+          <span class="preview__total preview__total--updated">
+            <strong>{{ plan.updated }}</strong> atualizados
+          </span>
+          <span class="preview__total">
+            <strong>{{ plan.unchanged }}</strong> sem alteração
+          </span>
+          <span class="preview__total preview__total--invalid">
+            <strong>{{ plan.invalid }}</strong> inválidos
+          </span>
+        </div>
+
+        <p class="data__note">
+          <mat-icon>shield</mat-icon>
+          {{ plan.untouched | number }} registros do banco não estão no arquivo e serão mantidos.
+        </p>
+
+        @if (store.unknownSheets().length > 0) {
+          <p class="data__note">
+            <mat-icon>info</mat-icon>
+            Abas ignoradas: {{ store.unknownSheets().join(', ') }}.
+          </p>
+        }
+
+        <div class="preview__table">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Aba</th>
+                <th scope="col" class="preview__number">Novos</th>
+                <th scope="col" class="preview__number">Atualizados</th>
+                <th scope="col" class="preview__number">Sem alteração</th>
+                <th scope="col" class="preview__number">Inválidos</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (sheet of sheets(); track sheet.sheetName) {
+                <tr>
+                  <td>{{ sheet.sheetName }}</td>
+                  <td class="preview__number">{{ sheet.created }}</td>
+                  <td class="preview__number">{{ sheet.updated }}</td>
+                  <td class="preview__number">{{ sheet.unchanged }}</td>
+                  <td class="preview__number">{{ sheet.invalid }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        @if (invalidLines().length > 0) {
+          <details class="preview__invalid">
+            <summary>Ver as {{ invalidLines().length }} linhas inválidas</summary>
+            <ul>
+              @for (line of invalidLines(); track line.sheetName + line.row.line) {
+                <li>
+                  <strong>{{ line.sheetName }}, linha {{ line.row.line }}</strong>
+                  <span>{{ line.row.description }}</span>
+                  @for (issue of line.row.issues; track issue.column) {
+                    <span class="preview__issue">{{ issue.column }}: {{ issue.message }}</span>
+                  }
+                </li>
+              }
+            </ul>
+          </details>
+        }
+
+        <div class="preview__actions">
+          <button matButton (click)="store.resetImport()" [disabled]="store.applying()">
+            Cancelar
+          </button>
+          <button matButton="filled" (click)="confirm()" [disabled]="!store.canConfirm()">
+            {{ store.applying() ? 'Importando…' : 'Confirmar importação' }}
+          </button>
+        </div>
+        @if (!plan.hasWork) {
+          <p class="data__note">
+            <mat-icon>done_all</mat-icon>
+            Nada a aplicar: o arquivo está igual ao que já está no Baru Budget.
+          </p>
+        }
+      </div>
+    }
+
+    @if (store.outcome(); as outcome) {
+      <div class="preview__result">
+        <p [class.data__note]="outcome.ok" [class.data__error]="!outcome.ok">
+          <mat-icon>{{ outcome.ok ? 'check_circle' : 'error_outline' }}</mat-icon>
+          {{ outcome.written }} registros gravados{{ outcome.failed > 0 ? ', ' + outcome.failed + ' não gravados' : '' }}.
+        </p>
+        <ul>
+          @for (sheet of outcome.sheets; track sheet.sheetName) {
+            <li>
+              <strong>{{ sheet.sheetName }}</strong>
+              @if (sheet.error) {
+                <span class="preview__issue">{{ sheet.error }}</span>
+              } @else {
+                <span>{{ sheet.written }} gravados</span>
+              }
+            </li>
+          }
+        </ul>
+      </div>
+    }
+  </article>
+</section>

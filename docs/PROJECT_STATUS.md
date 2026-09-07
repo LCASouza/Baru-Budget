@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**v0.12 — Baru Budget Excel Format v1** (IN_PROGRESS). The architectural analysis is delivered in `ARCHITECTURE_ANALYSIS_V0.12.md`; implementation starts after its approval. Version file: `versions/v0.12.md`. The production checks of v0.4 to v0.11 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
+**v0.12 — Baru Budget Excel Format v1** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V0.12.md`); implementation complete and `main` deployed. No migration was needed. Production check pending. Version file: `versions/v0.12.md`. The production checks of v0.4 to v0.11 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
 
 Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.11 (`versions/v0.1.md` to `versions/v0.11.md`).
 
@@ -52,8 +52,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.10 implementation | v0.10 | DELIVERED | Loans with explicit interest models, schedule generation and derived balances; hosted `db push` applied on 2026-09-07; production check deferred |
 | v0.11 architectural analysis | v0.11 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.11.md`; approved on 2026-09-07 |
 | v0.11 implementation | v0.11 | DELIVERED | Financings with Price and SAC, the asset value kept out of the ledger; hosted `db push` applied on 2026-09-07; production check deferred |
-| v0.12 architectural analysis | v0.12 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.12.md`; awaiting approval |
-| v0.12 implementation | v0.12 | PENDING | Declarative workbook contract, export, preview, merge by UUID, backup |
+| v0.12 architectural analysis | v0.12 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.12.md`; approved on 2026-09-07 |
+| v0.12 implementation | v0.12 | IN_PROGRESS | Declarative workbook contract, export, preview, merge by UUID, backup; no migration; production check pending |
 
 ## Features
 
@@ -81,7 +81,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | FEAT-020 | Settlements | v0.9 | DELIVERED | Settlement as a transaction kind with direction, derived balances, receivables and payables |
 | FEAT-021 | Loans | v0.10 | DELIVERED | Simple interest and Price with documented conversions, idempotent schedule, derived outstanding balance, disbursement out of income |
 | FEAT-022 | Financings | v0.11 | DELIVERED | Price and SAC with documented conversions, generated financed amount, idempotent schedule, derived outstanding balance, asset value never recorded |
-| FEAT-023 | Baru Budget Excel Format v1 | v0.12 | IN_PROGRESS | Export, import, preview, merge by UUID, backup |
+| FEAT-023 | Baru Budget Excel Format v1 | v0.12 | IN_PROGRESS | Frozen schema version 1, paginated export, mandatory preview, merge by UUID, absence never deletes, backup; implemented locally |
 
 ## Bugs
 
@@ -115,4 +115,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-07 — v0.11 delivered (production check deferred by the administrator). v0.12 Baru Budget Excel Format v1 started: architectural analysis delivered, awaiting approval before implementation.
+2026-09-07 — v0.12 Baru Budget Excel Format v1 implemented and deployed (no migration, 890 pgTAP assertions, 368 Vitest tests); production check pending.

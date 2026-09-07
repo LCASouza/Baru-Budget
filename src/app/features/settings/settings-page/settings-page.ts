@@ -19,5 +19,6 @@ export class SettingsPage {
     { path: 'accounts', label: 'Contas' },
     { path: 'categories', label: 'Categorias' },
     { path: 'profile', label: 'Perfil' },
+    { path: 'data', label: 'Dados' },
   ];
 }

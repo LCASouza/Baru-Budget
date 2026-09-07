@@ -55,6 +55,52 @@ select throws_ok(
              'aaaaaaaa-0000-4000-8000-000000000001') $$,
   '42501', null, 'VIEW: cannot create a transaction for the owner'
 );
+-- Every table the Excel format writes is closed to VIEW, so importing a
+-- workbook can never widen what a reader is allowed to do.
+select throws_ok(
+  $$ insert into public.credit_cards (owner_user_id, name, closing_day, due_day)
+     values ('11111111-1111-1111-1111-111111111111', 'Intruso', 10, 20) $$,
+  '42501', null, 'VIEW: cannot create a credit card for the owner'
+);
+select throws_ok(
+  $$ insert into public.categories (owner_user_id, kind, name)
+     values ('11111111-1111-1111-1111-111111111111', 'EXPENSE', 'Intrusa') $$,
+  '42501', null, 'VIEW: cannot create a category for the owner'
+);
+select throws_ok(
+  $$ insert into public.loans (owner_user_id, description, account_id, category_id, principal, interest_rate, interest_model, installment_count, start_date, first_due_date)
+     values ('11111111-1111-1111-1111-111111111111', 'Intruso', 'aaaaaaaa-0000-4000-8000-000000000001',
+             (select id from public.categories where owner_user_id = '11111111-1111-1111-1111-111111111111' and kind = 'EXPENSE' and name = 'Outros'),
+             1000, 1, 'PRICE', 12, '2026-09-05', '2026-10-10') $$,
+  null, null, 'VIEW: cannot create a loan for the owner'
+);
+select throws_ok(
+  $$ insert into public.financings (owner_user_id, description, account_id, category_id, asset_value, down_payment, interest_rate, system, installment_count, acquisition_date, first_due_date)
+     values ('11111111-1111-1111-1111-111111111111', 'Intruso', 'aaaaaaaa-0000-4000-8000-000000000001',
+             (select id from public.categories where owner_user_id = '11111111-1111-1111-1111-111111111111' and kind = 'EXPENSE' and name = 'Outros'),
+             1000, 0, 1, 'SAC', 12, '2026-09-05', '2026-10-10') $$,
+  null, null, 'VIEW: cannot create a financing for the owner'
+);
+select throws_ok(
+  $$ insert into public.fixed_expenses (owner_user_id, description, category_id, account_id, default_amount, due_day, frequency)
+     values ('11111111-1111-1111-1111-111111111111', 'Intruso',
+             (select id from public.categories where owner_user_id = '11111111-1111-1111-1111-111111111111' and kind = 'EXPENSE' and name = 'Outros'),
+             'aaaaaaaa-0000-4000-8000-000000000001', 100, 10, 'MONTHLY') $$,
+  null, null, 'VIEW: cannot create a fixed expense for the owner'
+);
+select throws_ok(
+  $$ insert into public.recurring_incomes (owner_user_id, description, category_id, account_id, default_amount, receipt_day, frequency)
+     values ('11111111-1111-1111-1111-111111111111', 'Intruso',
+             (select id from public.categories where owner_user_id = '11111111-1111-1111-1111-111111111111' and kind = 'INCOME' and name = 'Outros'),
+             'aaaaaaaa-0000-4000-8000-000000000001', 100, 10, 'MONTHLY') $$,
+  null, null, 'VIEW: cannot create a recurring income for the owner'
+);
+select is(
+  (select count(*)::int from public.credit_cards where owner_user_id = '11111111-1111-1111-1111-111111111111'),
+  0,
+  'VIEW: nothing was written for the owner'
+);
+
 select lives_ok($$ update public.transactions set amount = 1 where id = 'aaaaaaaa-0000-4000-8000-0000000000e1' $$, 'VIEW: update on owner transaction affects no rows');
 select lives_ok($$ delete from public.transactions where id = 'aaaaaaaa-0000-4000-8000-0000000000e1' $$, 'VIEW: delete on owner transaction affects no rows');
 select lives_ok($$ update public.financial_access_grants set permission = 'MANAGE' where id = '99999999-0000-4000-8000-000000000001' $$, 'VIEW: update on the grant affects no rows');

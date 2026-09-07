@@ -163,6 +163,11 @@ export const routes: Routes = [
             loadComponent: () =>
               import('./features/settings/profile-page/profile-page').then((m) => m.ProfilePage),
           },
+          {
+            path: 'data',
+            loadComponent: () =>
+              import('./features/data-transfer/data-page/data-page').then((m) => m.DataPage),
+          },
         ],
       },
     ],
