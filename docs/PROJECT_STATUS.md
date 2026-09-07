@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**v0.11 — Financings** (IN_PROGRESS). The architectural analysis is delivered in `ARCHITECTURE_ANALYSIS_V0.11.md`; implementation starts after its approval. Version file: `versions/v0.11.md`. The production checks of v0.4 to v0.10 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
+**v0.11 — Financings** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V0.11.md`); implementation complete, migrations applied to the hosted project and `main` deployed; production check pending. Version file: `versions/v0.11.md`. The production checks of v0.4 to v0.10 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
 
 Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.10 (`versions/v0.1.md` to `versions/v0.10.md`).
 
@@ -50,8 +50,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.9 implementation | v0.9 | DELIVERED | Allocations with a backend invariant, settlements and balances; hosted `db push` applied on 2026-09-07; production check deferred |
 | v0.10 architectural analysis | v0.10 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.10.md`; approved on 2026-09-07 |
 | v0.10 implementation | v0.10 | DELIVERED | Loans with explicit interest models, schedule generation and derived balances; hosted `db push` applied on 2026-09-07; production check deferred |
-| v0.11 architectural analysis | v0.11 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.11.md`; awaiting approval |
-| v0.11 implementation | v0.11 | PENDING | Financings with Price and SAC, down payment as the only acquisition expense |
+| v0.11 architectural analysis | v0.11 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.11.md`; approved on 2026-09-07 |
+| v0.11 implementation | v0.11 | IN_PROGRESS | Financings with Price and SAC, the asset value kept out of the ledger; hosted `db push` applied on 2026-09-07; production check pending |
 
 ## Features
 
@@ -78,7 +78,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | FEAT-019 | Transaction allocations | v0.9 | DELIVERED | Payer vs. responsible, sum invariant in the database, counterparty visibility |
 | FEAT-020 | Settlements | v0.9 | DELIVERED | Settlement as a transaction kind with direction, derived balances, receivables and payables |
 | FEAT-021 | Loans | v0.10 | DELIVERED | Simple interest and Price with documented conversions, idempotent schedule, derived outstanding balance, disbursement out of income |
-| FEAT-022 | Financings | v0.11 | IN_PROGRESS | Asset value, down payment, financed amount, outstanding balance |
+| FEAT-022 | Financings | v0.11 | IN_PROGRESS | Price and SAC with documented conversions, generated financed amount, idempotent schedule, derived outstanding balance, asset value never recorded; implemented locally |
 | FEAT-023 | Baru Budget Excel Format v1 | v0.12 | PENDING | Export, import, preview, merge by UUID, backup |
 
 ## Bugs
@@ -113,4 +113,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-07 — v0.10 delivered (production check deferred by the administrator). v0.11 Financings started: architectural analysis delivered, awaiting approval before implementation.
+2026-09-07 — v0.11 Financings implemented and deployed (2 migrations applied to the hosted project, 883 pgTAP assertions, 314 Vitest tests); production check pending.
