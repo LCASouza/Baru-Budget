@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**v0.9 — Allocations and Settlements** (IN_PROGRESS). The architectural analysis is delivered in `ARCHITECTURE_ANALYSIS_V0.9.md`; implementation starts after its approval. Version file: `versions/v0.9.md`. The production checks of v0.4 to v0.8 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
+**v0.9 — Allocations and Settlements** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V0.9.md`), including the documented decision to model a settlement as a SETTLEMENT transaction instead of a separate table; implementation complete locally, hosted migrations and production check pending. Version file: `versions/v0.9.md`. The production checks of v0.4 to v0.8 remain deferred (see their version files). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
 
 Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.8 (`versions/v0.1.md` to `versions/v0.8.md`).
 
@@ -46,8 +46,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.7 implementation | v0.7 | DELIVERED | Installment generation in the database, installments page, commitment, filters; hosted `db push` applied on 2026-09-07; production check deferred |
 | v0.8 architectural analysis | v0.8 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.8.md`; approved on 2026-09-07 |
 | v0.8 implementation | v0.8 | DELIVERED | Templates, idempotent generation and recurrences page; hosted `db push` applied on 2026-09-07; production check deferred |
-| v0.9 architectural analysis | v0.9 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.9.md`; awaiting approval |
-| v0.9 implementation | v0.9 | PENDING | Allocations with a backend invariant, settlements, balances between people |
+| v0.9 architectural analysis | v0.9 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.9.md`; approved on 2026-09-07 |
+| v0.9 implementation | v0.9 | IN_PROGRESS | Allocations with a backend invariant, settlements and balances done locally; hosted `db push` and production check pending |
 
 ## Features
 
@@ -71,8 +71,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | FEAT-016 | Installments | v0.7 | DELIVERED | Generation in the database, one instalment per invoice or month, progress, commitment and filters |
 | FEAT-017 | Fixed expenses | v0.8 | DELIVERED | Templates on account or card, idempotent monthly generation, editable instances |
 | FEAT-018 | Recurring incomes | v0.8 | DELIVERED | Templates in their own table, generated as pending on the receipt day |
-| FEAT-019 | Transaction allocations | v0.9 | IN_PROGRESS | Payer vs. responsible, amounts owed |
-| FEAT-020 | Settlements | v0.9 | IN_PROGRESS | Payments between users, receivables and payables |
+| FEAT-019 | Transaction allocations | v0.9 | IN_PROGRESS | Payer vs. responsible, sum invariant in the database, counterparty visibility; implemented locally |
+| FEAT-020 | Settlements | v0.9 | IN_PROGRESS | Settlement as a transaction kind with direction, derived balances, receivables and payables; implemented locally |
 | FEAT-021 | Loans | v0.10 | PENDING | Explicit interest models, outstanding balance |
 | FEAT-022 | Financings | v0.11 | PENDING | Asset value, down payment, financed amount, outstanding balance |
 | FEAT-023 | Baru Budget Excel Format v1 | v0.12 | PENDING | Export, import, preview, merge by UUID, backup |
@@ -109,4 +109,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-07 — v0.8 delivered (production check deferred by the administrator). v0.9 Allocations and Settlements started: architectural analysis delivered, awaiting approval before implementation.
+2026-09-07 — v0.9 Allocations and Settlements implemented locally (3 migrations, 692 pgTAP assertions, 260 Vitest tests); hosted migrations and production check pending.

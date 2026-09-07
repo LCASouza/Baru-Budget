@@ -144,6 +144,10 @@ export class TransactionsPage {
     effect(() => this.store.setKind(parseKindTab(this.kind())));
   }
 
+  protected hasSplit(view: TransactionView): boolean {
+    return (this.store.allocationsByTransaction().get(view.transaction.id)?.length ?? 0) > 0;
+  }
+
   protected isTabActive(tab: KindTabOption): boolean {
     return this.store.filters().kind === tab.kind;
   }

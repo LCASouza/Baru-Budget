@@ -15,6 +15,8 @@ import { makeAccount, makeCategory, makeTransaction } from '../../../testing/fin
 import { AccountsStore } from '../../accounts/accounts.store';
 import { CategoriesStore } from '../../categories/categories.store';
 import { CardsStore } from '../../cards/cards.store';
+import { SettlementsRepository } from '../../settlements/settlements.repository';
+import { SettlementsStore } from '../../settlements/settlements.store';
 import { InstallmentsStore } from '../../installments/installments.store';
 import { CreditCard } from '../../cards/card.model';
 import { TransactionFormData } from '../open-transaction-dialog';
@@ -26,7 +28,10 @@ registerLocaleData(localePt);
 describe('TransactionFormDialog', () => {
   let fixture: ComponentFixture<TransactionFormDialog>;
   let component: TransactionFormDialog;
-  let store: Record<'create' | 'update' | 'remove' | 'createInstallments' | 'removeInstallmentGroup', ReturnType<typeof vi.fn>>;
+  let store: Record<
+    'create' | 'update' | 'remove' | 'createInstallments' | 'removeInstallmentGroup' | 'setAllocations',
+    ReturnType<typeof vi.fn>
+  >;
   let dialogRef: { close: ReturnType<typeof vi.fn> };
   let snackBar: { open: ReturnType<typeof vi.fn> };
   const accounts = signal([
@@ -42,6 +47,7 @@ describe('TransactionFormDialog', () => {
 
   const context = signal<FinancialContext>(PERSONAL_CONTEXT);
   const cards = signal<CreditCard[]>([]);
+  const people = signal<{ id: string; name: string }[]>([]);
   const cardsService = {
     cards,
     activeCards: computed(() => cards().filter((card) => card.active)),
@@ -96,6 +102,10 @@ describe('TransactionFormDialog', () => {
     memberNameById: computed(
       () => new Map(households().flatMap((h) => h.members.map((m) => [m.userId, m.displayName] as const))),
     ),
+    dataOwnerId: computed(() => {
+      const c = context();
+      return c.kind === 'shared' ? c.ownerId : 'u1';
+    }),
   };
 
   async function setup(
@@ -104,11 +114,12 @@ describe('TransactionFormDialog', () => {
   ): Promise<void> {
     findManyByIds = vi.fn().mockResolvedValue(profiles);
     store = {
-      create: vi.fn().mockResolvedValue(undefined),
+      create: vi.fn().mockResolvedValue(makeTransaction({ id: 'tx-new' })),
       update: vi.fn().mockResolvedValue(undefined),
       remove: vi.fn().mockResolvedValue(undefined),
       createInstallments: vi.fn().mockResolvedValue(undefined),
       removeInstallmentGroup: vi.fn().mockResolvedValue(undefined),
+      setAllocations: vi.fn().mockResolvedValue(undefined),
     };
     dialogRef = { close: vi.fn() };
     snackBar = { open: vi.fn() };
@@ -124,6 +135,22 @@ describe('TransactionFormDialog', () => {
         { provide: TransactionsStore, useValue: store },
         { provide: FinancialContextService, useValue: contextService },
         { provide: CardsStore, useValue: cardsService },
+        {
+          provide: SettlementsStore,
+          useValue: {
+            totals: signal({ receivable: 0, payable: 0, net: 0 }),
+            people: people,
+            reload: vi.fn(),
+          },
+        },
+        {
+          provide: SettlementsRepository,
+          useValue: {
+            listAllocationsIn: vi.fn().mockResolvedValue([]),
+            listAllocations: vi.fn().mockResolvedValue([]),
+            setAllocations: vi.fn().mockResolvedValue(undefined),
+          },
+        },
         {
           provide: InstallmentsStore,
           useValue: {
@@ -171,6 +198,7 @@ describe('TransactionFormDialog', () => {
     context.set(PERSONAL_CONTEXT);
     households.set([]);
     cards.set([]);
+    people.set([]);
   });
 
   it('starts as an expense with today and PAID by default', async () => {
@@ -534,6 +562,75 @@ describe('TransactionFormDialog', () => {
     await component['removeInstallmentGroup']();
     expect(store.removeInstallmentGroup).toHaveBeenCalledWith('g1');
     expect(dialogRef.close).toHaveBeenCalledWith('deleted');
+  });
+
+  it('offers the split only for an expense and only with people available', async () => {
+    await setup();
+    expect(component['canShare']()).toBe(false);
+
+    people.set([{ id: 'u2', name: 'Maria' }]);
+    TestBed.resetTestingModule();
+    await setup();
+    expect(component['canShare']()).toBe(true);
+    form().controls.kind.setValue('TRANSFER');
+    expect(component['canShare']()).toBe(false);
+  });
+
+  it('splits evenly including the payer own share', async () => {
+    people.set([{ id: 'u2', name: 'Maria' }]);
+    await setup();
+    form().controls.amount.setValue('600');
+    component['addSplitRow']();
+    component['setSplitUser'](0, 'u2');
+    component['splitEvenly']();
+    expect(component['splitRows']()).toEqual([
+      { userId: 'u1', amount: '300,00' },
+      { userId: 'u2', amount: '300,00' },
+    ]);
+    expect(component['splitRemaining']()).toBe(0);
+    expect(component['splitValid']()).toBe(true);
+  });
+
+  it('refuses a split that does not add up', async () => {
+    people.set([{ id: 'u2', name: 'Maria' }]);
+    await setup();
+    form().patchValue({ description: 'Mercado', amount: '600', categoryId: 'cat-food', accountId: 'acc-bank' });
+    component['addSplitRow']();
+    component['setSplitUser'](0, 'u2');
+    component['setSplitAmount'](0, '200');
+    expect(component['splitValid']()).toBe(false);
+    expect(component['splitRemaining']()).toBe(400);
+    await component['save']();
+    expect(store.create).not.toHaveBeenCalled();
+    expect(snackBar.open).toHaveBeenCalledWith(
+      'A divisão precisa somar exatamente o valor da despesa.',
+      'OK',
+      expect.anything(),
+    );
+  });
+
+  it('writes the split after creating the expense', async () => {
+    people.set([{ id: 'u2', name: 'Maria' }]);
+    await setup();
+    form().patchValue({ description: 'Mercado', amount: '600', categoryId: 'cat-food', accountId: 'acc-bank' });
+    component['addSplitRow']();
+    component['setSplitUser'](0, 'u1');
+    component['setSplitAmount'](0, '300');
+    component['addSplitRow']();
+    component['setSplitUser'](1, 'u2');
+    component['setSplitAmount'](1, '300');
+    await component['save']();
+    expect(store.create).toHaveBeenCalled();
+    expect(store.setAllocations).toHaveBeenCalledWith('tx-new', ['u1', 'u2'], [300, 300]);
+    expect(dialogRef.close).toHaveBeenCalledWith('saved');
+  });
+
+  it('does not touch the split when there is none', async () => {
+    people.set([{ id: 'u2', name: 'Maria' }]);
+    await setup();
+    form().patchValue({ description: 'Luz', amount: '10', categoryId: 'cat-food', accountId: 'acc-bank' });
+    await component['save']();
+    expect(store.setAllocations).not.toHaveBeenCalled();
   });
 
   it('uses the initial kind passed by the caller', async () => {

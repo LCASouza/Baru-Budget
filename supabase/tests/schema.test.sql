@@ -65,6 +65,18 @@ select has_view('public', 'installment_purchases', 'installment_purchases view e
 select has_enum('public', 'recurrence_frequency', 'recurrence_frequency enum exists');
 select enum_has_labels('public', 'recurrence_frequency', array['MONTHLY', 'YEARLY'], 'recurrence_frequency labels');
 select has_table('public', 'fixed_expenses', 'fixed_expenses table exists');
+select has_table('public', 'transaction_allocations', 'transaction_allocations table exists');
+select has_index('public', 'transaction_allocations', 'transaction_allocations_unique_user', 'transaction_allocations has the unique user index');
+select index_is_unique('public', 'transaction_allocations', 'transaction_allocations_unique_user', 'the allocation user index is unique');
+select has_enum('public', 'settlement_direction', 'settlement_direction enum exists');
+select enum_has_labels('public', 'settlement_direction', array['PAY', 'RECEIVE'], 'settlement_direction labels');
+select has_column('public', 'transactions', 'counterparty_user_id', 'transactions.counterparty_user_id exists');
+select has_column('public', 'transactions', 'settlement_direction', 'transactions.settlement_direction exists');
+select has_view('public', 'people_balances', 'people_balances view exists');
+select has_function('public', 'set_transaction_allocations', array['uuid', 'uuid[]', 'numeric[]'], 'set_transaction_allocations exists');
+select has_function('public', 'is_allocated_to_me', array['uuid'], 'is_allocated_to_me exists');
+select has_function('public', 'shares_ledger_with', array['uuid'], 'shares_ledger_with exists');
+select policies_are('public', 'transaction_allocations', array['transaction_allocations_select_related', 'transaction_allocations_insert_manage', 'transaction_allocations_update_manage', 'transaction_allocations_delete_manage'], 'transaction_allocations policies');
 select has_table('public', 'recurring_incomes', 'recurring_incomes table exists');
 select col_not_null('public', 'fixed_expenses', 'category_id', 'fixed_expenses.category_id is not null');
 select col_not_null('public', 'recurring_incomes', 'account_id', 'recurring_incomes.account_id is not null');

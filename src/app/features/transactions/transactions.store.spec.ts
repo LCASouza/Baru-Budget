@@ -6,6 +6,7 @@ import { PeriodService } from '../../core/period/period.service';
 import { makeAccount, makeCategory, makeTransaction } from '../../testing/finance-fixtures';
 import { AccountsStore } from '../accounts/accounts.store';
 import { CardsStore } from '../cards/cards.store';
+import { SettlementsRepository } from '../settlements/settlements.repository';
 import { InstallmentsStore } from '../installments/installments.store';
 import { CategoriesStore } from '../categories/categories.store';
 import { TransactionRepository } from './transaction.repository';
@@ -55,6 +56,14 @@ describe('TransactionsStore', () => {
           },
         },
         { provide: TransactionRepository, useValue: repository },
+        {
+          provide: SettlementsRepository,
+          useValue: {
+            listAllocationsIn: vi.fn().mockResolvedValue([]),
+            listAllocations: vi.fn().mockResolvedValue([]),
+            setAllocations: vi.fn().mockResolvedValue(undefined),
+          },
+        },
         {
           provide: InstallmentsStore,
           useValue: {

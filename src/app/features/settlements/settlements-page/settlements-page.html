@@ -1,0 +1,105 @@
+<section class="settlements">
+  <div class="settlements__summary">
+    @for (card of cards(); track card.label) {
+      <app-summary-card [data]="card" />
+    }
+  </div>
+
+  <article class="bb-card">
+    <header class="bb-card__head">
+      <div>
+        <h3 class="bb-card__title">Saldo por pessoa</h3>
+        <p class="bb-card__subtitle">
+          Positivo é a receber, negativo é a pagar. O acerto não altera a despesa de origem.
+        </p>
+      </div>
+      @if (store.canManage()) {
+        <button matButton="filled" (click)="openSettlement()">
+          <mat-icon>handshake</mat-icon>
+          Registrar acerto
+        </button>
+      }
+    </header>
+
+    @if (store.isLoading() && !store.loaded()) {
+      <mat-progress-bar mode="indeterminate" />
+    } @else if (store.error()) {
+      <app-empty-state
+        icon="error_outline"
+        title="Não foi possível carregar os saldos"
+        description="Verifique a conexão e tente novamente."
+      >
+        <button matButton="outlined" (click)="store.reload()">Tentar novamente</button>
+      </app-empty-state>
+    } @else if (store.open().length === 0) {
+      <app-empty-state
+        icon="handshake"
+        title="Nenhuma conta em aberto"
+        description="Divida uma despesa com alguém para acompanhar aqui quanto cada um deve."
+      />
+    } @else {
+      <ul class="people">
+        @for (person of store.open(); track person.userId) {
+          <li class="person">
+            <button type="button" class="person__head" (click)="store.toggle(person.userId)">
+              <span class="person__avatar" aria-hidden="true">{{ person.name.charAt(0).toUpperCase() }}</span>
+              <span class="person__info">
+                <span class="person__name">{{ person.name }}</span>
+                <span class="person__meta">
+                  {{ person.balance > 0 ? 'deve a você' : 'você deve' }}
+                </span>
+              </span>
+              <span class="person__amount bb-amount" [class.person__amount--payable]="person.balance < 0">
+                {{ (person.balance < 0 ? -person.balance : person.balance) | currency }}
+              </span>
+              <mat-icon class="person__caret">
+                {{ store.selected() === person.userId ? 'expand_less' : 'expand_more' }}
+              </mat-icon>
+            </button>
+
+            @if (store.selected() === person.userId) {
+              <div class="person__detail">
+                @if (store.itemsLoading()) {
+                  <mat-progress-bar mode="indeterminate" />
+                } @else {
+                  <ul class="items">
+                    @for (item of store.items(); track item.id) {
+                      <li>
+                        <button type="button" class="item" (click)="openItem(item)">
+                          <span class="item__icon" [class.item__icon--settlement]="item.kind === 'SETTLEMENT'">
+                            <mat-icon>{{ item.kind === 'SETTLEMENT' ? 'handshake' : 'receipt_long' }}</mat-icon>
+                          </span>
+                          <span class="item__info">
+                            <span class="item__name">{{ item.description }}</span>
+                            <span class="item__meta">
+                              {{ item.date | date: 'dd/MM/yyyy' }} ·
+                              @switch (item.kind) {
+                                @case ('OWED_TO_ME') { parte de {{ person.name }} }
+                                @case ('I_OWE') { sua parte }
+                                @case ('SETTLEMENT') { acerto }
+                              }
+                            </span>
+                          </span>
+                          <span class="item__amount bb-amount" [class.item__amount--negative]="item.amount < 0">
+                            {{ item.amount > 0 ? '+' : '−' }}
+                            {{ (item.amount < 0 ? -item.amount : item.amount) | currency }}
+                          </span>
+                        </button>
+                      </li>
+                    }
+                  </ul>
+                }
+                @if (store.canManage()) {
+                  <button matButton="outlined" class="person__settle" (click)="openSettlement(person)">
+                    <mat-icon>handshake</mat-icon>
+                    Registrar acerto com {{ person.name }}
+                  </button>
+                }
+              </div>
+            }
+          </li>
+        }
+      </ul>
+    }
+  </article>
+</section>

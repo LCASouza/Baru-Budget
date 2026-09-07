@@ -1,0 +1,77 @@
+<h2 mat-dialog-title>Registrar acerto</h2>
+
+<mat-dialog-content>
+  <form class="settlement-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <mat-form-field appearance="outline">
+      <mat-label>Pessoa</mat-label>
+      <mat-select formControlName="counterpartyUserId">
+        @for (person of people(); track person.id) {
+          <mat-option [value]="person.id">{{ person.name }}</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.counterpartyUserId.hasError('required')) {
+        <mat-error>Selecione a pessoa.</mat-error>
+      }
+    </mat-form-field>
+
+    <div class="settlement-form__direction">
+      <span class="settlement-form__label">Direção</span>
+      <mat-button-toggle-group formControlName="direction" hideSingleSelectionIndicator aria-label="Direção do acerto">
+        <mat-button-toggle value="RECEIVE">
+          <mat-icon>call_received</mat-icon>
+          Recebi
+        </mat-button-toggle>
+        <mat-button-toggle value="PAY">
+          <mat-icon>call_made</mat-icon>
+          Paguei
+        </mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Descrição</mat-label>
+      <input matInput formControlName="description" maxlength="120" />
+      @if (form.controls.description.hasError('required')) {
+        <mat-error>Informe a descrição.</mat-error>
+      }
+    </mat-form-field>
+
+    <div class="settlement-form__row">
+      <mat-form-field appearance="outline" floatLabel="always">
+        <mat-label>Valor</mat-label>
+        <span matTextPrefix>R$&nbsp;</span>
+        <input matInput formControlName="amount" inputmode="decimal" placeholder="0,00" />
+        @if (form.controls.amount.invalid) {
+          <mat-error>Informe um valor maior que zero.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Data</mat-label>
+        <input matInput formControlName="date" [matDatepicker]="picker" />
+        <mat-datepicker-toggle matIconSuffix [for]="picker" />
+        <mat-datepicker #picker />
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline">
+      <mat-label>{{ isPaying() ? 'Conta de saída' : 'Conta de entrada' }}</mat-label>
+      <mat-select formControlName="accountId">
+        @for (account of accounts(); track account.id) {
+          <mat-option [value]="account.id">{{ account.name }}</mat-option>
+        }
+      </mat-select>
+      @if (form.controls.accountId.hasError('required')) {
+        <mat-error>Selecione a conta.</mat-error>
+      }
+      <mat-hint>O acerto move dinheiro e não conta como receita nem despesa.</mat-hint>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button matButton mat-dialog-close type="button">Cancelar</button>
+  <button matButton="filled" type="button" (click)="save()" [disabled]="submitting()">
+    {{ submitting() ? 'Salvando…' : 'Registrar' }}
+  </button>
+</mat-dialog-actions>

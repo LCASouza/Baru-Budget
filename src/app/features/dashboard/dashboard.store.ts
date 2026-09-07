@@ -7,6 +7,7 @@ import { SummaryCardData } from '../../shared/components/summary-card/summary-ca
 import { AccountsStore } from '../accounts/accounts.store';
 import { CardsStore } from '../cards/cards.store';
 import { InstallmentsStore } from '../installments/installments.store';
+import { SettlementsStore } from '../settlements/settlements.store';
 import { TransactionsStore } from '../transactions/transactions.store';
 import {
   buildMonthlySeries,
@@ -32,6 +33,7 @@ export class DashboardStore {
   private readonly accounts = inject(AccountsStore);
   private readonly cardsStore = inject(CardsStore);
   private readonly installments = inject(InstallmentsStore);
+  private readonly settlements = inject(SettlementsStore);
 
   // Six-month window ending at the selected month; the current month itself comes
   // from the transactions already loaded for the page.
@@ -138,6 +140,25 @@ export class DashboardStore {
           tone: 'payable',
           hint: `${remainingInstallments} ${remainingInstallments === 1 ? 'parcela a vencer' : 'parcelas a vencer'}`,
         });
+      }
+      const balances = this.settlements.totals();
+      if (balances.receivable > 0 || balances.payable > 0) {
+        cards.push(
+          {
+            label: 'A receber',
+            amount: balances.receivable,
+            icon: 'call_received',
+            tone: 'receivable',
+            hint: 'Divisões de despesas ainda não acertadas',
+          },
+          {
+            label: 'A pagar',
+            amount: balances.payable,
+            icon: 'call_made',
+            tone: 'payable',
+            hint: 'O que você deve a outras pessoas',
+          },
+        );
       }
       cards.push(
         {

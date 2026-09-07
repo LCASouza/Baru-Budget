@@ -9,6 +9,7 @@ import { currentMonth, monthRange, shiftMonth } from '../../core/period/period.m
 import { makeAccount, makeCategory, makeTransaction } from '../../testing/finance-fixtures';
 import { AccountsStore } from '../accounts/accounts.store';
 import { CardsStore } from '../cards/cards.store';
+import { SettlementsStore } from '../settlements/settlements.store';
 import { InstallmentsStore } from '../installments/installments.store';
 import { buildTransactionViews } from '../transactions/transaction.model';
 import { TransactionsStore } from '../transactions/transactions.store';
@@ -59,6 +60,14 @@ describe('DashboardStore', () => {
           useValue: { dataOwnerId: ownerId, householdId, canManage: signal(true) },
         },
         { provide: DashboardRepository, useValue: { listMonthlyTotals } },
+        {
+          provide: SettlementsStore,
+          useValue: {
+            totals: signal({ receivable: 0, payable: 0, net: 0 }),
+            people: signal([]),
+            reload: vi.fn(),
+          },
+        },
         {
           provide: InstallmentsStore,
           useValue: {

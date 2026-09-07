@@ -2,6 +2,7 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  effect,
   inject,
   resource,
   signal,
@@ -49,10 +50,18 @@ import {
 import { TransactionFormData, TransactionFormResult } from '../open-transaction-dialog';
 import { SupportedTransactionKind, TransactionInput } from '../transaction.model';
 import { TransactionsStore } from '../transactions.store';
+import { SettlementsRepository } from '../../settlements/settlements.repository';
+import { SettlementsStore } from '../../settlements/settlements.store';
+import { isSplitValid, remainingToAllocate, splitEqually } from '../../settlements/allocation';
 
 interface SelectOption {
   readonly id: string;
   readonly name: string;
+}
+
+interface SplitRow {
+  readonly userId: string;
+  readonly amount: string;
 }
 
 interface AuditEntry {
@@ -99,8 +108,10 @@ export class TransactionFormDialog {
   private readonly accountsStore = inject(AccountsStore);
   private readonly categoriesStore = inject(CategoriesStore);
   private readonly cardsStore = inject(CardsStore);
-  private readonly context = inject(FinancialContextService);
+  protected readonly context = inject(FinancialContextService);
   private readonly profiles = inject(ProfileRepository);
+  private readonly settlementsStore = inject(SettlementsStore);
+  private readonly allocationsRepository = inject(SettlementsRepository);
 
   protected readonly transaction = this.data?.transaction ?? null;
   private readonly invoicePayment = this.data?.invoicePayment ?? null;
@@ -356,7 +367,111 @@ export class TransactionFormDialog {
     return entries;
   });
 
+  // Splitting an expense between people: the payer's own share is a row like any
+  // other, and the rows always add up to the amount.
+  protected readonly splitRows = signal<SplitRow[]>([]);
+  private splitLoaded = false;
+
+  protected readonly canShare = computed(
+    () => !this.readonly && this.kind() === 'EXPENSE' && this.settlementsStore.people().length > 0,
+  );
+  protected readonly splitPeople = this.settlementsStore.people;
+  private readonly splitAmounts = computed(() =>
+    this.splitRows()
+      .map((row) => parseAmountInput(row.amount))
+      .filter((amount): amount is number => amount !== null),
+  );
+  protected readonly splitRemaining = computed(() =>
+    remainingToAllocate(parseAmountInput(this.amountValue() ?? '') ?? 0, this.splitAmounts()),
+  );
+  protected readonly splitValid = computed(() => {
+    const rows = this.splitRows();
+    if (rows.length === 0) {
+      return true;
+    }
+    if (rows.some((row) => !row.userId || parseAmountInput(row.amount) === null)) {
+      return false;
+    }
+    const ids = rows.map((row) => row.userId);
+    if (new Set(ids).size !== ids.length) {
+      return false;
+    }
+    return isSplitValid(parseAmountInput(this.amountValue() ?? '') ?? 0, this.splitAmounts());
+  });
+
+  private readonly existingAllocations = resource({
+    params: () => this.transaction?.id,
+    loader: ({ params: id }) => this.allocationsRepository.listAllocations(id),
+  });
+
+  protected ownerLabel(userId: string): string {
+    if (userId === this.context.dataOwnerId()) {
+      return 'Você';
+    }
+    return (
+      this.settlementsStore.people().find((person) => person.id === userId)?.name ?? 'Usuário'
+    );
+  }
+
+  protected addSplitRow(): void {
+    this.splitRows.update((rows) => [...rows, { userId: '', amount: '' }]);
+  }
+
+  protected removeSplitRow(index: number): void {
+    this.splitRows.update((rows) => rows.filter((_, position) => position !== index));
+  }
+
+  protected setSplitUser(index: number, userId: string): void {
+    this.splitRows.update((rows) =>
+      rows.map((row, position) => (position === index ? { ...row, userId } : row)),
+    );
+  }
+
+  protected setSplitAmount(index: number, amount: string): void {
+    this.splitRows.update((rows) =>
+      rows.map((row, position) => (position === index ? { ...row, amount } : row)),
+    );
+  }
+
+  /** Splits the amount evenly, making sure the payer has a row of their own. */
+  protected splitEvenly(): void {
+    const total = parseAmountInput(this.amountValue() ?? '');
+    const ownerId = this.context.dataOwnerId();
+    if (total === null || total <= 0 || !ownerId) {
+      return;
+    }
+    const rows = this.splitRows().filter((row) => row.userId);
+    if (!rows.some((row) => row.userId === ownerId)) {
+      rows.unshift({ userId: ownerId, amount: '' });
+    }
+    const amounts = splitEqually(total, rows.length);
+    if (amounts.length === 0) {
+      return;
+    }
+    this.splitRows.set(
+      rows.map((row, index) => ({ ...row, amount: formatAmountInput(amounts[index]) })),
+    );
+  }
+
+  protected clearSplit(): void {
+    this.splitRows.set([]);
+  }
+
   constructor() {
+    effect(() => {
+      if (this.splitLoaded || !this.existingAllocations.hasValue()) {
+        return;
+      }
+      this.splitLoaded = true;
+      this.splitRows.set(
+        this.existingAllocations
+          .value()
+          .map((allocation) => ({
+            userId: allocation.user_id,
+            amount: formatAmountInput(allocation.amount),
+          })),
+      );
+    });
     this.form.controls.kind.valueChanges.pipe(takeUntilDestroyed()).subscribe((kind) => {
       this.form.controls.categoryId.reset('');
       if (kind === 'INCOME') {
@@ -387,6 +502,12 @@ export class TransactionFormDialog {
       this.form.markAllAsTouched();
       return;
     }
+    if (!this.splitValid()) {
+      this.snackBar.open('A divisão precisa somar exatamente o valor da despesa.', 'OK', {
+        duration: 5000,
+      });
+      return;
+    }
 
     const input = this.toInput();
     this.submitting.set(true);
@@ -406,11 +527,14 @@ export class TransactionFormDialog {
         this.dialogRef.close('saved');
         return;
       }
+      let transactionId: string;
       if (this.transaction) {
         await this.store.update(this.transaction.id, input);
+        transactionId = this.transaction.id;
       } else {
-        await this.store.create(input);
+        transactionId = (await this.store.create(input)).id;
       }
+      await this.saveSplit(transactionId);
       this.dialogRef.close('saved');
     } catch (error) {
       this.snackBar.open(
@@ -480,6 +604,22 @@ export class TransactionFormDialog {
     } finally {
       this.submitting.set(false);
     }
+  }
+
+  /** Writes the split when it changed; an empty list removes it. */
+  private async saveSplit(transactionId: string): Promise<void> {
+    const rows = this.splitRows().filter((row) => row.userId);
+    const hadSplit = this.existingAllocations.hasValue()
+      ? this.existingAllocations.value().length > 0
+      : false;
+    if (rows.length === 0 && !hadSplit) {
+      return;
+    }
+    await this.store.setAllocations(
+      transactionId,
+      rows.map((row) => row.userId),
+      rows.map((row) => parseAmountInput(row.amount) ?? 0),
+    );
   }
 
   private initialKind(): SupportedTransactionKind {

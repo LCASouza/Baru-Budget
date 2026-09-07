@@ -278,6 +278,70 @@
       </mat-form-field>
     }
 
+    @if (canShare()) {
+      <div class="tx-form__split">
+        <div class="tx-form__split-head">
+          <span class="tx-form__label">Dividir com</span>
+          <span class="tx-form__split-actions">
+            <button matButton type="button" (click)="splitEvenly()">Dividir igualmente</button>
+            @if (splitRows().length > 0) {
+              <button matButton type="button" (click)="clearSplit()">Remover divisão</button>
+            }
+          </span>
+        </div>
+
+        @for (row of splitRows(); track $index) {
+          <div class="tx-form__split-row">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Pessoa</mat-label>
+              <mat-select [value]="row.userId" (valueChange)="setSplitUser($index, $event)">
+                @if (context.dataOwnerId(); as ownerId) {
+                  <mat-option [value]="ownerId">Você</mat-option>
+                }
+                @for (person of splitPeople(); track person.id) {
+                  <mat-option [value]="person.id">{{ person.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" floatLabel="always" subscriptSizing="dynamic">
+              <mat-label>Valor</mat-label>
+              <span matTextPrefix>R$&nbsp;</span>
+              <input
+                matInput
+                inputmode="decimal"
+                placeholder="0,00"
+                [value]="row.amount"
+                (input)="setSplitAmount($index, $any($event.target).value)"
+              />
+            </mat-form-field>
+
+            <button matIconButton type="button" (click)="removeSplitRow($index)" aria-label="Remover pessoa">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+        }
+
+        <div class="tx-form__split-foot">
+          <button matButton type="button" (click)="addSplitRow()">
+            <mat-icon>person_add</mat-icon>
+            Adicionar pessoa
+          </button>
+          @if (splitRows().length > 0) {
+            <span class="tx-form__split-remaining" [class.tx-form__split-remaining--off]="!splitValid()">
+              @if (splitRemaining() === 0) {
+                Divisão fecha com o valor
+              } @else if (splitRemaining() > 0) {
+                Falta alocar {{ splitRemaining() | currency }}
+              } @else {
+                Excedeu em {{ -splitRemaining() | currency }}
+              }
+            </span>
+          }
+        </div>
+      </div>
+    }
+
     <mat-form-field appearance="outline">
       <mat-label>Observações</mat-label>
       <textarea matInput formControlName="notes" rows="2" maxlength="1000"></textarea>

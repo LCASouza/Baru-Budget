@@ -201,6 +201,9 @@
                         } @else if (view.transaction.recurring_income_id) {
                           <span class="tx-row__installment">Recorrente</span>
                         }
+                        @if (hasSplit(view)) {
+                          <span class="tx-row__installment">Dividida</span>
+                        }
                       </span>
                       <span class="tx-row__meta">
                         @if (isHousehold()) {

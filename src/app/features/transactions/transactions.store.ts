@@ -7,6 +7,8 @@ import { AccountsStore } from '../accounts/accounts.store';
 import { CardsStore } from '../cards/cards.store';
 import { InstallmentPurchaseInput } from '../installments/installment.repository';
 import { InstallmentsStore } from '../installments/installments.store';
+import { Allocation } from '../settlements/allocation.model';
+import { SettlementsRepository } from '../settlements/settlements.repository';
 import { CategoriesStore } from '../categories/categories.store';
 import {
   EMPTY_FILTERS,
@@ -29,6 +31,7 @@ export class TransactionsStore {
   private readonly categories = inject(CategoriesStore);
   private readonly cards = inject(CardsStore);
   private readonly installments = inject(InstallmentsStore);
+  private readonly settlements = inject(SettlementsRepository);
 
   private readonly filtersState = signal<TransactionFilters>(EMPTY_FILTERS);
 
@@ -61,6 +64,31 @@ export class TransactionsStore {
   readonly isLoading = this.listResource.isLoading;
   readonly error = this.listResource.error;
   readonly loaded = computed(() => this.listResource.hasValue());
+
+  // Splits of the loaded month, so a row can show that it is shared.
+  private readonly allocationsResource = resource({
+    params: () => {
+      const ids = this.transactions().map((transaction) => transaction.id);
+      return ids.length > 0 ? ids : undefined;
+    },
+    loader: ({ params: ids }) => this.settlements.listAllocationsIn(ids),
+  });
+
+  readonly allocationsByTransaction = computed<ReadonlyMap<string, Allocation[]>>(() => {
+    const map = new Map<string, Allocation[]>();
+    if (!this.allocationsResource.hasValue()) {
+      return map;
+    }
+    for (const allocation of this.allocationsResource.value()) {
+      const rows = map.get(allocation.transaction_id);
+      if (rows) {
+        rows.push(allocation);
+      } else {
+        map.set(allocation.transaction_id, [allocation]);
+      }
+    }
+    return map;
+  });
 
   readonly views = computed(() =>
     buildTransactionViews(
@@ -108,8 +136,19 @@ export class TransactionsStore {
     return this.context.canManageOwner(transaction.owner_user_id);
   }
 
-  async create(input: TransactionInput): Promise<void> {
-    await this.repository.create(this.requireOwnerId(), input);
+  async create(input: TransactionInput): Promise<Transaction> {
+    const created = await this.repository.create(this.requireOwnerId(), input);
+    this.afterMutation();
+    return created;
+  }
+
+  /** Replaces the split of a transaction; an empty list removes it. */
+  async setAllocations(
+    transactionId: string,
+    userIds: readonly string[],
+    amounts: readonly number[],
+  ): Promise<void> {
+    await this.settlements.setAllocations(transactionId, userIds, amounts);
     this.afterMutation();
   }
 
@@ -140,6 +179,7 @@ export class TransactionsStore {
 
   private afterMutation(): void {
     this.listResource.reload();
+    this.allocationsResource.reload();
     this.accounts.reloadBalances();
     this.cards.reload();
   }

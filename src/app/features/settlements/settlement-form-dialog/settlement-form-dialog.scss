@@ -1,0 +1,55 @@
+.settlement-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-top: 8px;
+  min-width: min(440px, 100%);
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.settlement-form__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px;
+}
+
+.settlement-form__direction {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  mat-button-toggle-group {
+    align-self: stretch;
+  }
+
+  mat-button-toggle {
+    flex: 1 1 0;
+  }
+
+  mat-icon {
+    margin-right: 6px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    vertical-align: -4px;
+  }
+}
+
+.settlement-form__label {
+  font: var(--mat-sys-label-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+@media (max-width: 599.98px) {
+  .settlement-form {
+    min-width: 0;
+  }
+
+  .settlement-form__row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

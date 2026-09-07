@@ -110,11 +110,14 @@ export const routes: Routes = [
         'Financiamentos com valor do bem, entrada, parcelas e saldo devedor.',
         'v0.11',
       ),
-      placeholderRoute(
-        '/settlements',
-        'Divisão de despesas e acertos com valores a receber e a pagar entre pessoas.',
-        'v0.9',
-      ),
+      {
+        path: 'settlements',
+        title: navItem('/settlements').label,
+        loadComponent: () =>
+          import('./features/settlements/settlements-page/settlements-page').then(
+            (m) => m.SettlementsPage,
+          ),
+      },
       {
         path: 'households',
         title: navItem('/households').label,

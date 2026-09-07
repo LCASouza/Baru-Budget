@@ -143,3 +143,47 @@ mat-form-field {
     height: 18px;
   }
 }
+
+.tx-form__split {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--bb-card-border);
+  border-radius: 12px;
+}
+
+.tx-form__split-head,
+.tx-form__split-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tx-form__split-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.tx-form__split-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 140px) auto;
+  align-items: center;
+  gap: 8px;
+}
+
+.tx-form__split-remaining {
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+
+  &--off {
+    color: var(--mat-sys-error);
+  }
+}
+
+@media (max-width: 599.98px) {
+  .tx-form__split-row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 110px) auto;
+  }
+}

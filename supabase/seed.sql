@@ -302,3 +302,42 @@ begin
   perform public.generate_recurrences(dev_user, date_trunc('month', current_date)::date);
 end;
 $$;
+
+-- A shared grocery expense and a partial settlement between the two development
+-- users, so the balances page has data.
+do $$
+declare
+  dev_user  constant uuid := '00000000-0000-4000-8000-000000000001';
+  dev2_user constant uuid := '00000000-0000-4000-8000-000000000002';
+  market    uuid;
+  bank      uuid;
+begin
+  perform set_config(
+    'request.jwt.claims',
+    json_build_object('sub', dev_user, 'role', 'authenticated')::text,
+    true
+  );
+
+  select id into market from public.transactions
+   where owner_user_id = dev_user and description = 'Supermercado'
+     and date >= date_trunc('month', current_date)::date
+   limit 1;
+  select id into bank from public.accounts where owner_user_id = dev_user and name = 'Conta corrente';
+
+  if market is not null then
+    perform public.set_transaction_allocations(
+      market,
+      array[dev_user, dev2_user],
+      array[160.23, 160.22]
+    );
+  end if;
+
+  insert into public.transactions
+    (owner_user_id, kind, description, amount, date, status, account_id,
+     counterparty_user_id, settlement_direction, created_by, updated_by)
+  values
+    (dev_user, 'SETTLEMENT', 'Acerto do mercado', 60.00,
+     (date_trunc('month', current_date) + interval '12 day')::date, 'PAID', bank,
+     dev2_user, 'RECEIVE', dev_user, dev_user);
+end;
+$$;

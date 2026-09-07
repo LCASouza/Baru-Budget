@@ -655,11 +655,74 @@ export type Database = {
           },
         ]
       }
+      transaction_allocations: {
+        Row: {
+          amount: number
+          created_at: string
+          created_by: string
+          id: string
+          transaction_id: string
+          updated_at: string
+          updated_by: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          transaction_id: string
+          updated_at?: string
+          updated_by?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          created_by?: string
+          id?: string
+          transaction_id?: string
+          updated_at?: string
+          updated_by?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transaction_allocations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_allocations_transaction_id_fkey"
+            columns: ["transaction_id"]
+            isOneToOne: false
+            referencedRelation: "transactions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_allocations_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transaction_allocations_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       transactions: {
         Row: {
           account_id: string | null
           amount: number
           category_id: string | null
+          counterparty_user_id: string | null
           created_at: string
           created_by: string
           credit_card_id: string | null
@@ -679,6 +742,9 @@ export type Database = {
           owner_user_id: string
           recurrence_month: string | null
           recurring_income_id: string | null
+          settlement_direction:
+            | Database["public"]["Enums"]["settlement_direction"]
+            | null
           status: Database["public"]["Enums"]["transaction_status"]
           updated_at: string
           updated_by: string
@@ -687,6 +753,7 @@ export type Database = {
           account_id?: string | null
           amount: number
           category_id?: string | null
+          counterparty_user_id?: string | null
           created_at?: string
           created_by?: string
           credit_card_id?: string | null
@@ -706,6 +773,9 @@ export type Database = {
           owner_user_id: string
           recurrence_month?: string | null
           recurring_income_id?: string | null
+          settlement_direction?:
+            | Database["public"]["Enums"]["settlement_direction"]
+            | null
           status?: Database["public"]["Enums"]["transaction_status"]
           updated_at?: string
           updated_by?: string
@@ -714,6 +784,7 @@ export type Database = {
           account_id?: string | null
           amount?: number
           category_id?: string | null
+          counterparty_user_id?: string | null
           created_at?: string
           created_by?: string
           credit_card_id?: string | null
@@ -733,6 +804,9 @@ export type Database = {
           owner_user_id?: string
           recurrence_month?: string | null
           recurring_income_id?: string | null
+          settlement_direction?:
+            | Database["public"]["Enums"]["settlement_direction"]
+            | null
           status?: Database["public"]["Enums"]["transaction_status"]
           updated_at?: string
           updated_by?: string
@@ -757,6 +831,13 @@ export type Database = {
             columns: ["category_id"]
             isOneToOne: false
             referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_counterparty_user_id_fkey"
+            columns: ["counterparty_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
           {
@@ -941,6 +1022,13 @@ export type Database = {
           },
         ]
       }
+      people_balances: {
+        Row: {
+          balance: number | null
+          counterparty_user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       assert_household_member: {
@@ -964,10 +1052,22 @@ export type Database = {
         Returns: undefined
       }
       can_manage: { Args: { owner: string }; Returns: boolean }
+      can_manage_transaction_owner: {
+        Args: { p_transaction: string }
+        Returns: boolean
+      }
       can_view: { Args: { owner: string }; Returns: boolean }
+      can_view_transaction_owner: {
+        Args: { p_transaction: string }
+        Returns: boolean
+      }
       category_used_in_my_households: {
         Args: { category: string }
         Returns: boolean
+      }
+      check_allocation_sum_for: {
+        Args: { p_transaction: string }
+        Returns: undefined
       }
       create_installment_purchase: {
         Args: {
@@ -996,6 +1096,7 @@ export type Database = {
         Args: { household: string; member: string }
         Returns: boolean
       }
+      is_allocated_to_me: { Args: { p_transaction: string }; Returns: boolean }
       is_grant_counterpart: { Args: { other: string }; Returns: boolean }
       is_household_admin: { Args: { household: string }; Returns: boolean }
       is_household_member: { Args: { household: string }; Returns: boolean }
@@ -1012,7 +1113,16 @@ export type Database = {
         Args: { profile_id: string }
         Returns: undefined
       }
+      set_transaction_allocations: {
+        Args: {
+          p_amounts: number[]
+          p_transaction_id: string
+          p_user_ids: string[]
+        }
+        Returns: number
+      }
       shares_household_with: { Args: { other: string }; Returns: boolean }
+      shares_ledger_with: { Args: { other: string }; Returns: boolean }
       shift_month_day: {
         Args: { months: number; reference: string }
         Returns: string
@@ -1029,6 +1139,7 @@ export type Database = {
       household_member_status: "ACTIVE" | "INACTIVE"
       household_role: "ADMIN" | "MEMBER"
       recurrence_frequency: "MONTHLY" | "YEARLY"
+      settlement_direction: "PAY" | "RECEIVE"
       transaction_kind: "INCOME" | "EXPENSE" | "TRANSFER" | "SETTLEMENT"
       transaction_status: "PENDING" | "PAID" | "CANCELLED"
     }
@@ -1167,6 +1278,7 @@ export const Constants = {
       household_member_status: ["ACTIVE", "INACTIVE"],
       household_role: ["ADMIN", "MEMBER"],
       recurrence_frequency: ["MONTHLY", "YEARLY"],
+      settlement_direction: ["PAY", "RECEIVE"],
       transaction_kind: ["INCOME", "EXPENSE", "TRANSFER", "SETTLEMENT"],
       transaction_status: ["PENDING", "PAID", "CANCELLED"],
     },

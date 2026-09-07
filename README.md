@@ -2,7 +2,7 @@
 
 Personal and family finance management web application.
 
-Current state: v0.8 (Recurrences) — fixed expense and recurring income templates that generate the transactions of a chosen month, on top of the v0.7 installments, the v0.6 cards and invoices, the v0.5 dashboard, transactions, households and sharing, deployed at https://baru-budget.pages.dev. See `docs/PROJECT_STATUS.md` for the roadmap.
+Current state: v0.9 (Allocations and Settlements) — expenses split between people with the sum guaranteed by the database, settlements between users and derived receivable and payable balances, on top of the v0.8 recurrences, v0.7 installments, v0.6 cards, the dashboard, transactions, households and sharing, deployed at https://baru-budget.pages.dev. See `docs/PROJECT_STATUS.md` for the roadmap.
 
 ## Stack
 
@@ -28,7 +28,7 @@ npm run lint       # ESLint
 npm run build      # production build in dist/baru-budget
 ```
 
-Local login: `supabase/seed.sql` creates the development users `dev@baru.local` and `dev2@baru.local` (password `baru-dev-123`), sample accounts, transactions and a credit card with invoices, installment purchases, recurring templates with the current month generated, a shared household and a VIEW grant from the second user to the first (local stack only; sign-ups are disabled).
+Local login: `supabase/seed.sql` creates the development users `dev@baru.local` and `dev2@baru.local` (password `baru-dev-123`), sample accounts, transactions and a credit card with invoices, installment purchases, recurring templates with the current month generated, a split expense with a partial settlement, a shared household and a VIEW grant from the second user to the first (local stack only; sign-ups are disabled).
 
 Database workflow:
 
@@ -47,5 +47,5 @@ Project documentation lives exclusively in `docs/*.md`:
 - `docs/MASTER_PROMPT.md` — product specification and rules
 - `docs/DOCUMENTATION_POLICY.md` — documentation governance
 - `docs/PROJECT_STATUS.md` — roadmap, features, bugs and technical debt
-- `docs/ARCHITECTURE_ANALYSIS_V0.1.md` to `V0.8.md` — approved architecture per version
+- `docs/ARCHITECTURE_ANALYSIS_V0.1.md` to `V0.9.md` — approved architecture per version
 - `docs/versions/` — one file per version
