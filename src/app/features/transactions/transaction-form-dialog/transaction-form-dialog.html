@@ -15,7 +15,7 @@
     </p>
   }
 
-  @if (!readonly && !accountsLoading() && !hasAccounts()) {
+  @if (!readonly && !accountsLoading() && needsAccount() && !hasAccounts()) {
     <div class="tx-form__notice">
       <mat-icon>info</mat-icon>
       <p>
@@ -46,6 +46,26 @@
       </mat-button-toggle>
     </mat-button-toggle-group>
 
+    @if (showMethodToggle()) {
+      <div class="tx-form__method">
+        <span class="tx-form__label">{{ isTransfer() ? 'Destino' : 'Pagar com' }}</span>
+        <mat-button-toggle-group
+          formControlName="paymentMethod"
+          hideSingleSelectionIndicator
+          [attr.aria-label]="isTransfer() ? 'Destino da transferência' : 'Forma de pagamento'"
+        >
+          <mat-button-toggle value="ACCOUNT">
+            <mat-icon>account_balance</mat-icon>
+            {{ isTransfer() ? 'Outra conta' : 'Conta' }}
+          </mat-button-toggle>
+          <mat-button-toggle value="CARD">
+            <mat-icon>credit_card</mat-icon>
+            {{ isTransfer() ? 'Fatura de cartão' : 'Cartão' }}
+          </mat-button-toggle>
+        </mat-button-toggle-group>
+      </div>
+    }
+
     <mat-form-field appearance="outline">
       <mat-label>Descrição</mat-label>
       <input matInput formControlName="description" placeholder="Ex.: Supermercado" maxlength="120" />
@@ -75,7 +95,48 @@
       </mat-form-field>
     </div>
 
-    @if (isTransfer()) {
+    @if (isInvoicePayment()) {
+      <div class="tx-form__row">
+        <mat-form-field appearance="outline">
+          <mat-label>Conta de origem</mat-label>
+          <mat-select formControlName="accountId">
+            @for (account of accounts(); track account.id) {
+              <mat-option [value]="account.id">{{ account.name }}</mat-option>
+            }
+          </mat-select>
+          @if (form.controls.accountId.hasError('required')) {
+            <mat-error>Selecione a conta.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Cartão</mat-label>
+          <mat-select formControlName="creditCardId">
+            @for (card of cards(); track card.id) {
+              <mat-option [value]="card.id">{{ card.name }}</mat-option>
+            }
+          </mat-select>
+          @if (form.controls.creditCardId.hasError('required')) {
+            <mat-error>Selecione o cartão.</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Fatura</mat-label>
+        <mat-select formControlName="invoiceDueDate">
+          @for (invoice of invoices(); track invoice.dueDate) {
+            <mat-option [value]="invoice.dueDate">
+              {{ invoice.label }} · vence {{ invoice.dueDate | date: 'dd/MM/yyyy' }}
+            </mat-option>
+          }
+        </mat-select>
+        @if (form.controls.invoiceDueDate.hasError('required')) {
+          <mat-error>Selecione a fatura.</mat-error>
+        }
+        <mat-hint>O pagamento debita a conta e não conta como despesa do período.</mat-hint>
+      </mat-form-field>
+    } @else if (isTransfer()) {
       <div class="tx-form__row">
         <mat-form-field appearance="outline">
           <mat-label>De</mat-label>
@@ -117,18 +178,39 @@
           }
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
-          <mat-label>Conta</mat-label>
-          <mat-select formControlName="accountId">
-            @for (account of accounts(); track account.id) {
-              <mat-option [value]="account.id">{{ account.name }}</mat-option>
+        @if (isCardPurchase()) {
+          <mat-form-field appearance="outline">
+            <mat-label>Cartão</mat-label>
+            <mat-select formControlName="creditCardId">
+              @for (card of cards(); track card.id) {
+                <mat-option [value]="card.id">{{ card.name }}</mat-option>
+              }
+            </mat-select>
+            @if (form.controls.creditCardId.hasError('required')) {
+              <mat-error>Selecione o cartão.</mat-error>
             }
-          </mat-select>
-          @if (form.controls.accountId.hasError('required')) {
-            <mat-error>Selecione a conta.</mat-error>
-          }
-        </mat-form-field>
+          </mat-form-field>
+        } @else {
+          <mat-form-field appearance="outline">
+            <mat-label>Conta</mat-label>
+            <mat-select formControlName="accountId">
+              @for (account of accounts(); track account.id) {
+                <mat-option [value]="account.id">{{ account.name }}</mat-option>
+              }
+            </mat-select>
+            @if (form.controls.accountId.hasError('required')) {
+              <mat-error>Selecione a conta.</mat-error>
+            }
+          </mat-form-field>
+        }
       </div>
+
+      @if (invoicePreview(); as preview) {
+        <p class="tx-form__preview">
+          <mat-icon>event</mat-icon>
+          {{ preview.label }} · vence {{ preview.dueDate | date: 'dd/MM/yyyy' }}
+        </p>
+      }
     }
 
     <div class="tx-form__row">
@@ -194,7 +276,7 @@
       matButton="filled"
       type="button"
       (click)="save()"
-      [disabled]="submitting() || !hasAccounts()"
+      [disabled]="submitting() || (needsAccount() && !hasAccounts())"
     >
       {{ submitting() ? 'Salvando…' : 'Salvar' }}
     </button>

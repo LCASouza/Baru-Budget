@@ -1,0 +1,113 @@
+<section class="cards">
+  <header class="cards__head">
+    <p class="cards__intro">
+      Compras no cartão entram nas despesas do período e só saem da conta quando a fatura é paga.
+    </p>
+    @if (context.canManage()) {
+      <button matButton="filled" (click)="openForm()">
+        <mat-icon>add</mat-icon>
+        Novo cartão
+      </button>
+    }
+  </header>
+
+  @if (store.isLoading() && !store.loaded()) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else if (store.error()) {
+    <article class="bb-card">
+      <app-empty-state
+        icon="error_outline"
+        title="Não foi possível carregar os cartões"
+        description="Verifique a conexão e tente novamente."
+      >
+        <button matButton="outlined" (click)="store.reload()">Tentar novamente</button>
+      </app-empty-state>
+    </article>
+  } @else if (store.cards().length === 0) {
+    <article class="bb-card">
+      <app-empty-state
+        icon="credit_card"
+        title="Nenhum cartão cadastrado"
+        description="Cadastre um cartão com o dia de fechamento e o de vencimento para acompanhar as faturas."
+      >
+        @if (context.canManage()) {
+          <button matButton="filled" (click)="openForm()">Cadastrar cartão</button>
+        }
+      </app-empty-state>
+    </article>
+  } @else {
+    <div class="cards__grid">
+      @for (summary of store.summaries(); track summary.card.id) {
+        <article class="bb-card card" [class.card--inactive]="!summary.card.active">
+          <header class="bb-card__head">
+            <div>
+              <h3 class="bb-card__title">
+                <a class="card__link" [routerLink]="['/cards', summary.card.id]">{{ summary.card.name }}</a>
+                @if (!summary.card.active) {
+                  <span class="card__badge">Inativo</span>
+                }
+              </h3>
+              <p class="bb-card__subtitle">
+                @if (summary.card.institution) {
+                  {{ summary.card.institution }} ·
+                }
+                fecha dia {{ summary.card.closing_day }} · vence dia {{ summary.card.due_day }}
+              </p>
+            </div>
+            @if (context.canManage()) {
+              <button matIconButton [matMenuTriggerFor]="menu" [attr.aria-label]="'Ações do cartão ' + summary.card.name">
+                <mat-icon>more_vert</mat-icon>
+              </button>
+            }
+            <mat-menu #menu="matMenu">
+              <button mat-menu-item (click)="openForm(summary.card)">
+                <mat-icon>edit</mat-icon>
+                <span>Editar</span>
+              </button>
+              <button mat-menu-item (click)="toggleActive(summary.card)">
+                <mat-icon>{{ summary.card.active ? 'visibility_off' : 'visibility' }}</mat-icon>
+                <span>{{ summary.card.active ? 'Desativar' : 'Ativar' }}</span>
+              </button>
+              <button mat-menu-item (click)="remove(summary.card)">
+                <mat-icon>delete</mat-icon>
+                <span>Excluir</span>
+              </button>
+            </mat-menu>
+          </header>
+
+          @if (summary.next; as next) {
+            <div class="card__invoice">
+              <span class="card__invoice-label">
+                {{ next.label }} · vence {{ next.dueDate | date: 'dd/MM/yyyy' }}
+              </span>
+              <span class="card__invoice-amount bb-amount">{{ next.remaining | currency }}</span>
+              <span [class]="'card__status card__status--' + next.status.toLowerCase()">
+                {{ statusLabels[next.status] }}
+              </span>
+            </div>
+          } @else {
+            <p class="card__invoice-empty">Nenhuma fatura em aberto.</p>
+          }
+
+          @if (summary.card.limit_amount !== null) {
+            <div class="card__limit">
+              <span class="card__track">
+                <span class="card__bar" [style.width.%]="usedPercent(summary)"></span>
+              </span>
+              <span class="card__limit-text">
+                {{ summary.used | currency }} de {{ summary.card.limit_amount | currency }} ·
+                disponível {{ summary.available | currency }}
+              </span>
+            </div>
+          } @else {
+            <p class="card__limit-text">Utilizado {{ summary.used | currency }} · sem limite informado</p>
+          }
+
+          <a matButton="outlined" class="card__detail" [routerLink]="['/cards', summary.card.id]">
+            Ver faturas
+          </a>
+        </article>
+      }
+    </div>
+  }
+</section>

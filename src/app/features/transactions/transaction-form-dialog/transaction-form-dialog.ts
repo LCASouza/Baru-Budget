@@ -26,6 +26,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { FinancialContextService } from '../../../core/context/financial-context.service';
+import { PaymentMethod } from '../../../core/finance/payment-method';
 import {
   TRANSACTION_STATUSES,
   TransactionStatus,
@@ -38,6 +39,8 @@ import { parseIsoDate, toIsoDate } from '../../../shared/dates/iso-date';
 import { formatAmountInput, parseAmountInput } from '../../../shared/money/money';
 import { AccountsStore } from '../../accounts/accounts.store';
 import { CategoriesStore } from '../../categories/categories.store';
+import { CardsStore } from '../../cards/cards.store';
+import { invoiceDueDateFor, invoiceLabel } from '../../cards/invoice';
 import { TransactionFormData, TransactionFormResult } from '../open-transaction-dialog';
 import { SupportedTransactionKind, TransactionInput } from '../transaction.model';
 import { TransactionsStore } from '../transactions.store';
@@ -52,6 +55,9 @@ interface AuditEntry {
   readonly name: string;
   readonly at: string;
 }
+
+// Card purchases have no pending state: the pendency of a card is the invoice.
+const CARD_PURCHASE_STATUSES: readonly TransactionStatus[] = ['PAID', 'CANCELLED'];
 
 function amountValidator(control: AbstractControl<string>): ValidationErrors | null {
   const amount = parseAmountInput(control.value);
@@ -86,13 +92,13 @@ export class TransactionFormDialog {
   private readonly store = inject(TransactionsStore);
   private readonly accountsStore = inject(AccountsStore);
   private readonly categoriesStore = inject(CategoriesStore);
+  private readonly cardsStore = inject(CardsStore);
   private readonly context = inject(FinancialContextService);
   private readonly profiles = inject(ProfileRepository);
 
   protected readonly transaction = this.data?.transaction ?? null;
+  private readonly invoicePayment = this.data?.invoicePayment ?? null;
   protected readonly isEdit = this.transaction !== null;
-  // Editing is allowed for own records and, in a shared context, for the owner's
-  // records under MANAGE. Anything else opens read-only.
   protected readonly readonly = this.transaction
     ? !this.context.canManageOwner(this.transaction.owner_user_id)
     : !this.context.canManage();
@@ -103,12 +109,13 @@ export class TransactionFormDialog {
       this.initialKind(),
       Validators.required,
     ),
+    paymentMethod: this.formBuilder.control<PaymentMethod>(this.initialMethod()),
     description: [
-      this.transaction?.description ?? '',
+      this.transaction?.description ?? (this.invoicePayment ? 'Pagamento da fatura' : ''),
       [Validators.required, Validators.maxLength(120)],
     ],
     amount: [
-      this.transaction ? formatAmountInput(this.transaction.amount) : '',
+      this.initialAmount(),
       [Validators.required, amountValidator],
     ],
     date: this.formBuilder.control<Date | null>(
@@ -116,8 +123,12 @@ export class TransactionFormDialog {
       Validators.required,
     ),
     categoryId: [this.transaction?.category_id ?? ''],
-    accountId: [this.transaction?.account_id ?? '', Validators.required],
+    accountId: [this.transaction?.account_id ?? ''],
     destinationAccountId: [this.transaction?.destination_account_id ?? ''],
+    creditCardId: [this.transaction?.credit_card_id ?? this.invoicePayment?.cardId ?? ''],
+    invoiceDueDate: [
+      this.transaction?.invoice_due_date ?? this.invoicePayment?.invoiceDueDate ?? '',
+    ],
     householdId: [this.transaction?.household_id ?? this.context.householdId() ?? ''],
     status: this.formBuilder.control<TransactionStatus>(this.transaction?.status ?? 'PAID'),
     dueDate: this.formBuilder.control<Date | null>(
@@ -129,30 +140,85 @@ export class TransactionFormDialog {
   private readonly kind = toSignal(this.form.controls.kind.valueChanges, {
     initialValue: this.form.controls.kind.value,
   });
+  private readonly method = toSignal(this.form.controls.paymentMethod.valueChanges, {
+    initialValue: this.form.controls.paymentMethod.value,
+  });
   private readonly status = toSignal(this.form.controls.status.valueChanges, {
     initialValue: this.form.controls.status.value,
   });
+  private readonly selectedCardId = toSignal(this.form.controls.creditCardId.valueChanges, {
+    initialValue: this.form.controls.creditCardId.value,
+  });
+  private readonly selectedDate = toSignal(this.form.controls.date.valueChanges, {
+    initialValue: this.form.controls.date.value,
+  });
 
   protected readonly isTransfer = computed(() => this.kind() === 'TRANSFER');
-  protected readonly isPending = computed(() => this.status() === 'PENDING');
-  protected readonly statusOptions = computed(() =>
-    TRANSACTION_STATUSES.map((status) => ({
+  protected readonly usesCard = computed(() => this.method() === 'CARD');
+  protected readonly isCardPurchase = computed(() => this.kind() === 'EXPENSE' && this.usesCard());
+  protected readonly isInvoicePayment = computed(() => this.isTransfer() && this.usesCard());
+  protected readonly showMethodToggle = computed(
+    () => this.kind() !== 'INCOME' && this.cardsStore.activeCards().length > 0,
+  );
+  protected readonly isPending = computed(
+    () => this.status() === 'PENDING' && !this.isCardPurchase(),
+  );
+
+  protected readonly statusOptions = computed(() => {
+    const statuses = this.isCardPurchase() ? CARD_PURCHASE_STATUSES : TRANSACTION_STATUSES;
+    return statuses.map((status) => ({
       value: status,
       label: transactionStatusLabel(status, this.kind()),
-    })),
-  );
+    }));
+  });
+
+  protected readonly cards = computed<readonly SelectOption[]>(() => {
+    const current = this.transaction?.credit_card_id ?? null;
+    return this.cardsStore
+      .cards()
+      .filter((card) => card.active || card.id === current)
+      .map((card) => ({ id: card.id, name: card.name }));
+  });
+
+  /** Invoices of the selected card, for an invoice payment. */
+  protected readonly invoices = computed(() => {
+    const cardId = this.selectedCardId();
+    if (!cardId) {
+      return [];
+    }
+    const invoices = this.cardsStore
+      .invoicesOf(cardId)
+      .map((invoice) => ({ dueDate: invoice.dueDate, label: invoice.label }));
+    const current = this.form.controls.invoiceDueDate.value;
+    if (current && !invoices.some((invoice) => invoice.dueDate === current)) {
+      invoices.unshift({ dueDate: current, label: invoiceLabel(current) });
+    }
+    return invoices;
+  });
+
+  /** Invoice a new card purchase will fall into, mirroring the database rule. */
+  protected readonly invoicePreview = computed(() => {
+    const cardId = this.selectedCardId();
+    const date = this.selectedDate();
+    if (!this.isCardPurchase() || !cardId || !date) {
+      return null;
+    }
+    const card = this.cardsStore.byId().get(cardId);
+    if (!card) {
+      return null;
+    }
+    const dueDate = invoiceDueDateFor(toIsoDate(date), card.closing_day, card.due_day);
+    return { dueDate, label: invoiceLabel(dueDate) };
+  });
 
   // The household field is offered in the personal and household contexts to
   // users who belong to at least one household. In a shared context the grantee
-  // is not a member of the owner's households, so the value is only preserved.
+  // is not a member of the owner households, so the value is only preserved.
   protected readonly householdOptions = this.context.households;
   protected readonly showHouseholdField = computed(
     () => this.context.context().kind !== 'shared' && this.householdOptions().length > 0,
   );
 
-  // Inactive records stay selectable only when the transaction already uses them.
-  // Records of another household member are not visible; a placeholder keeps the
-  // read-only form meaningful.
   protected readonly categories = computed<readonly SelectOption[]>(() => {
     const kind = this.kind();
     if (kind === 'TRANSFER') {
@@ -168,6 +234,7 @@ export class TransactionFormDialog {
     }
     return options;
   });
+
   protected readonly accounts = computed<readonly SelectOption[]>(() => {
     const current = this.transaction;
     const options: SelectOption[] = this.accountsStore
@@ -180,21 +247,26 @@ export class TransactionFormDialog {
       );
     for (const id of [current?.account_id, current?.destination_account_id]) {
       if (id && !options.some((option) => option.id === id)) {
-        options.push({ id, name: this.ownerName() ? `Conta de ${this.ownerName()}` : 'Conta de outro usuário' });
+        options.push({
+          id,
+          name: this.ownerName() ? `Conta de ${this.ownerName()}` : 'Conta de outro usuário',
+        });
       }
     }
     return options;
   });
+
   protected readonly hasAccounts = computed(() => this.accountsStore.activeAccounts().length > 0);
+  protected readonly needsAccount = computed(() => !this.isCardPurchase());
   protected readonly accountsLoading = computed(
     () => this.accountsStore.isLoading() && !this.accountsStore.loaded(),
   );
   protected readonly ownerName = computed(() =>
-    this.transaction ? (this.context.memberNameById().get(this.transaction.owner_user_id) ?? null) : null,
+    this.transaction
+      ? (this.context.memberNameById().get(this.transaction.owner_user_id) ?? null)
+      : null,
   );
 
-  // Basic audit: who registered and who last changed the record, when different
-  // from the owner (a user with MANAGE or, for display, the owner in a household).
   private readonly auditResource = resource({
     params: () => {
       const transaction = this.transaction;
@@ -217,10 +289,21 @@ export class TransactionFormDialog {
     const nameOf = (id: string) => names.get(id) ?? 'outro usuário';
     const entries: AuditEntry[] = [];
     if (transaction.created_by !== transaction.owner_user_id) {
-      entries.push({ label: 'Registrado por', name: nameOf(transaction.created_by), at: transaction.created_at });
+      entries.push({
+        label: 'Registrado por',
+        name: nameOf(transaction.created_by),
+        at: transaction.created_at,
+      });
     }
-    if (transaction.updated_by !== transaction.owner_user_id && transaction.updated_by !== transaction.created_by) {
-      entries.push({ label: 'Alterado por', name: nameOf(transaction.updated_by), at: transaction.updated_at });
+    if (
+      transaction.updated_by !== transaction.owner_user_id &&
+      transaction.updated_by !== transaction.created_by
+    ) {
+      entries.push({
+        label: 'Alterado por',
+        name: nameOf(transaction.updated_by),
+        at: transaction.updated_at,
+      });
     }
     return entries;
   });
@@ -228,19 +311,28 @@ export class TransactionFormDialog {
   constructor() {
     this.form.controls.kind.valueChanges.pipe(takeUntilDestroyed()).subscribe((kind) => {
       this.form.controls.categoryId.reset('');
-      this.applyKindValidators(kind);
+      if (kind === 'INCOME') {
+        this.form.controls.paymentMethod.setValue('ACCOUNT', { emitEvent: false });
+      }
+      this.applyShape();
     });
+    this.form.controls.paymentMethod.valueChanges
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => this.applyShape());
     this.form.controls.accountId.valueChanges
       .pipe(takeUntilDestroyed())
       .subscribe(() => this.form.controls.destinationAccountId.updateValueAndValidity());
-    this.applyKindValidators(this.form.controls.kind.value);
+    this.applyShape();
     if (this.readonly) {
       this.form.disable();
     }
   }
 
   protected async save(): Promise<void> {
-    if (this.submitting() || this.readonly || !this.hasAccounts()) {
+    if (this.submitting() || this.readonly) {
+      return;
+    }
+    if (this.needsAccount() && !this.hasAccounts()) {
       return;
     }
     if (this.form.invalid) {
@@ -298,22 +390,70 @@ export class TransactionFormDialog {
   }
 
   private initialKind(): SupportedTransactionKind {
+    if (this.invoicePayment) {
+      return 'TRANSFER';
+    }
     const kind = this.transaction?.kind ?? this.data?.initialKind ?? 'EXPENSE';
     return kind === 'SETTLEMENT' ? 'EXPENSE' : kind;
   }
 
-  private applyKindValidators(kind: SupportedTransactionKind): void {
-    const { categoryId, destinationAccountId } = this.form.controls;
+  private initialMethod(): PaymentMethod {
+    if (this.invoicePayment) {
+      return 'CARD';
+    }
+    return this.transaction?.credit_card_id ? 'CARD' : 'ACCOUNT';
+  }
+
+  private initialAmount(): string {
+    if (this.transaction) {
+      return formatAmountInput(this.transaction.amount);
+    }
+    return this.invoicePayment ? formatAmountInput(this.invoicePayment.amount) : '';
+  }
+
+  // Exactly one origin per transaction, mirroring the database constraint.
+  private applyShape(): void {
+    const { categoryId, accountId, destinationAccountId, creditCardId, invoiceDueDate, status } =
+      this.form.controls;
+    const kind = this.form.controls.kind.value;
+    const method = this.form.controls.paymentMethod.value;
+    const usesCard = method === 'CARD';
+
+    for (const control of [categoryId, accountId, destinationAccountId, creditCardId, invoiceDueDate]) {
+      control.clearValidators();
+    }
+
     if (kind === 'TRANSFER') {
-      categoryId.clearValidators();
-      destinationAccountId.setValidators([Validators.required, this.differentAccountValidator]);
+      accountId.setValidators(Validators.required);
+      categoryId.reset('', { emitEvent: false });
+      if (usesCard) {
+        creditCardId.setValidators(Validators.required);
+        invoiceDueDate.setValidators(Validators.required);
+        destinationAccountId.reset('', { emitEvent: false });
+      } else {
+        destinationAccountId.setValidators([Validators.required, this.differentAccountValidator]);
+        creditCardId.reset('', { emitEvent: false });
+        invoiceDueDate.reset('', { emitEvent: false });
+      }
     } else {
       categoryId.setValidators(Validators.required);
-      destinationAccountId.clearValidators();
-      destinationAccountId.reset('');
+      destinationAccountId.reset('', { emitEvent: false });
+      if (kind === 'EXPENSE' && usesCard) {
+        creditCardId.setValidators(Validators.required);
+        accountId.reset('', { emitEvent: false });
+        if (status.value === 'PENDING') {
+          status.setValue('PAID', { emitEvent: false });
+        }
+      } else {
+        accountId.setValidators(Validators.required);
+        creditCardId.reset('', { emitEvent: false });
+        invoiceDueDate.reset('', { emitEvent: false });
+      }
     }
-    categoryId.updateValueAndValidity();
-    destinationAccountId.updateValueAndValidity();
+
+    for (const control of [categoryId, accountId, destinationAccountId, creditCardId, invoiceDueDate]) {
+      control.updateValueAndValidity({ emitEvent: false });
+    }
   }
 
   private readonly differentAccountValidator = (
@@ -325,19 +465,34 @@ export class TransactionFormDialog {
 
   private toInput(): TransactionInput {
     const value = this.form.getRawValue();
+    const usesCard = value.paymentMethod === 'CARD';
     const isTransfer = value.kind === 'TRANSFER';
+    const isCardPurchase = value.kind === 'EXPENSE' && usesCard;
+    const isInvoicePayment = isTransfer && usesCard;
+    const date = toIsoDate(value.date as Date);
+
     return {
       kind: value.kind,
       description: value.description.trim(),
       amount: parseAmountInput(value.amount) ?? 0,
-      date: toIsoDate(value.date as Date),
-      dueDate: value.status === 'PENDING' && value.dueDate ? toIsoDate(value.dueDate) : null,
+      date,
+      dueDate:
+        value.status === 'PENDING' && !isCardPurchase && value.dueDate
+          ? toIsoDate(value.dueDate)
+          : null,
       status: value.status,
       categoryId: isTransfer ? null : value.categoryId,
-      accountId: value.accountId,
-      destinationAccountId: isTransfer ? value.destinationAccountId : null,
+      accountId: isCardPurchase ? null : value.accountId,
+      destinationAccountId: isTransfer && !usesCard ? value.destinationAccountId : null,
+      creditCardId: usesCard ? value.creditCardId : null,
+      invoiceDueDate: isInvoicePayment
+        ? value.invoiceDueDate
+        : isCardPurchase
+          ? (this.invoicePreview()?.dueDate ?? null)
+          : null,
       householdId: value.householdId || null,
       notes: value.notes.trim() || null,
     };
   }
+
 }

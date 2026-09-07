@@ -101,3 +101,45 @@ mat-form-field {
   font: var(--mat-sys-body-small);
   color: var(--mat-sys-on-surface-variant);
 }
+
+.tx-form__method {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  mat-button-toggle-group {
+    align-self: stretch;
+  }
+
+  mat-button-toggle {
+    flex: 1 1 0;
+  }
+
+  mat-icon {
+    margin-right: 6px;
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    vertical-align: -4px;
+  }
+}
+
+.tx-form__label {
+  font: var(--mat-sys-label-medium);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.tx-form__preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: -4px 0 0;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}

@@ -8,6 +8,7 @@ import { PeriodService } from '../../core/period/period.service';
 import { currentMonth, monthRange, shiftMonth } from '../../core/period/period.model';
 import { makeAccount, makeCategory, makeTransaction } from '../../testing/finance-fixtures';
 import { AccountsStore } from '../accounts/accounts.store';
+import { CardsStore } from '../cards/cards.store';
 import { buildTransactionViews } from '../transactions/transaction.model';
 import { TransactionsStore } from '../transactions/transactions.store';
 import { DashboardRepository } from './dashboard.repository';
@@ -57,6 +58,19 @@ describe('DashboardStore', () => {
           useValue: { dataOwnerId: ownerId, householdId, canManage: signal(true) },
         },
         { provide: DashboardRepository, useValue: { listMonthlyTotals } },
+        {
+          provide: CardsStore,
+          useValue: {
+            cards: signal([]),
+            activeCards: signal([]),
+            byId: signal(new Map()),
+            nameById: signal(new Map()),
+            invoicesOf: () => [],
+            dueBetween: () => [],
+            totalDueBetween: () => 0,
+            reload: vi.fn(),
+          },
+        },
         {
           provide: TransactionsStore,
           useValue: {

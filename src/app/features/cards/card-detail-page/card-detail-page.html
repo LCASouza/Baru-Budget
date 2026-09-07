@@ -1,0 +1,135 @@
+<section class="detail">
+  <a class="detail__back" routerLink="/cards">
+    <mat-icon>arrow_back</mat-icon>
+    Cartões
+  </a>
+
+  @if (store.isLoading() && !store.loaded()) {
+    <mat-progress-bar mode="indeterminate" />
+  } @else if (!summary()) {
+    <article class="bb-card">
+      <app-empty-state
+        icon="credit_card_off"
+        title="Cartão não encontrado"
+        description="Ele pode ter sido excluído ou pertencer a outro contexto financeiro."
+      >
+        <a matButton="filled" routerLink="/cards">Voltar para cartões</a>
+      </app-empty-state>
+    </article>
+  } @else {
+    <header class="detail__head bb-card">
+      <div>
+        <h2 class="detail__name">{{ summary()!.card.name }}</h2>
+        <p class="detail__meta">
+          @if (summary()!.card.institution) {
+            {{ summary()!.card.institution }} ·
+          }
+          fecha dia {{ summary()!.card.closing_day }} · vence dia {{ summary()!.card.due_day }}
+        </p>
+      </div>
+      <div class="detail__usage">
+        <span class="detail__usage-label">Utilizado</span>
+        <span class="detail__usage-amount bb-amount">{{ summary()!.used | currency }}</span>
+        @if (summary()!.available !== null) {
+          <span class="detail__usage-label">Disponível {{ summary()!.available | currency }}</span>
+        }
+      </div>
+    </header>
+
+    @if (invoices().length === 0) {
+      <article class="bb-card">
+        <app-empty-state
+          icon="receipt_long"
+          title="Nenhuma fatura ainda"
+          description="Registre uma compra neste cartão para que a primeira fatura apareça."
+        />
+      </article>
+    } @else {
+      <div class="detail__body">
+        <nav class="detail__invoices" aria-label="Faturas">
+          @for (invoice of invoices(); track invoice.dueDate) {
+            <button
+              type="button"
+              class="invoice-item"
+              [class.invoice-item--active]="invoice.dueDate === selected()?.dueDate"
+              (click)="select(invoice)"
+            >
+              <span class="invoice-item__label">{{ invoice.label }}</span>
+              <span class="invoice-item__amount bb-amount">{{ invoice.total | currency }}</span>
+              <span [class]="'invoice-item__status invoice-item__status--' + invoice.status.toLowerCase()">
+                {{ statusLabels[invoice.status] }}
+              </span>
+            </button>
+          }
+        </nav>
+
+        @if (selected(); as invoice) {
+          <article class="bb-card detail__invoice">
+            <header class="bb-card__head">
+              <div>
+                <h3 class="bb-card__title">{{ invoice.label }}</h3>
+                <p class="bb-card__subtitle">
+                  Fecha {{ invoice.closingDate | date: 'dd/MM/yyyy' }} · vence
+                  {{ invoice.dueDate | date: 'dd/MM/yyyy' }} ·
+                  {{ invoice.purchaseCount }} {{ invoice.purchaseCount === 1 ? 'compra' : 'compras' }}
+                </p>
+              </div>
+              @if (context.canManage() && invoice.status !== 'PAID') {
+                <button matButton="filled" (click)="payInvoice(invoice)">
+                  <mat-icon>payments</mat-icon>
+                  Registrar pagamento
+                </button>
+              }
+            </header>
+
+            <dl class="invoice-totals">
+              <div>
+                <dt>Total</dt>
+                <dd class="bb-amount">{{ invoice.total | currency }}</dd>
+              </div>
+              <div>
+                <dt>Pago</dt>
+                <dd class="bb-amount">{{ invoice.paid | currency }}</dd>
+              </div>
+              <div>
+                <dt>Restante</dt>
+                <dd class="bb-amount invoice-totals__remaining">{{ invoice.remaining | currency }}</dd>
+              </div>
+            </dl>
+
+            @if (linesLoading()) {
+              <mat-progress-bar mode="indeterminate" />
+            } @else {
+              <ul class="invoice-lines">
+                @for (line of lines(); track line.transaction.id) {
+                  <li>
+                    <button type="button" class="invoice-line" (click)="open(line.transaction)">
+                      <span class="invoice-line__icon" [class.invoice-line__icon--payment]="line.isPayment">
+                        <mat-icon>{{ line.isPayment ? 'payments' : 'shopping_bag' }}</mat-icon>
+                      </span>
+                      <span class="invoice-line__info">
+                        <span class="invoice-line__name">{{ line.transaction.description }}</span>
+                        <span class="invoice-line__meta">
+                          {{ line.transaction.date | date: 'dd/MM/yyyy' }}
+                          @if (line.categoryName) {
+                            · {{ line.categoryName }}
+                          }
+                          @if (line.transaction.status === 'CANCELLED') {
+                            · Cancelada
+                          }
+                        </span>
+                      </span>
+                      <span class="invoice-line__amount bb-amount" [class.invoice-line__amount--payment]="line.isPayment">
+                        {{ line.isPayment ? '−' : '' }} {{ line.transaction.amount | currency }}
+                      </span>
+                    </button>
+                  </li>
+                }
+              </ul>
+            }
+          </article>
+        }
+      </div>
+    }
+  }
+</section>

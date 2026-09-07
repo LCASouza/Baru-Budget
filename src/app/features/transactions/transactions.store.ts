@@ -4,6 +4,7 @@ import { DisplayStatus } from '../../core/finance/transaction-status';
 import { PeriodService } from '../../core/period/period.service';
 import { todayIso } from '../../shared/dates/iso-date';
 import { AccountsStore } from '../accounts/accounts.store';
+import { CardsStore } from '../cards/cards.store';
 import { CategoriesStore } from '../categories/categories.store';
 import {
   EMPTY_FILTERS,
@@ -24,6 +25,7 @@ export class TransactionsStore {
   private readonly repository = inject(TransactionRepository);
   private readonly accounts = inject(AccountsStore);
   private readonly categories = inject(CategoriesStore);
+  private readonly cards = inject(CardsStore);
 
   private readonly filtersState = signal<TransactionFilters>(EMPTY_FILTERS);
 
@@ -64,6 +66,7 @@ export class TransactionsStore {
       this.accounts.byId(),
       todayIso(),
       this.context.memberNameById(),
+      this.cards.nameById(),
     ),
   );
   readonly filtered = computed(() => filterTransactions(this.views(), this.filters()));
@@ -80,6 +83,10 @@ export class TransactionsStore {
 
   setAccount(accountId: string | null): void {
     this.patchFilters({ accountId });
+  }
+
+  setCard(cardId: string | null): void {
+    this.patchFilters({ cardId });
   }
 
   setStatus(status: DisplayStatus | null): void {
@@ -120,6 +127,7 @@ export class TransactionsStore {
   private afterMutation(): void {
     this.listResource.reload();
     this.accounts.reloadBalances();
+    this.cards.reload();
   }
 
   private patchFilters(patch: Partial<TransactionFilters>): void {

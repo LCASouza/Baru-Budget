@@ -1,0 +1,55 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Editar cartão' : 'Novo cartão' }}</h2>
+
+<mat-dialog-content>
+  <form class="card-form" [formGroup]="form" (ngSubmit)="save()" novalidate>
+    <mat-form-field appearance="outline">
+      <mat-label>Nome</mat-label>
+      <input matInput formControlName="name" placeholder="Ex.: Cartão principal" maxlength="60" />
+      @if (form.controls.name.hasError('required')) {
+        <mat-error>Informe o nome.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Instituição</mat-label>
+      <input matInput formControlName="institution" placeholder="Opcional" maxlength="80" />
+    </mat-form-field>
+
+    <div class="card-form__row">
+      <mat-form-field appearance="outline">
+        <mat-label>Dia do fechamento</mat-label>
+        <mat-select formControlName="closingDay">
+          @for (day of days; track day) {
+            <mat-option [value]="day">{{ day }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Dia do vencimento</mat-label>
+        <mat-select formControlName="dueDay">
+          @for (day of days; track day) {
+            <mat-option [value]="day">{{ day }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <mat-form-field appearance="outline" floatLabel="always">
+      <mat-label>Limite</mat-label>
+      <span matTextPrefix>R$&nbsp;</span>
+      <input matInput formControlName="limitAmount" inputmode="decimal" placeholder="0,00" />
+      @if (form.controls.limitAmount.invalid) {
+        <mat-error>Informe um valor válido.</mat-error>
+      }
+      <mat-hint>Opcional. Serve para acompanhar o disponível.</mat-hint>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button matButton mat-dialog-close type="button">Cancelar</button>
+  <button matButton="filled" type="button" (click)="save()" [disabled]="submitting()">
+    {{ submitting() ? 'Salvando…' : 'Salvar' }}
+  </button>
+</mat-dialog-actions>

@@ -42,7 +42,6 @@ select col_type_is('public', 'transactions', 'amount', 'numeric(14,2)', 'transac
 select col_type_is('public', 'transactions', 'date', 'date', 'transactions.date is a date');
 select col_type_is('public', 'transactions', 'due_date', 'date', 'transactions.due_date is a date');
 select col_not_null('public', 'transactions', 'owner_user_id', 'transactions.owner_user_id is not null');
-select col_not_null('public', 'transactions', 'account_id', 'transactions.account_id is not null');
 select col_is_null('public', 'transactions', 'category_id', 'transactions.category_id is nullable');
 select col_is_null('public', 'transactions', 'destination_account_id', 'transactions.destination_account_id is nullable');
 select col_is_null('public', 'transactions', 'due_date', 'transactions.due_date is nullable');
@@ -61,6 +60,27 @@ select has_index('public', 'transactions', 'transactions_destination_account_idx
 
 select has_view('public', 'account_balances', 'account_balances view exists');
 select has_view('public', 'monthly_transaction_totals', 'monthly_transaction_totals view exists');
+select has_view('public', 'credit_card_invoices', 'credit_card_invoices view exists');
+select has_column('public', 'credit_card_invoices', 'invoice_due_date', 'credit_card_invoices.invoice_due_date exists');
+select has_column('public', 'credit_card_invoices', 'total', 'credit_card_invoices.total exists');
+select has_column('public', 'credit_card_invoices', 'paid', 'credit_card_invoices.paid exists');
+
+select has_table('public', 'credit_cards', 'credit_cards table exists');
+select has_pk('public', 'credit_cards', 'credit_cards has a primary key');
+select col_type_is('public', 'credit_cards', 'limit_amount', 'numeric(14,2)', 'credit_cards.limit_amount is numeric(14,2)');
+select col_is_null('public', 'credit_cards', 'limit_amount', 'credit_cards.limit_amount is nullable');
+select col_not_null('public', 'credit_cards', 'closing_day', 'credit_cards.closing_day is not null');
+select col_not_null('public', 'credit_cards', 'due_day', 'credit_cards.due_day is not null');
+select has_index('public', 'credit_cards', 'credit_cards_owner_name_key', 'credit_cards has the owner/name unique index');
+select policies_are('public', 'credit_cards', array['credit_cards_select_visible', 'credit_cards_insert_manage', 'credit_cards_update_manage', 'credit_cards_delete_manage'], 'credit_cards policies');
+
+select has_column('public', 'transactions', 'credit_card_id', 'transactions.credit_card_id exists');
+select has_column('public', 'transactions', 'invoice_due_date', 'transactions.invoice_due_date exists');
+select col_is_null('public', 'transactions', 'account_id', 'transactions.account_id is nullable');
+select fk_ok('public', 'transactions', 'credit_card_id', 'public', 'credit_cards', 'id', 'transactions.credit_card_id references credit_cards');
+select has_index('public', 'transactions', 'transactions_card_invoice_idx', 'transactions has the card/invoice index');
+select has_function('public', 'invoice_due_date_for', array['date', 'integer', 'integer'], 'invoice_due_date_for exists');
+select has_function('public', 'last_day_of_month', array['date'], 'last_day_of_month exists');
 select has_column('public', 'monthly_transaction_totals', 'month', 'monthly_transaction_totals.month exists');
 select has_column('public', 'monthly_transaction_totals', 'kind', 'monthly_transaction_totals.kind exists');
 select has_column('public', 'monthly_transaction_totals', 'total', 'monthly_transaction_totals.total exists');

@@ -49,6 +49,22 @@ describe('transaction-summary', () => {
       expect(ids(filterTransactions(views, { ...EMPTY_FILTERS, accountId: 'acc-cash' }))).toEqual(['bakery', 'withdraw']);
     });
 
+    it('filters by card', () => {
+      const withCard = buildTransactionViews(
+        [
+          makeTransaction({ id: 'card-buy', kind: 'EXPENSE', account_id: null, credit_card_id: 'k1', invoice_due_date: '2026-10-05' }),
+          makeTransaction({ id: 'account-buy', kind: 'EXPENSE' }),
+        ],
+        new Map([['cat-food', makeCategory()]]),
+        new Map([['acc-bank', makeAccount()]]),
+        TODAY,
+        new Map(),
+        new Map([['k1', 'Cartão']]),
+      );
+      expect(ids(filterTransactions(withCard, { ...EMPTY_FILTERS, cardId: 'k1' }))).toEqual(['card-buy']);
+      expect(withCard[0].cardName).toBe('Cartão');
+    });
+
     it('filters by derived status', () => {
       expect(ids(filterTransactions(views, { ...EMPTY_FILTERS, status: 'OVERDUE' }))).toEqual(['energy']);
       expect(ids(filterTransactions(views, { ...EMPTY_FILTERS, status: 'PENDING' }))).toEqual(['internet']);
@@ -65,7 +81,7 @@ describe('transaction-summary', () => {
   it('counts active filters excluding the kind tab', () => {
     expect(countActiveFilters(EMPTY_FILTERS)).toBe(0);
     expect(countActiveFilters({ ...EMPTY_FILTERS, kind: 'INCOME' })).toBe(0);
-    expect(countActiveFilters({ kind: null, categoryId: 'c', accountId: 'a', status: 'PAID', search: ' x ' })).toBe(4);
+    expect(countActiveFilters({ kind: null, categoryId: 'c', accountId: 'a', cardId: 'k', status: 'PAID', search: ' x ' })).toBe(5);
     expect(countActiveFilters({ ...EMPTY_FILTERS, search: '   ' })).toBe(0);
   });
 

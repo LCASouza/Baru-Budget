@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**v0.6 — Credit Cards and Invoices** (IN_PROGRESS). The architectural analysis is delivered in `ARCHITECTURE_ANALYSIS_V0.6.md`; implementation starts after its approval. Version file: `versions/v0.6.md`. The v0.5 production check is deferred (see `versions/v0.5.md`). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
+**v0.6 — Credit Cards and Invoices** (IN_PROGRESS). Architectural analysis approved on 2026-09-06 (`ARCHITECTURE_ANALYSIS_V0.6.md`); implementation complete locally, hosted migrations and production check pending. Version file: `versions/v0.6.md`. The v0.5 production check is deferred (see `versions/v0.5.md`). The v0.4 production walkthrough with two users also remains deferred (see `versions/v0.4.md`).
 
 Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.5 (`versions/v0.1.md` to `versions/v0.5.md`).
 
@@ -40,8 +40,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.4 implementation | v0.4 | DELIVERED | Households, grants, authorization functions, complete policies, real context selector, Grupos and Compartilhamento pages; hosted `db push` applied on 2026-09-06; production walkthrough with two users deferred |
 | v0.5 architectural analysis | v0.5 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.5.md`; approved on 2026-09-06 |
 | v0.5 implementation | v0.5 | DELIVERED | Monthly totals view, dashboard store, real cards, charts and lists by context and period; hosted `db push` applied on 2026-09-06; production check deferred |
-| v0.6 architectural analysis | v0.6 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.6.md`; awaiting approval |
-| v0.6 implementation | v0.6 | PENDING | Credit cards, invoice competence rule, card purchases, invoice payments, cards pages |
+| v0.6 architectural analysis | v0.6 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.6.md`; approved on 2026-09-06 |
+| v0.6 implementation | v0.6 | IN_PROGRESS | Credit cards, invoice competence rule, card purchases, invoice payments, cards pages done locally; hosted `db push` and production check pending |
 
 ## Features
 
@@ -61,7 +61,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | FEAT-012 | Households | v0.4 | DELIVERED | households, household_members, ADMIN/MEMBER roles, household-tagged transactions, household context |
 | FEAT-013 | Financial access grants | v0.4 | DELIVERED | VIEW and MANAGE permissions, non-transitive, owner-only management, shared context |
 | FEAT-014 | Dashboard | v0.5 | DELIVERED | Real summary cards, six-month chart with adaptive scale, expenses by category and by person, pending and recent lists, by context and period |
-| FEAT-015 | Credit cards and invoices | v0.6 | PENDING | Closing and due day rules, invoice payment as transfer |
+| FEAT-015 | Credit cards and invoices | v0.6 | IN_PROGRESS | Cards with limit, closing and due days; invoice competence rule stored per purchase; invoices derived with status; payment as transfer; implemented locally |
 | FEAT-016 | Installments | v0.7 | PENDING | Installment generation and tracking |
 | FEAT-017 | Fixed expenses | v0.8 | PENDING | Recurring expense templates with editable monthly instances |
 | FEAT-018 | Recurring incomes | v0.8 | PENDING | Recurring income templates |
@@ -103,4 +103,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-06 — v0.6 Credit Cards and Invoices started: architectural analysis delivered, awaiting approval before implementation.
+2026-09-06 — v0.6 Credit Cards and Invoices implemented locally (3 migrations, 465 pgTAP assertions, 192 Vitest tests); hosted migrations and production check pending.

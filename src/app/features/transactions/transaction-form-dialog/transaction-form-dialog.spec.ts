@@ -1,3 +1,5 @@
+import { registerLocaleData } from '@angular/common';
+import localePt from '@angular/common/locales/pt';
 import { ApplicationRef, computed, signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideNativeDateAdapter } from '@angular/material/core';
@@ -11,9 +13,13 @@ import { ProfileRepository } from '../../../core/profile/profile.repository';
 import { makeAccount, makeCategory, makeTransaction } from '../../../testing/finance-fixtures';
 import { AccountsStore } from '../../accounts/accounts.store';
 import { CategoriesStore } from '../../categories/categories.store';
+import { CardsStore } from '../../cards/cards.store';
+import { CreditCard } from '../../cards/card.model';
 import { TransactionFormData } from '../open-transaction-dialog';
 import { TransactionsStore } from '../transactions.store';
 import { TransactionFormDialog } from './transaction-form-dialog';
+
+registerLocaleData(localePt);
 
 describe('TransactionFormDialog', () => {
   let fixture: ComponentFixture<TransactionFormDialog>;
@@ -33,6 +39,37 @@ describe('TransactionFormDialog', () => {
   ]);
 
   const context = signal<FinancialContext>(PERSONAL_CONTEXT);
+  const cards = signal<CreditCard[]>([]);
+  const cardsService = {
+    cards,
+    activeCards: computed(() => cards().filter((card) => card.active)),
+    byId: computed(() => new Map(cards().map((card) => [card.id, card]))),
+    nameById: computed(() => new Map(cards().map((card) => [card.id, card.name]))),
+    invoicesOf: (cardId: string) =>
+      cards().some((card) => card.id === cardId)
+        ? [{ dueDate: '2026-10-05', label: 'Fatura de Outubro 2026' }]
+        : [],
+    reload: vi.fn(),
+  };
+
+  function makeCard(overrides: Partial<CreditCard> = {}): CreditCard {
+    return {
+      id: 'card-1',
+      owner_user_id: 'u1',
+      name: 'Cartão',
+      institution: null,
+      limit_amount: 5000,
+      closing_day: 20,
+      due_day: 5,
+      color: null,
+      active: true,
+      created_at: '2026-09-01T00:00:00Z',
+      updated_at: '2026-09-01T00:00:00Z',
+      created_by: 'u1',
+      updated_by: 'u1',
+      ...overrides,
+    };
+  }
   const households = signal<{ id: string; name: string; members: { userId: string; displayName: string }[] }[]>([]);
   let findManyByIds: ReturnType<typeof vi.fn>;
 
@@ -82,6 +119,7 @@ describe('TransactionFormDialog', () => {
         { provide: MatSnackBar, useValue: snackBar },
         { provide: TransactionsStore, useValue: store },
         { provide: FinancialContextService, useValue: contextService },
+        { provide: CardsStore, useValue: cardsService },
         { provide: ProfileRepository, useValue: { findManyByIds } },
         {
           provide: AccountsStore,
@@ -109,6 +147,7 @@ describe('TransactionFormDialog', () => {
   beforeEach(() => {
     context.set(PERSONAL_CONTEXT);
     households.set([]);
+    cards.set([]);
   });
 
   it('starts as an expense with today and PAID by default', async () => {
@@ -176,6 +215,8 @@ describe('TransactionFormDialog', () => {
       categoryId: 'cat-food',
       accountId: 'acc-bank',
       destinationAccountId: null,
+      creditCardId: null,
+      invoiceDueDate: null,
       householdId: null,
       notes: null,
     });
@@ -273,9 +314,126 @@ describe('TransactionFormDialog', () => {
     expect(dialogRef.close).toHaveBeenCalledWith('saved');
   });
 
+  it('offers the card option only when there are active cards', async () => {
+    await setup();
+    expect(component['showMethodToggle']()).toBe(false);
+
+    cards.set([makeCard()]);
+    TestBed.resetTestingModule();
+    await setup();
+    expect(component['showMethodToggle']()).toBe(true);
+    form().controls.kind.setValue('INCOME');
+    expect(component['showMethodToggle']()).toBe(false);
+  });
+
+  it('records a card purchase without an account and with the previewed invoice', async () => {
+    cards.set([makeCard()]);
+    await setup();
+    form().controls.paymentMethod.setValue('CARD');
+    form().patchValue({
+      description: 'Livraria',
+      amount: '129,90',
+      date: new Date(2026, 8, 10),
+      categoryId: 'cat-food',
+      creditCardId: 'card-1',
+    });
+    expect(component['isCardPurchase']()).toBe(true);
+    expect(component['invoicePreview']()).toEqual({
+      dueDate: '2026-10-05',
+      label: 'Fatura de Outubro 2026',
+    });
+    expect(component['statusOptions']().map((option) => option.value)).toEqual(['PAID', 'CANCELLED']);
+
+    await component['save']();
+    expect(store.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'EXPENSE',
+        accountId: null,
+        creditCardId: 'card-1',
+        invoiceDueDate: '2026-10-05',
+        categoryId: 'cat-food',
+        amount: 129.9,
+      }),
+    );
+  });
+
+  it('moves the purchase to the next invoice after the closing day', async () => {
+    cards.set([makeCard()]);
+    await setup();
+    form().controls.paymentMethod.setValue('CARD');
+    form().patchValue({ creditCardId: 'card-1', date: new Date(2026, 8, 21) });
+    expect(component['invoicePreview']()?.dueDate).toBe('2026-11-05');
+  });
+
+  it('opens prefilled as an invoice payment and saves it as a transfer', async () => {
+    cards.set([makeCard()]);
+    await setup({
+      invoicePayment: {
+        cardId: 'card-1',
+        cardName: 'Cartão',
+        invoiceDueDate: '2026-10-05',
+        amount: 200,
+      },
+    });
+    const value = form().getRawValue();
+    expect(value.kind).toBe('TRANSFER');
+    expect(value.paymentMethod).toBe('CARD');
+    expect(value.amount).toBe('200,00');
+    expect(value.invoiceDueDate).toBe('2026-10-05');
+    expect(component['isInvoicePayment']()).toBe(true);
+
+    form().controls.accountId.setValue('acc-bank');
+    await component['save']();
+    expect(store.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: 'TRANSFER',
+        accountId: 'acc-bank',
+        creditCardId: 'card-1',
+        invoiceDueDate: '2026-10-05',
+        destinationAccountId: null,
+        categoryId: null,
+      }),
+    );
+  });
+
+  it('requires an account and an invoice for an invoice payment', async () => {
+    cards.set([makeCard()]);
+    await setup();
+    form().controls.kind.setValue('TRANSFER');
+    form().controls.paymentMethod.setValue('CARD');
+    form().patchValue({ description: 'Pagamento', amount: '100', creditCardId: 'card-1' });
+    await component['save']();
+    expect(store.create).not.toHaveBeenCalled();
+    expect(form().controls.accountId.hasError('required')).toBe(true);
+    expect(form().controls.invoiceDueDate.hasError('required')).toBe(true);
+  });
+
+  it('clears the card when switching back to an account', async () => {
+    cards.set([makeCard()]);
+    await setup();
+    form().controls.paymentMethod.setValue('CARD');
+    form().controls.creditCardId.setValue('card-1');
+    form().controls.paymentMethod.setValue('ACCOUNT');
+    expect(form().controls.creditCardId.value).toBe('');
+    expect(component['isCardPurchase']()).toBe(false);
+    expect(form().controls.accountId.hasError('required')).toBe(true);
+  });
+
   it('uses the initial kind passed by the caller', async () => {
     await setup({ initialKind: 'INCOME' });
     expect(form().controls.kind.value).toBe('INCOME');
+  });
+
+  it('allows a card purchase even without accounts', async () => {
+    accounts.set([makeAccount({ active: false })]);
+    cards.set([makeCard()]);
+    await setup();
+    form().controls.paymentMethod.setValue('CARD');
+    form().patchValue({ description: 'Livraria', amount: '10', categoryId: 'cat-food', creditCardId: 'card-1' });
+    expect(component['needsAccount']()).toBe(false);
+    await component['save']();
+    expect(store.create).toHaveBeenCalled();
+    accounts.set([makeAccount(), makeAccount({ id: 'acc-cash', name: 'Dinheiro', type: 'CASH' }), makeAccount({ id: 'acc-old', name: 'Antiga', active: false })]);
   });
 
   it('blocks saving when there are no active accounts', async () => {

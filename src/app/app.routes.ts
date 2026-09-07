@@ -51,11 +51,20 @@ export const routes: Routes = [
             (m) => m.TransactionsPage,
           ),
       },
-      placeholderRoute(
-        '/cards',
-        'Cartões de crédito com limite, fechamento, vencimento e faturas por competência.',
-        'v0.6',
-      ),
+      {
+        path: 'cards',
+        title: navItem('/cards').label,
+        loadComponent: () =>
+          import('./features/cards/cards-page/cards-page').then((m) => m.CardsPage),
+      },
+      {
+        path: 'cards/:id',
+        title: 'Cartão',
+        loadComponent: () =>
+          import('./features/cards/card-detail-page/card-detail-page').then(
+            (m) => m.CardDetailPage,
+          ),
+      },
       placeholderRoute(
         '/installments',
         'Compras parceladas com parcela atual, parcelas restantes e comprometimento futuro.',

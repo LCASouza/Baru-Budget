@@ -79,6 +79,19 @@
             </mat-select>
           </mat-form-field>
 
+          @if (!isHousehold() && cards.cards().length > 0) {
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
+              <mat-label>Cartão</mat-label>
+              <mat-select [ngModel]="store.filters().cardId" (ngModelChange)="store.setCard($event)">
+                <mat-option [value]="null">Todos</mat-option>
+                @for (card of cards.cards(); track card.id) {
+                  <mat-option [value]="card.id">
+                    {{ card.name }}{{ card.active ? '' : ' (inativo)' }}
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          }
           @if (!isHousehold()) {
             <mat-form-field appearance="outline" subscriptSizing="dynamic">
               <mat-label>Conta</mat-label>
@@ -173,7 +186,7 @@
                     (click)="edit(view)"
                   >
                     <span class="tx-row__icon" [class]="'tx-row__icon tx-row__icon--' + view.transaction.kind.toLowerCase()">
-                      <mat-icon>{{ kindIcons[view.transaction.kind] }}</mat-icon>
+                      <mat-icon>{{ view.cardName ? 'credit_card' : kindIcons[view.transaction.kind] }}</mat-icon>
                     </span>
                     <span class="tx-row__info">
                       <span class="tx-row__name">{{ view.transaction.description }}</span>
@@ -181,9 +194,13 @@
                         @if (isHousehold()) {
                           {{ view.ownerName ?? 'Membro' }}{{ view.categoryName ? ' · ' + view.categoryName : '' }}
                         } @else if (view.transaction.kind === 'TRANSFER') {
-                          {{ view.accountName }} → {{ view.destinationAccountName }}
+                          @if (view.cardName) {
+                            {{ view.accountName }} → {{ view.cardName }}
+                          } @else {
+                            {{ view.accountName }} → {{ view.destinationAccountName }}
+                          }
                         } @else {
-                          {{ view.categoryName }} · {{ view.accountName }}
+                          {{ view.categoryName }} · {{ view.cardName ?? view.accountName }}
                         }
                       </span>
                     </span>

@@ -183,3 +183,47 @@ begin
    where owner_user_id = dev_user and description = 'Supermercado' and date >= month_start;
 end;
 $$;
+
+-- Credit card for the development user with two invoices: the oldest one already
+-- paid and the current one still open.
+do $$
+declare
+  dev_user    constant uuid := '00000000-0000-4000-8000-000000000001';
+  month_start constant date := date_trunc('month', current_date)::date;
+  prev_month  constant date := (date_trunc('month', current_date) - interval '1 month')::date;
+  card        uuid;
+  bank        uuid;
+  cat_shop    uuid;
+  cat_subs    uuid;
+  cat_food    uuid;
+  paid_due    date;
+begin
+  insert into public.credit_cards (owner_user_id, name, institution, limit_amount, closing_day, due_day, created_by, updated_by)
+  values (dev_user, 'Cartão principal', 'Banco', 5000.00, 20, 5, dev_user, dev_user)
+  returning id into card;
+
+  select id into bank     from public.accounts   where owner_user_id = dev_user and name = 'Conta corrente';
+  select id into cat_shop from public.categories where owner_user_id = dev_user and kind = 'EXPENSE' and name = 'Compras';
+  select id into cat_subs from public.categories where owner_user_id = dev_user and kind = 'EXPENSE' and name = 'Assinaturas';
+  select id into cat_food from public.categories where owner_user_id = dev_user and kind = 'EXPENSE' and name = 'Alimentação';
+
+  -- Purchases; invoice_due_date is filled by the trigger from the card rules.
+  insert into public.transactions
+    (owner_user_id, kind, description, amount, date, status, category_id, credit_card_id, created_by, updated_by)
+  values
+    (dev_user, 'EXPENSE', 'Livraria',   129.90, prev_month + 9,  'PAID', cat_shop, card, dev_user, dev_user),
+    (dev_user, 'EXPENSE', 'Streaming',   49.90, month_start + 2, 'PAID', cat_subs, card, dev_user, dev_user),
+    (dev_user, 'EXPENSE', 'Restaurante', 96.40, month_start + 8, 'PAID', cat_food, card, dev_user, dev_user);
+
+  -- Pay the oldest invoice in full, as a transfer from the bank account.
+  select min(invoice_due_date) into paid_due
+    from public.transactions
+   where credit_card_id = card and kind = 'EXPENSE';
+
+  insert into public.transactions
+    (owner_user_id, kind, description, amount, date, status, account_id, credit_card_id, invoice_due_date, created_by, updated_by)
+  select dev_user, 'TRANSFER', 'Pagamento da fatura', sum(amount), paid_due, 'PAID', bank, card, paid_due, dev_user, dev_user
+    from public.transactions
+   where credit_card_id = card and kind = 'EXPENSE' and invoice_due_date = paid_due;
+end;
+$$;

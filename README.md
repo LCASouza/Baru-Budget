@@ -2,7 +2,7 @@
 
 Personal and family finance management web application.
 
-Current state: v0.5 (Dashboard) — real summary cards, six-month income and expense evolution, expenses by category and by person, pending and recent transactions, all following the selected month and financial context, on top of the v0.4 households and sharing, deployed at https://baru-budget.pages.dev. See `docs/PROJECT_STATUS.md` for the roadmap.
+Current state: v0.6 (Credit Cards and Invoices) — cards with closing and due days, purchases attached to the right invoice, invoices with status and payment as a transfer, on top of the v0.5 dashboard, transactions, households and sharing, deployed at https://baru-budget.pages.dev. See `docs/PROJECT_STATUS.md` for the roadmap.
 
 ## Stack
 
@@ -28,7 +28,7 @@ npm run lint       # ESLint
 npm run build      # production build in dist/baru-budget
 ```
 
-Local login: `supabase/seed.sql` creates the development users `dev@baru.local` and `dev2@baru.local` (password `baru-dev-123`), sample accounts and transactions, a shared household and a VIEW grant from the second user to the first (local stack only; sign-ups are disabled).
+Local login: `supabase/seed.sql` creates the development users `dev@baru.local` and `dev2@baru.local` (password `baru-dev-123`), sample accounts, transactions and a credit card with invoices, a shared household and a VIEW grant from the second user to the first (local stack only; sign-ups are disabled).
 
 Database workflow:
 
@@ -47,5 +47,5 @@ Project documentation lives exclusively in `docs/*.md`:
 - `docs/MASTER_PROMPT.md` — product specification and rules
 - `docs/DOCUMENTATION_POLICY.md` — documentation governance
 - `docs/PROJECT_STATUS.md` — roadmap, features, bugs and technical debt
-- `docs/ARCHITECTURE_ANALYSIS_V0.1.md` to `V0.5.md` — approved architecture per version
+- `docs/ARCHITECTURE_ANALYSIS_V0.1.md` to `V0.6.md` — approved architecture per version
 - `docs/versions/` — one file per version

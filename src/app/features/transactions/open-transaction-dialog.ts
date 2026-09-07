@@ -3,9 +3,18 @@ import { firstValueFrom } from 'rxjs';
 import { ViewportService } from '../../core/layout/viewport.service';
 import { Transaction } from './transaction.model';
 
+export interface InvoicePaymentPrefill {
+  readonly cardId: string;
+  readonly cardName: string;
+  readonly invoiceDueDate: string;
+  readonly amount: number;
+}
+
 export interface TransactionFormData {
   readonly transaction?: Transaction;
   readonly initialKind?: 'INCOME' | 'EXPENSE' | 'TRANSFER';
+  /** Opens the form as a payment of the given invoice. */
+  readonly invoicePayment?: InvoicePaymentPrefill;
 }
 
 export type TransactionFormResult = 'saved' | 'deleted';

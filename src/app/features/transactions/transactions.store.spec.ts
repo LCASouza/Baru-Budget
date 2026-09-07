@@ -5,6 +5,7 @@ import { FinancialContextService } from '../../core/context/financial-context.se
 import { PeriodService } from '../../core/period/period.service';
 import { makeAccount, makeCategory, makeTransaction } from '../../testing/finance-fixtures';
 import { AccountsStore } from '../accounts/accounts.store';
+import { CardsStore } from '../cards/cards.store';
 import { CategoriesStore } from '../categories/categories.store';
 import { TransactionRepository } from './transaction.repository';
 import { TransactionsStore } from './transactions.store';
@@ -53,6 +54,19 @@ describe('TransactionsStore', () => {
           },
         },
         { provide: TransactionRepository, useValue: repository },
+        {
+          provide: CardsStore,
+          useValue: {
+            cards: signal([]),
+            activeCards: signal([]),
+            byId: signal(new Map()),
+            nameById: signal(new Map()),
+            invoicesOf: () => [],
+            dueBetween: () => [],
+            totalDueBetween: () => 0,
+            reload: vi.fn(),
+          },
+        },
         {
           provide: AccountsStore,
           useValue: {
@@ -130,6 +144,8 @@ describe('TransactionsStore', () => {
       categoryId: 'cat-food',
       accountId: 'acc-bank',
       destinationAccountId: null,
+      creditCardId: null,
+      invoiceDueDate: null,
       householdId: null,
       notes: null,
     });

@@ -29,6 +29,7 @@ import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import { PeriodFilter } from '../../../shared/components/period-filter/period-filter';
 import { SummaryCard, SummaryCardData } from '../../../shared/components/summary-card/summary-card';
 import { AccountsStore } from '../../accounts/accounts.store';
+import { CardsStore } from '../../cards/cards.store';
 import { CategoriesStore } from '../../categories/categories.store';
 import { openTransactionDialog } from '../open-transaction-dialog';
 import { KindTab } from '../transaction-summary';
@@ -87,6 +88,7 @@ export class TransactionsPage {
   protected readonly store = inject(TransactionsStore);
   protected readonly accounts = inject(AccountsStore);
   protected readonly categories = inject(CategoriesStore);
+  protected readonly cards = inject(CardsStore);
   protected readonly viewport = inject(ViewportService);
   protected readonly context = inject(FinancialContextService);
   private readonly dialog = inject(MatDialog);

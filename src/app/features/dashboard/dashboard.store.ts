@@ -5,6 +5,7 @@ import { monthRange, shiftMonth } from '../../core/period/period.model';
 import { todayIso } from '../../shared/dates/iso-date';
 import { SummaryCardData } from '../../shared/components/summary-card/summary-card';
 import { AccountsStore } from '../accounts/accounts.store';
+import { CardsStore } from '../cards/cards.store';
 import { TransactionsStore } from '../transactions/transactions.store';
 import {
   buildMonthlySeries,
@@ -28,6 +29,7 @@ export class DashboardStore {
   private readonly repository = inject(DashboardRepository);
   private readonly transactions = inject(TransactionsStore);
   private readonly accounts = inject(AccountsStore);
+  private readonly cardsStore = inject(CardsStore);
 
   // Six-month window ending at the selected month; the current month itself comes
   // from the transactions already loaded for the page.
@@ -111,10 +113,20 @@ export class DashboardStore {
       },
     ];
 
-    // A household has no accounts of its own, so cash balances only make sense
-    // in the personal and shared contexts.
+    // A household has no accounts or cards of its own, so cash balances and
+    // invoices only make sense in the personal and shared contexts.
     if (!this.isHousehold()) {
       const totals = this.accounts.totals();
+      const invoices = this.invoicesDueInPeriod();
+      if (invoices.length > 0) {
+        cards.push({
+          label: 'Faturas a pagar',
+          amount: this.invoiceTotalDue(),
+          icon: 'credit_card',
+          tone: 'payable',
+          hint: `${invoices.length} ${invoices.length === 1 ? 'fatura vence' : 'faturas vencem'} no período`,
+        });
+      }
       cards.push(
         {
           label: 'Saldo monetário',
@@ -135,6 +147,15 @@ export class DashboardStore {
       );
     }
     return cards;
+  });
+
+  private readonly invoicesDueInPeriod = computed(() => {
+    const range = this.period.range();
+    return this.cardsStore.dueBetween(range.start, range.end);
+  });
+  private readonly invoiceTotalDue = computed(() => {
+    const range = this.period.range();
+    return this.cardsStore.totalDueBetween(range.start, range.end);
   });
 
   readonly isLoading = computed(

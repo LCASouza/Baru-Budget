@@ -10,6 +10,7 @@ export interface TransactionFilters {
   readonly kind: KindTab;
   readonly categoryId: string | null;
   readonly accountId: string | null;
+  readonly cardId: string | null;
   readonly status: DisplayStatus | null;
   readonly search: string;
 }
@@ -18,6 +19,7 @@ export const EMPTY_FILTERS: TransactionFilters = {
   kind: null,
   categoryId: null,
   accountId: null,
+  cardId: null,
   status: null,
   search: '',
 };
@@ -26,6 +28,7 @@ export function countActiveFilters(filters: TransactionFilters): number {
   let count = 0;
   if (filters.categoryId) count++;
   if (filters.accountId) count++;
+  if (filters.cardId) count++;
   if (filters.status) count++;
   if (filters.search.trim()) count++;
   return count;
@@ -47,6 +50,9 @@ export function filterTransactions(
       transaction.account_id !== filters.accountId &&
       transaction.destination_account_id !== filters.accountId
     ) {
+      return false;
+    }
+    if (filters.cardId && transaction.credit_card_id !== filters.cardId) {
       return false;
     }
     if (filters.status && displayStatus !== filters.status) {

@@ -75,6 +75,8 @@ function toRow(input: TransactionInput) {
     category_id: input.categoryId,
     account_id: input.accountId,
     destination_account_id: input.destinationAccountId,
+    credit_card_id: input.creditCardId,
+    invoice_due_date: input.invoiceDueDate,
     household_id: input.householdId,
     notes: input.notes,
   };

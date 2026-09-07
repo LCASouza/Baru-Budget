@@ -165,6 +165,76 @@ export type Database = {
           },
         ]
       }
+      credit_cards: {
+        Row: {
+          active: boolean
+          closing_day: number
+          color: string | null
+          created_at: string
+          created_by: string
+          due_day: number
+          id: string
+          institution: string | null
+          limit_amount: number | null
+          name: string
+          owner_user_id: string
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          active?: boolean
+          closing_day: number
+          color?: string | null
+          created_at?: string
+          created_by?: string
+          due_day: number
+          id?: string
+          institution?: string | null
+          limit_amount?: number | null
+          name: string
+          owner_user_id: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Update: {
+          active?: boolean
+          closing_day?: number
+          color?: string | null
+          created_at?: string
+          created_by?: string
+          due_day?: number
+          id?: string
+          institution?: string | null
+          limit_amount?: number | null
+          name?: string
+          owner_user_id?: string
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "credit_cards_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_cards_owner_user_id_fkey"
+            columns: ["owner_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "credit_cards_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_access_grants: {
         Row: {
           created_at: string
@@ -363,17 +433,19 @@ export type Database = {
       }
       transactions: {
         Row: {
-          account_id: string
+          account_id: string | null
           amount: number
           category_id: string | null
           created_at: string
           created_by: string
+          credit_card_id: string | null
           date: string
           description: string
           destination_account_id: string | null
           due_date: string | null
           household_id: string | null
           id: string
+          invoice_due_date: string | null
           kind: Database["public"]["Enums"]["transaction_kind"]
           notes: string | null
           owner_user_id: string
@@ -382,17 +454,19 @@ export type Database = {
           updated_by: string
         }
         Insert: {
-          account_id: string
+          account_id?: string | null
           amount: number
           category_id?: string | null
           created_at?: string
           created_by?: string
+          credit_card_id?: string | null
           date: string
           description: string
           destination_account_id?: string | null
           due_date?: string | null
           household_id?: string | null
           id?: string
+          invoice_due_date?: string | null
           kind: Database["public"]["Enums"]["transaction_kind"]
           notes?: string | null
           owner_user_id: string
@@ -401,17 +475,19 @@ export type Database = {
           updated_by?: string
         }
         Update: {
-          account_id?: string
+          account_id?: string | null
           amount?: number
           category_id?: string | null
           created_at?: string
           created_by?: string
+          credit_card_id?: string | null
           date?: string
           description?: string
           destination_account_id?: string | null
           due_date?: string | null
           household_id?: string | null
           id?: string
+          invoice_due_date?: string | null
           kind?: Database["public"]["Enums"]["transaction_kind"]
           notes?: string | null
           owner_user_id?: string
@@ -446,6 +522,13 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_credit_card_id_fkey"
+            columns: ["credit_card_id"]
+            isOneToOne: false
+            referencedRelation: "credit_cards"
             referencedColumns: ["id"]
           },
           {
@@ -504,6 +587,24 @@ export type Database = {
           },
         ]
       }
+      credit_card_invoices: {
+        Row: {
+          credit_card_id: string | null
+          invoice_due_date: string | null
+          paid: number | null
+          purchase_count: number | null
+          total: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_credit_card_id_fkey"
+            columns: ["credit_card_id"]
+            isOneToOne: false
+            referencedRelation: "credit_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_transaction_totals: {
         Row: {
           household_id: string | null
@@ -538,6 +639,10 @@ export type Database = {
         Args: { category: string }
         Returns: boolean
       }
+      invoice_due_date_for: {
+        Args: { closing_day: number; due_day: number; purchase_date: string }
+        Returns: string
+      }
       is_active_member: {
         Args: { household: string; member: string }
         Returns: boolean
@@ -545,6 +650,7 @@ export type Database = {
       is_grant_counterpart: { Args: { other: string }; Returns: boolean }
       is_household_admin: { Args: { household: string }; Returns: boolean }
       is_household_member: { Args: { household: string }; Returns: boolean }
+      last_day_of_month: { Args: { reference: string }; Returns: number }
       leave_household: { Args: { household: string }; Returns: undefined }
       lookup_user_by_email: {
         Args: { email_address: string }

@@ -38,15 +38,18 @@ describe('transaction.model', () => {
         makeTransaction(),
         makeTransaction({ id: 'tx-2', kind: 'TRANSFER', category_id: null, destination_account_id: 'acc-cash' }),
         makeTransaction({ id: 'tx-3', category_id: 'missing', account_id: 'missing' }),
+        makeTransaction({ id: 'tx-4', account_id: null, credit_card_id: 'k1', invoice_due_date: '2026-10-05' }),
       ],
       categories,
       accounts,
       '2026-09-06',
       new Map([['u1', 'Alice']]),
+      new Map([['k1', 'Cartão']]),
     );
 
     expect(views[0]).toMatchObject({ categoryName: 'Alimentação', accountName: 'Conta corrente', destinationAccountName: null, displayStatus: 'PAID', ownerName: 'Alice' });
     expect(views[1]).toMatchObject({ categoryName: null, accountName: 'Conta corrente', destinationAccountName: 'Dinheiro' });
-    expect(views[2]).toMatchObject({ categoryName: null, accountName: '', ownerName: 'Alice' });
+    expect(views[2]).toMatchObject({ categoryName: null, accountName: '', ownerName: 'Alice', cardName: null });
+    expect(views[3]).toMatchObject({ accountName: '', cardName: 'Cartão' });
   });
 });
