@@ -2,8 +2,15 @@ import { Injectable, computed, inject, resource, signal } from '@angular/core';
 import { FinancialContextService } from '../../core/context/financial-context.service';
 import { AccountsStore } from '../accounts/accounts.store';
 import { CategoriesStore } from '../categories/categories.store';
+import { DebtStatementInput } from '../../shared/components/debt-statement-dialog/debt-statement-dialog';
 import { Transaction } from '../transactions/transaction.model';
-import { LoanInput, LoanView, buildLoanView, totalRemaining } from './loan.model';
+import {
+  DebtStatement,
+  LoanInput,
+  LoanView,
+  buildLoanView,
+  totalRemaining,
+} from './loan.model';
 import { LoanRepository } from './loan.repository';
 
 @Injectable({ providedIn: 'root' })
@@ -20,16 +27,21 @@ export class LoansStore {
   private readonly dataResource = resource({
     params: () => (this.active() ? (this.context.dataOwnerId() ?? undefined) : undefined),
     loader: async ({ params: ownerId }) => {
-      const [loans, transactions] = await Promise.all([
+      const [loans, transactions, statements] = await Promise.all([
         this.repository.listByOwner(ownerId),
         this.repository.listTransactions(ownerId),
+        this.repository.listStatements(ownerId),
       ]);
-      return { loans, transactions };
+      return { loans, transactions, statements };
     },
   });
 
   private readonly transactions = computed<readonly Transaction[]>(() =>
     this.dataResource.hasValue() ? this.dataResource.value().transactions : [],
+  );
+
+  private readonly statements = computed<readonly DebtStatement[]>(() =>
+    this.dataResource.hasValue() ? this.dataResource.value().statements : [],
   );
 
   readonly views = computed<readonly LoanView[]>(() => {
@@ -40,7 +52,9 @@ export class LoansStore {
     const categoryNames = new Map(this.categories.visibleCategories().map((c) => [c.id, c.name]));
     return this.dataResource
       .value()
-      .loans.map((loan) => buildLoanView(loan, this.transactions(), accountNames, categoryNames));
+      .loans.map((loan) =>
+        buildLoanView(loan, this.transactions(), accountNames, categoryNames, this.statements()),
+      );
   });
 
   readonly open = computed(() => this.views().filter((view) => view.remainingCount > 0));
@@ -85,6 +99,16 @@ export class LoansStore {
     this.reload();
     this.accounts.reloadBalances();
     return created;
+  }
+
+  async saveStatement(loanId: string, input: DebtStatementInput): Promise<void> {
+    await this.repository.saveStatement(loanId, input);
+    this.reload();
+  }
+
+  async removeStatement(id: string): Promise<void> {
+    await this.repository.removeStatement(id);
+    this.reload();
   }
 
   /** Declares that this data is about to be shown. Idempotent. */

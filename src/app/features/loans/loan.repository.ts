@@ -2,7 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { toDataError } from '../../core/supabase/data-error';
 import { SUPABASE_CLIENT } from '../../core/supabase/supabase-client';
 import { Transaction } from '../transactions/transaction.model';
-import { Loan, LoanInput } from './loan.model';
+import { DebtStatementInput } from '../../shared/components/debt-statement-dialog/debt-statement-dialog';
+import { DebtStatement, Loan, LoanInput } from './loan.model';
 
 @Injectable({ providedIn: 'root' })
 export class LoanRepository {
@@ -32,6 +33,46 @@ export class LoanRepository {
       throw toDataError(error, 'Failed to load loan transactions');
     }
     return data;
+  }
+
+  /** Statements observed for every loan of the owner, oldest first. */
+  async listStatements(ownerId: string): Promise<DebtStatement[]> {
+    const { data, error } = await this.client
+      .from('debt_statements')
+      .select('*, loans!inner(owner_user_id)')
+      .eq('loans.owner_user_id', ownerId)
+      .order('competence');
+    if (error) {
+      throw toDataError(error, 'Failed to load loan statements');
+    }
+    return data as unknown as DebtStatement[];
+  }
+
+  /** Records what the lender reported for a month, replacing that month if it exists. */
+  async saveStatement(loanId: string, input: DebtStatementInput): Promise<void> {
+    const { error } = await this.client.from('debt_statements').upsert(
+      {
+        loan_id: loanId,
+        competence: input.competence,
+        outstanding_balance: input.outstandingBalance,
+        installment_amount: input.installmentAmount,
+        insurance_amount: input.insuranceAmount,
+        fee_amount: input.feeAmount,
+        remaining_count: input.remainingCount,
+        notes: input.notes,
+      },
+      { onConflict: 'loan_id,competence' },
+    );
+    if (error) {
+      throw toDataError(error, 'Failed to save the statement');
+    }
+  }
+
+  async removeStatement(id: string): Promise<void> {
+    const { error } = await this.client.from('debt_statements').delete().eq('id', id);
+    if (error) {
+      throw toDataError(error, 'Failed to delete the statement');
+    }
   }
 
   async create(ownerId: string, input: LoanInput): Promise<Loan> {

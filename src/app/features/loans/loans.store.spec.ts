@@ -26,6 +26,8 @@ const LOAN: Loan = {
   start_date: '2026-09-05',
   first_due_date: '2026-10-10',
   notes: null,
+  insurance_amount: 0,
+  fee_amount: 0,
   created_at: '2026-09-05T00:00:00Z',
   updated_at: '2026-09-05T00:00:00Z',
   created_by: 'u1',
@@ -41,7 +43,10 @@ describe('LoansStore', () => {
     | 'update'
     | 'remove'
     | 'generateSchedule'
-    | 'realignSchedule',
+    | 'realignSchedule'
+    | 'listStatements'
+    | 'saveStatement'
+    | 'removeStatement',
     ReturnType<typeof vi.fn>
   >;
   let reloadBalances: ReturnType<typeof vi.fn>;
@@ -75,6 +80,9 @@ describe('LoansStore', () => {
       update: vi.fn().mockResolvedValue(undefined),
       remove: vi.fn().mockResolvedValue(undefined),
       generateSchedule: vi.fn().mockResolvedValue(12),
+      listStatements: vi.fn().mockResolvedValue([]),
+      saveStatement: vi.fn().mockResolvedValue(undefined),
+      removeStatement: vi.fn().mockResolvedValue(undefined),
       realignSchedule: vi.fn().mockResolvedValue(9),
     };
     reloadBalances = vi.fn();
@@ -121,6 +129,28 @@ describe('LoansStore', () => {
     expect(repository.realignSchedule).toHaveBeenCalledWith('loan-1');
     expect(repository.listByOwner).toHaveBeenCalledTimes(2);
     expect(reloadBalances).toHaveBeenCalled();
+  });
+
+  it('records an observed statement and reloads', async () => {
+    await load();
+    const input = {
+      competence: '2026-12-01',
+      outstandingBalance: 8000,
+      installmentAmount: 900,
+      insuranceAmount: 10,
+      feeAmount: 5,
+      remainingCount: 9,
+      notes: null,
+    };
+    await store.saveStatement('loan-1', input);
+    await settle();
+    expect(repository.saveStatement).toHaveBeenCalledWith('loan-1', input);
+    expect(repository.listByOwner).toHaveBeenCalledTimes(2);
+  });
+
+  it('loads the statements together with the loans', async () => {
+    await load();
+    expect(repository.listStatements).toHaveBeenCalledWith('u1');
   });
 
   it('creates, updates and deletes loans', async () => {

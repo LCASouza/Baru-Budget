@@ -1,0 +1,22 @@
+.statement__hint {
+  margin: 0 0 16px;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-on-surface-variant);
+}
+
+.statement__form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.statement__wide {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 599.98px) {
+  .statement__form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

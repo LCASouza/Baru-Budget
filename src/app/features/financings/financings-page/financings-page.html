@@ -82,6 +82,11 @@
               <span class="financing__remaining bb-amount">{{ view.remainingTotal | currency }}</span>
               <span class="financing__hint">a pagar</span>
               <span class="financing__hint">saldo devedor {{ view.outstandingPrincipal | currency }}</span>
+              @if (view.lastStatement; as observed) {
+                <span class="financing__hint">observado em {{ observed.competence | date: 'MM/yyyy' }}</span>
+              } @else {
+                <span class="financing__hint">projetado pelo contrato</span>
+              }
               @if (view.drifted.length) {
                 <span class="financing__stale">
                   <mat-icon aria-hidden="true">warning</mat-icon>
@@ -102,6 +107,10 @@
                 <button mat-menu-item (click)="generate(view)">
                   <mat-icon>playlist_add</mat-icon>
                   <span>{{ view.generated ? 'Completar cronograma' : 'Gerar cronograma' }}</span>
+                </button>
+                <button mat-menu-item (click)="addStatement(view)">
+                  <mat-icon>receipt_long</mat-icon>
+                  <span>Registrar extrato</span>
                 </button>
                 @if (view.drifted.length) {
                   <button mat-menu-item (click)="realign(view)">

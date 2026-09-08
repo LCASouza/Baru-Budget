@@ -20,6 +20,8 @@ const FINANCING: Financing = {
   acquisition_date: '2026-09-05',
   first_due_date: '2026-10-10',
   notes: null,
+  insurance_amount: 0,
+  fee_amount: 0,
   created_at: '2026-09-05T00:00:00Z',
   updated_at: '2026-09-05T00:00:00Z',
   created_by: 'u1',

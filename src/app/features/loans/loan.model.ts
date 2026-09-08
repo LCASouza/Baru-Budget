@@ -7,13 +7,19 @@ import {
   InterestPeriod,
   LoanInterestModel,
   ScheduleRow,
-  buildSchedule,
+  ScheduleAnchor,
+  buildScheduleByParts,
   instalmentDrift,
+  instalmentNumberFor,
   monthlyRate,
   scheduleTotals,
 } from './loan-math';
 
 export type Loan = Tables<'loans'>;
+export type DebtStatement = Tables<'debt_statements'>;
+
+/** Where the outstanding balance shown on screen comes from. */
+export type BalanceSource = 'OBSERVED' | 'PROJECTED';
 
 export interface LoanInput {
   readonly description: string;
@@ -46,6 +52,13 @@ export interface LoanView {
   readonly outstandingPrincipal: number;
   readonly totalToPay: number;
   readonly totalInterest: number;
+  /** Statements the lender reported, oldest first. */
+  readonly statements: readonly DebtStatement[];
+  readonly lastStatement: DebtStatement | null;
+  /** Whether the outstanding balance rests on an observation or on the contract. */
+  readonly balanceSource: BalanceSource;
+  /** Insurance plus fee charged with the next instalment. */
+  readonly nextCharges: number;
   /** Pending instalments left behind by an edit to the loan. */
   readonly drifted: readonly InstalmentDrift[];
   readonly next: Transaction | null;
@@ -54,18 +67,50 @@ export interface LoanView {
   readonly categoryName: string;
 }
 
+/**
+ * Insurance plus fee of one instalment. The statement of that month wins,
+ * because insurance is recalculated over the balance; every other month falls
+ * back to what the contract charges. Mirrors `public.loan_charges_for`.
+ */
+function chargesFor(
+  loan: Loan,
+  statements: readonly DebtStatement[],
+  number: number | null,
+): number {
+  const observed =
+    number === null
+      ? undefined
+      : statements.find(
+          (statement) => instalmentNumberFor(loan.first_due_date, statement.competence) === number,
+        );
+  return observed
+    ? sumAmounts([observed.insurance_amount, observed.fee_amount])
+    : sumAmounts([loan.insurance_amount, loan.fee_amount]);
+}
+
 export function buildLoanView(
   loan: Loan,
   transactions: readonly Transaction[],
   accountNames: ReadonlyMap<string, string>,
   categoryNames: ReadonlyMap<string, string>,
+  allStatements: readonly DebtStatement[] = [],
 ): LoanView {
   const rate = monthlyRate(loan.interest_rate, loan.interest_period, loan.interest_model);
-  const schedule = buildSchedule(
+  const statements = allStatements
+    .filter((statement) => statement.loan_id === loan.id)
+    .slice()
+    .sort((a, b) => a.competence.localeCompare(b.competence));
+  const anchors: ScheduleAnchor[] = statements.map((statement) => ({
+    number: instalmentNumberFor(loan.first_due_date, statement.competence),
+    balance: statement.outstanding_balance,
+    count: statement.remaining_count,
+  }));
+  const schedule = buildScheduleByParts(
     loan.principal,
     rate,
     loan.installment_count,
     loan.interest_model,
+    anchors,
   );
   const totals = scheduleTotals(schedule);
 
@@ -89,6 +134,10 @@ export function buildLoanView(
       paid.length === 0 ? loan.principal : (schedule[paid.length - 1]?.balanceAfter ?? 0),
     totalToPay: totals.total,
     totalInterest: totals.interest,
+    statements,
+    lastStatement: statements.at(-1) ?? null,
+    balanceSource: statements.length > 0 ? 'OBSERVED' : 'PROJECTED',
+    nextCharges: chargesFor(loan, statements, pending[0]?.loan_installment_number ?? null),
     drifted: instalmentDrift(
       pending.map((transaction) => ({
         number: transaction.loan_installment_number ?? 0,

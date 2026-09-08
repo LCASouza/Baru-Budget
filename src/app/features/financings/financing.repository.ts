@@ -2,7 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { toDataError } from '../../core/supabase/data-error';
 import { SUPABASE_CLIENT } from '../../core/supabase/supabase-client';
 import { Transaction } from '../transactions/transaction.model';
-import { Financing, FinancingInput } from './financing.model';
+import { DebtStatementInput } from '../../shared/components/debt-statement-dialog/debt-statement-dialog';
+import { DebtStatement, Financing, FinancingInput } from './financing.model';
 
 @Injectable({ providedIn: 'root' })
 export class FinancingRepository {
@@ -32,6 +33,46 @@ export class FinancingRepository {
       throw toDataError(error, 'Failed to load financing transactions');
     }
     return data;
+  }
+
+  /** Statements observed for every financing of the owner, oldest first. */
+  async listStatements(ownerId: string): Promise<DebtStatement[]> {
+    const { data, error } = await this.client
+      .from('debt_statements')
+      .select('*, financings!inner(owner_user_id)')
+      .eq('financings.owner_user_id', ownerId)
+      .order('competence');
+    if (error) {
+      throw toDataError(error, 'Failed to load financing statements');
+    }
+    return data as unknown as DebtStatement[];
+  }
+
+  /** Records what the lender reported for a month, replacing that month if it exists. */
+  async saveStatement(financingId: string, input: DebtStatementInput): Promise<void> {
+    const { error } = await this.client.from('debt_statements').upsert(
+      {
+        financing_id: financingId,
+        competence: input.competence,
+        outstanding_balance: input.outstandingBalance,
+        installment_amount: input.installmentAmount,
+        insurance_amount: input.insuranceAmount,
+        fee_amount: input.feeAmount,
+        remaining_count: input.remainingCount,
+        notes: input.notes,
+      },
+      { onConflict: 'financing_id,competence' },
+    );
+    if (error) {
+      throw toDataError(error, 'Failed to save the statement');
+    }
+  }
+
+  async removeStatement(id: string): Promise<void> {
+    const { error } = await this.client.from('debt_statements').delete().eq('id', id);
+    if (error) {
+      throw toDataError(error, 'Failed to delete the statement');
+    }
   }
 
   async create(ownerId: string, input: FinancingInput): Promise<Financing> {

@@ -159,6 +159,17 @@ export function scheduleTotals(rows: readonly ScheduleRow[]): ScheduleTotals {
 }
 
 /**
+ * Position in the schedule of the instalment competent for a month. Instalment
+ * one sits on the first due date and each one after it a month later. Mirrors
+ * `public.instalment_number_for`.
+ */
+export function instalmentNumberFor(firstDueDate: string, competence: string): number {
+  const [firstYear, firstMonth] = firstDueDate.split('-').map(Number);
+  const [year, month] = competence.split('-').map(Number);
+  return (year - firstYear) * 12 + (month - firstMonth) + 1;
+}
+
+/**
  * A point the schedule restarts from: the contract at instalment one, and every
  * observed statement after it.
  */

@@ -9,6 +9,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 import { describeDataError } from '../../../core/supabase/data-error';
 import { confirmAction } from '../../../shared/components/confirm-dialog/confirm-dialog';
+import { recordStatement } from '../../../shared/components/debt-statement-dialog/debt-statement-dialog';
 import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import { SummaryCard, SummaryCardData } from '../../../shared/components/summary-card/summary-card';
 import { LOAN_INTEREST_MODEL_LABELS, INTEREST_PERIOD_LABELS } from '../loan-math';
@@ -82,6 +83,26 @@ export class LoansPage {
     } catch (error) {
       this.snackBar.open(
         describeDataError(error, { fallback: 'Não foi possível gerar o cronograma.' }),
+        'OK',
+        { duration: 5000 },
+      );
+    }
+  }
+
+  protected async addStatement(view: LoanView): Promise<void> {
+    const input = await recordStatement(this.dialog, {
+      title: 'Registrar extrato',
+      hint: 'Informe o que o credor reportou neste mês. O cronograma passa a partir daqui, em vez de projetar do contrato.',
+    });
+    if (!input) {
+      return;
+    }
+    try {
+      await this.store.saveStatement(view.loan.id, input);
+      this.snackBar.open('Extrato registrado.', undefined, { duration: 4000 });
+    } catch (error) {
+      this.snackBar.open(
+        describeDataError(error, { fallback: 'Não foi possível registrar o extrato.' }),
         'OK',
         { duration: 5000 },
       );

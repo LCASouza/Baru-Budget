@@ -1,0 +1,65 @@
+<h2 mat-dialog-title>{{ data.title }}</h2>
+
+<mat-dialog-content>
+  <p class="statement__hint">{{ data.hint }}</p>
+
+  <form [formGroup]="form" class="statement__form" (ngSubmit)="submit()">
+    <mat-form-field>
+      <mat-label>Mês do extrato</mat-label>
+      <input matInput [matDatepicker]="picker" formControlName="competence" />
+      <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+      <mat-datepicker #picker></mat-datepicker>
+      <mat-hint>Só o mês é guardado; o dia é ignorado.</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Saldo devedor informado</mat-label>
+      <input matInput formControlName="outstandingBalance" inputmode="decimal" />
+      <span matTextPrefix>R$&nbsp;</span>
+      @if (form.controls.outstandingBalance.hasError('amount')) {
+        <mat-error>Informe um valor maior que zero.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Parcela (juros e principal)</mat-label>
+      <input matInput formControlName="installmentAmount" inputmode="decimal" />
+      <span matTextPrefix>R$&nbsp;</span>
+      <mat-hint>Sem seguro e sem taxa.</mat-hint>
+      @if (form.controls.installmentAmount.hasError('amount')) {
+        <mat-error>Informe um valor maior que zero.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Seguro</mat-label>
+      <input matInput formControlName="insuranceAmount" inputmode="decimal" />
+      <span matTextPrefix>R$&nbsp;</span>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Taxa operacional</mat-label>
+      <input matInput formControlName="feeAmount" inputmode="decimal" />
+      <span matTextPrefix>R$&nbsp;</span>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-label>Parcelas restantes</mat-label>
+      <input matInput formControlName="remainingCount" inputmode="numeric" />
+      <mat-hint>Quantas o credor ainda espera, contando esta.</mat-hint>
+      @if (form.controls.remainingCount.invalid && form.controls.remainingCount.touched) {
+        <mat-error>Informe um número inteiro.</mat-error>
+      }
+    </mat-form-field>
+
+    <mat-form-field class="statement__wide">
+      <mat-label>Observações</mat-label>
+      <input matInput formControlName="notes" />
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button matButton mat-dialog-close>Cancelar</button>
+  <button matButton="filled" (click)="submit()">Salvar</button>
+</mat-dialog-actions>

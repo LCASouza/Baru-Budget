@@ -2,8 +2,10 @@ import { Injectable, computed, inject, resource, signal } from '@angular/core';
 import { FinancialContextService } from '../../core/context/financial-context.service';
 import { AccountsStore } from '../accounts/accounts.store';
 import { CategoriesStore } from '../categories/categories.store';
+import { DebtStatementInput } from '../../shared/components/debt-statement-dialog/debt-statement-dialog';
 import { Transaction } from '../transactions/transaction.model';
 import {
+  DebtStatement,
   FinancingInput,
   FinancingView,
   buildFinancingView,
@@ -25,16 +27,21 @@ export class FinancingsStore {
   private readonly dataResource = resource({
     params: () => (this.active() ? (this.context.dataOwnerId() ?? undefined) : undefined),
     loader: async ({ params: ownerId }) => {
-      const [financings, transactions] = await Promise.all([
+      const [financings, transactions, statements] = await Promise.all([
         this.repository.listByOwner(ownerId),
         this.repository.listTransactions(ownerId),
+        this.repository.listStatements(ownerId),
       ]);
-      return { financings, transactions };
+      return { financings, transactions, statements };
     },
   });
 
   private readonly transactions = computed<readonly Transaction[]>(() =>
     this.dataResource.hasValue() ? this.dataResource.value().transactions : [],
+  );
+
+  private readonly statements = computed<readonly DebtStatement[]>(() =>
+    this.dataResource.hasValue() ? this.dataResource.value().statements : [],
   );
 
   readonly views = computed<readonly FinancingView[]>(() => {
@@ -46,7 +53,13 @@ export class FinancingsStore {
     return this.dataResource
       .value()
       .financings.map((financing) =>
-        buildFinancingView(financing, this.transactions(), accountNames, categoryNames),
+        buildFinancingView(
+          financing,
+          this.transactions(),
+          accountNames,
+          categoryNames,
+          this.statements(),
+        ),
       );
   });
 
@@ -95,6 +108,16 @@ export class FinancingsStore {
     this.reload();
     this.accounts.reloadBalances();
     return changed;
+  }
+
+  async saveStatement(financingId: string, input: DebtStatementInput): Promise<void> {
+    await this.repository.saveStatement(financingId, input);
+    this.reload();
+  }
+
+  async removeStatement(id: string): Promise<void> {
+    await this.repository.removeStatement(id);
+    this.reload();
   }
 
   /** Declares that this data is about to be shown. Idempotent. */

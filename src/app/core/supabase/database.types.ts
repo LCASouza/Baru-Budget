@@ -235,6 +235,86 @@ export type Database = {
           },
         ]
       }
+      debt_statements: {
+        Row: {
+          competence: string
+          created_at: string
+          created_by: string
+          fee_amount: number
+          financing_id: string | null
+          id: string
+          installment_amount: number
+          insurance_amount: number
+          loan_id: string | null
+          notes: string | null
+          outstanding_balance: number
+          remaining_count: number
+          updated_at: string
+          updated_by: string
+        }
+        Insert: {
+          competence: string
+          created_at?: string
+          created_by?: string
+          fee_amount?: number
+          financing_id?: string | null
+          id?: string
+          installment_amount: number
+          insurance_amount?: number
+          loan_id?: string | null
+          notes?: string | null
+          outstanding_balance: number
+          remaining_count: number
+          updated_at?: string
+          updated_by?: string
+        }
+        Update: {
+          competence?: string
+          created_at?: string
+          created_by?: string
+          fee_amount?: number
+          financing_id?: string | null
+          id?: string
+          installment_amount?: number
+          insurance_amount?: number
+          loan_id?: string | null
+          notes?: string | null
+          outstanding_balance?: number
+          remaining_count?: number
+          updated_at?: string
+          updated_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "debt_statements_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "debt_statements_financing_id_fkey"
+            columns: ["financing_id"]
+            isOneToOne: false
+            referencedRelation: "financings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "debt_statements_loan_id_fkey"
+            columns: ["loan_id"]
+            isOneToOne: false
+            referencedRelation: "loans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "debt_statements_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       financial_access_grants: {
         Row: {
           created_at: string
@@ -311,12 +391,14 @@ export type Database = {
           description: string
           down_payment: number
           down_payment_category_id: string | null
+          fee_amount: number
           financed_amount: number
           first_due_date: string
           household_id: string | null
           id: string
           installment_count: number
           institution: string | null
+          insurance_amount: number
           interest_period: Database["public"]["Enums"]["interest_period"]
           interest_rate: number
           notes: string | null
@@ -335,12 +417,14 @@ export type Database = {
           description: string
           down_payment?: number
           down_payment_category_id?: string | null
+          fee_amount?: number
           financed_amount?: number
           first_due_date: string
           household_id?: string | null
           id?: string
           installment_count: number
           institution?: string | null
+          insurance_amount?: number
           interest_period?: Database["public"]["Enums"]["interest_period"]
           interest_rate: number
           notes?: string | null
@@ -359,12 +443,14 @@ export type Database = {
           description?: string
           down_payment?: number
           down_payment_category_id?: string | null
+          fee_amount?: number
           financed_amount?: number
           first_due_date?: string
           household_id?: string | null
           id?: string
           installment_count?: number
           institution?: string | null
+          insurance_amount?: number
           interest_period?: Database["public"]["Enums"]["interest_period"]
           interest_rate?: number
           notes?: string | null
@@ -664,10 +750,12 @@ export type Database = {
           created_by: string
           description: string
           disbursement_category_id: string | null
+          fee_amount: number
           first_due_date: string
           household_id: string | null
           id: string
           installment_count: number
+          insurance_amount: number
           interest_model: Database["public"]["Enums"]["loan_interest_model"]
           interest_period: Database["public"]["Enums"]["interest_period"]
           interest_rate: number
@@ -686,10 +774,12 @@ export type Database = {
           created_by?: string
           description: string
           disbursement_category_id?: string | null
+          fee_amount?: number
           first_due_date: string
           household_id?: string | null
           id?: string
           installment_count: number
+          insurance_amount?: number
           interest_model: Database["public"]["Enums"]["loan_interest_model"]
           interest_period?: Database["public"]["Enums"]["interest_period"]
           interest_rate: number
@@ -708,10 +798,12 @@ export type Database = {
           created_by?: string
           description?: string
           disbursement_category_id?: string | null
+          fee_amount?: number
           first_due_date?: string
           household_id?: string | null
           id?: string
           installment_count?: number
+          insurance_amount?: number
           interest_model?: Database["public"]["Enums"]["loan_interest_model"]
           interest_period?: Database["public"]["Enums"]["interest_period"]
           interest_rate?: number
@@ -1385,6 +1477,14 @@ export type Database = {
         }
         Returns: string
       }
+      debt_owner: {
+        Args: { p_financing: string; p_loan: string }
+        Returns: string
+      }
+      financing_charges_for: {
+        Args: { p_financing_id: string; p_number: number }
+        Returns: number
+      }
       financing_installment_amounts: {
         Args: {
           p_count: number
@@ -1401,6 +1501,10 @@ export type Database = {
         }
         Returns: number
       }
+      financing_schedule_amounts: {
+        Args: { p_financing_id: string }
+        Returns: number[]
+      }
       generate_financing_schedule: {
         Args: { p_financing_id: string; p_with_down_payment?: boolean }
         Returns: number
@@ -1411,6 +1515,10 @@ export type Database = {
       }
       generate_recurrences: {
         Args: { p_month: string; p_owner_user_id: string }
+        Returns: number
+      }
+      instalment_number_for: {
+        Args: { p_competence: string; p_first_due: string }
         Returns: number
       }
       invoice_due_date_for: {
@@ -1427,6 +1535,10 @@ export type Database = {
       is_household_member: { Args: { household: string }; Returns: boolean }
       last_day_of_month: { Args: { reference: string }; Returns: number }
       leave_household: { Args: { household: string }; Returns: undefined }
+      loan_charges_for: {
+        Args: { p_loan_id: string; p_number: number }
+        Returns: number
+      }
       loan_installment_amounts: {
         Args: {
           p_count: number
@@ -1444,6 +1556,7 @@ export type Database = {
         }
         Returns: number
       }
+      loan_schedule_amounts: { Args: { p_loan_id: string }; Returns: number[] }
       lookup_user_by_email: {
         Args: { email_address: string }
         Returns: {

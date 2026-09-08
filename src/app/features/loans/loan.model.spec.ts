@@ -1,5 +1,5 @@
 import { makeTransaction } from '../../testing/finance-fixtures';
-import { Loan, buildLoanView, totalRemaining } from './loan.model';
+import { DebtStatement, Loan, buildLoanView, totalRemaining } from './loan.model';
 
 const LOAN: Loan = {
   id: 'loan-1',
@@ -18,6 +18,8 @@ const LOAN: Loan = {
   start_date: '2026-09-05',
   first_due_date: '2026-10-10',
   notes: null,
+  insurance_amount: 0,
+  fee_amount: 0,
   created_at: '2026-09-05T00:00:00Z',
   updated_at: '2026-09-05T00:00:00Z',
   created_by: 'u1',
@@ -115,5 +117,69 @@ describe('loan.model', () => {
     expect(view.drifted.map((drift) => drift.number)).toEqual([2]);
     expect(view.drifted[0].amount).toBe(916.8);
     expect(view.drifted[0].expected).toBe(view.schedule[1].amount);
+  });
+
+  function statement(overrides: Partial<DebtStatement> = {}): DebtStatement {
+    return {
+      id: 's1',
+      loan_id: 'loan-1',
+      financing_id: null,
+      competence: '2026-12-01',
+      outstanding_balance: 8000,
+      installment_amount: 900,
+      insurance_amount: 0,
+      fee_amount: 0,
+      remaining_count: 9,
+      notes: null,
+      created_at: '2026-12-01T00:00:00Z',
+      updated_at: '2026-12-01T00:00:00Z',
+      created_by: 'u1',
+      updated_by: 'u1',
+      ...overrides,
+    };
+  }
+
+  it('says the balance is projected while nothing was observed', () => {
+    const view = buildLoanView(LOAN, [instalment(1, 'PAID')], names.accounts, names.categories);
+    expect(view.balanceSource).toBe('PROJECTED');
+    expect(view.lastStatement).toBeNull();
+  });
+
+  it('reanchors the schedule on the observed balance and says so', () => {
+    // First due 2026-10-10, so the competence of December is instalment 3.
+    const view = buildLoanView(
+      LOAN,
+      [instalment(1, 'PAID'), instalment(2, 'PAID'), instalment(3)],
+      names.accounts,
+      names.categories,
+      [statement()],
+    );
+    expect(view.balanceSource).toBe('OBSERVED');
+    expect(view.lastStatement?.competence).toBe('2026-12-01');
+    expect(view.schedule[0].amount).toBe(916.8);
+    expect(view.schedule[2].amount).not.toBe(916.8);
+    expect(view.schedule).toHaveLength(11);
+  });
+
+  it('takes the charges of the observed month from the statement', () => {
+    const view = buildLoanView(
+      LOAN,
+      [instalment(1, 'PAID'), instalment(2, 'PAID'), instalment(3)],
+      names.accounts,
+      names.categories,
+      [statement({ insurance_amount: 12.5, fee_amount: 3.5 })],
+    );
+    expect(view.nextCharges).toBe(16);
+  });
+
+  it('falls back to the charges the contract carries', () => {
+    const view = buildLoanView(
+      { ...LOAN, insurance_amount: 8, fee_amount: 2 },
+      [instalment(1, 'PAID'), instalment(2)],
+      names.accounts,
+      names.categories,
+      [statement()],
+    );
+    expect(view.nextCharges).toBe(10);
   });
 });
