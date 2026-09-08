@@ -70,6 +70,17 @@ export class FinancingRepository {
     }
     return data ?? 0;
   }
+
+  /** Brings pending instalments back in line with the schedule after an edit. */
+  async realignSchedule(financingId: string): Promise<number> {
+    const { data, error } = await this.client.rpc('realign_financing_schedule', {
+      p_financing_id: financingId,
+    });
+    if (error) {
+      throw toDataError(error, 'Failed to realign the financing schedule');
+    }
+    return data ?? 0;
+  }
 }
 
 function toRow(input: FinancingInput) {

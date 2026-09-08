@@ -4,9 +4,11 @@ import { sumAmounts } from '../../shared/money/money';
 import { Transaction } from '../transactions/transaction.model';
 import {
   FinancingSystem,
+  InstalmentDrift,
   InterestPeriod,
   ScheduleRow,
   buildSchedule,
+  instalmentDrift,
   monthlyRate,
   scheduleTotals,
 } from './financing-math';
@@ -48,6 +50,8 @@ export interface FinancingView {
   /** Everything that leaves the pocket: down payment plus every instalment. */
   readonly totalToPay: number;
   readonly totalInterest: number;
+  /** Pending instalments left behind by an edit to the financing. */
+  readonly drifted: readonly InstalmentDrift[];
   readonly next: Transaction | null;
   readonly progressPercent: number;
   readonly accountName: string;
@@ -99,6 +103,13 @@ export function buildFinancingView(
         : (schedule[paid.length - 1]?.balanceAfter ?? 0),
     totalToPay: sumAmounts([financing.down_payment, totals.total]),
     totalInterest: totals.interest,
+    drifted: instalmentDrift(
+      pending.map((transaction) => ({
+        number: transaction.financing_installment_number ?? 0,
+        amount: transaction.amount,
+      })),
+      schedule,
+    ),
     next: pending[0] ?? null,
     progressPercent:
       financing.installment_count > 0 ? (paid.length / financing.installment_count) * 100 : 0,

@@ -8,10 +8,12 @@ export {
   INTEREST_PERIOD_LABELS,
   buildSchedule,
   installmentAmounts,
+  instalmentDrift,
   priceInstalment,
   scheduleTotals,
 } from '../../shared/finance/amortization';
 export type {
+  InstalmentDrift,
   InterestPeriod,
   ScheduleRow,
   ScheduleTotals,

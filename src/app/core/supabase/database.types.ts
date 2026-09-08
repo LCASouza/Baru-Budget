@@ -1451,6 +1451,11 @@ export type Database = {
           id: string
         }[]
       }
+      realign_financing_schedule: {
+        Args: { p_financing_id: string }
+        Returns: number
+      }
+      realign_loan_schedule: { Args: { p_loan_id: string }; Returns: number }
       seed_default_categories: {
         Args: { profile_id: string }
         Returns: undefined

@@ -96,4 +96,24 @@ describe('loan.model', () => {
     expect(totalRemaining([view, view])).toBeCloseTo(3667.2, 2);
     expect(totalRemaining([])).toBe(0);
   });
+
+  it('reports no drift while the instalments match the schedule', () => {
+    const view = buildLoanView(LOAN, [instalment(1), instalment(2)], names.accounts, names.categories);
+    expect(view.drifted).toEqual([]);
+  });
+
+  it('reports the pending instalments an edit to the loan left behind', () => {
+    // Editing the principal changes the schedule; the rows already generated keep
+    // the amounts they were created with until they are realigned.
+    const edited: Loan = { ...LOAN, principal: 12000 };
+    const view = buildLoanView(
+      edited,
+      [instalment(1, 'PAID'), instalment(2), instalment(3, 'CANCELLED')],
+      names.accounts,
+      names.categories,
+    );
+    expect(view.drifted.map((drift) => drift.number)).toEqual([2]);
+    expect(view.drifted[0].amount).toBe(916.8);
+    expect(view.drifted[0].expected).toBe(view.schedule[1].amount);
+  });
 });

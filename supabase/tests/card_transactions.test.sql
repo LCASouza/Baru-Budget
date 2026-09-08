@@ -152,5 +152,35 @@ select is(
   'the explicit invoice due date is kept'
 );
 
+-- A purchase never sits after the invoice that charges it (BUG-005). An explicit
+-- invoice due date is the only way to reach this, since the derived one always
+-- follows the purchase.
+select throws_ok(
+  $$ insert into public.transactions (owner_user_id, kind, description, amount, date, category_id, credit_card_id, invoice_due_date)
+     values ('11111111-1111-1111-1111-111111111111', 'EXPENSE', 'Depois da fatura', 10, '2026-12-06',
+             (select id from public.categories where owner_user_id = '11111111-1111-1111-1111-111111111111' and kind = 'EXPENSE' and name = 'Compras'),
+             'cccccccc-0000-4000-8000-000000000001', '2026-12-05') $$,
+  '23514',
+  null,
+  'a card purchase dated after its own invoice is refused'
+);
+
+select lives_ok(
+  $$ insert into public.transactions (owner_user_id, kind, description, amount, date, category_id, credit_card_id, invoice_due_date)
+     values ('11111111-1111-1111-1111-111111111111', 'EXPENSE', 'No dia da fatura', 10, '2026-12-05',
+             (select id from public.categories where owner_user_id = '11111111-1111-1111-1111-111111111111' and kind = 'EXPENSE' and name = 'Compras'),
+             'cccccccc-0000-4000-8000-000000000001', '2026-12-05') $$,
+  'a card purchase dated on its own invoice is accepted, which a short month can produce'
+);
+
+-- Paying an invoice is a transfer: it may land after the due date, because being
+-- late is a fact to record, not a shape to refuse.
+select lives_ok(
+  $$ insert into public.transactions (owner_user_id, kind, description, amount, date, account_id, credit_card_id, invoice_due_date)
+     values ('11111111-1111-1111-1111-111111111111', 'TRANSFER', 'Pagamento em atraso', 100, '2026-12-20',
+             'aaaaaaaa-0000-4000-8000-000000000001', 'cccccccc-0000-4000-8000-000000000001', '2026-12-05') $$,
+  'an invoice payment after the due date is accepted'
+);
+
 select * from finish();
 rollback;

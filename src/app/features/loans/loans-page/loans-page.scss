@@ -98,6 +98,20 @@
   color: var(--mat-sys-on-surface-variant);
 }
 
+.loan__stale {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font: var(--mat-sys-body-small);
+  color: var(--mat-sys-error);
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
 @media (max-width: 767.98px) {
   .loans {
     gap: 16px;

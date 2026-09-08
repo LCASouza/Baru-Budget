@@ -73,6 +73,13 @@ export class LoansStore {
     this.reload();
   }
 
+  async realignSchedule(loanId: string): Promise<number> {
+    const changed = await this.repository.realignSchedule(loanId);
+    this.reload();
+    this.accounts.reloadBalances();
+    return changed;
+  }
+
   async generateSchedule(loanId: string, withDisbursement = true): Promise<number> {
     const created = await this.repository.generateSchedule(loanId, withDisbursement);
     this.reload();

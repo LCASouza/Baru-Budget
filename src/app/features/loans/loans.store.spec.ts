@@ -35,7 +35,13 @@ const LOAN: Loan = {
 describe('LoansStore', () => {
   const ownerId = signal<string | null>('u1');
   let repository: Record<
-    'listByOwner' | 'listTransactions' | 'create' | 'update' | 'remove' | 'generateSchedule',
+    | 'listByOwner'
+    | 'listTransactions'
+    | 'create'
+    | 'update'
+    | 'remove'
+    | 'generateSchedule'
+    | 'realignSchedule',
     ReturnType<typeof vi.fn>
   >;
   let reloadBalances: ReturnType<typeof vi.fn>;
@@ -69,6 +75,7 @@ describe('LoansStore', () => {
       update: vi.fn().mockResolvedValue(undefined),
       remove: vi.fn().mockResolvedValue(undefined),
       generateSchedule: vi.fn().mockResolvedValue(12),
+      realignSchedule: vi.fn().mockResolvedValue(9),
     };
     reloadBalances = vi.fn();
     TestBed.configureTestingModule({ providers: providers() });
@@ -103,6 +110,15 @@ describe('LoansStore', () => {
     await expect(store.generateSchedule('loan-1')).resolves.toBe(12);
     await settle();
     expect(repository.generateSchedule).toHaveBeenCalledWith('loan-1', true);
+    expect(repository.listByOwner).toHaveBeenCalledTimes(2);
+    expect(reloadBalances).toHaveBeenCalled();
+  });
+
+  it('realigns the pending instalments and refreshes the account balances', async () => {
+    await load();
+    await expect(store.realignSchedule('loan-1')).resolves.toBe(9);
+    await settle();
+    expect(repository.realignSchedule).toHaveBeenCalledWith('loan-1');
     expect(repository.listByOwner).toHaveBeenCalledTimes(2);
     expect(reloadBalances).toHaveBeenCalled();
   });

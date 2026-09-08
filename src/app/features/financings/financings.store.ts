@@ -90,6 +90,13 @@ export class FinancingsStore {
     return created;
   }
 
+  async realignSchedule(financingId: string): Promise<number> {
+    const changed = await this.repository.realignSchedule(financingId);
+    this.reload();
+    this.accounts.reloadBalances();
+    return changed;
+  }
+
   /** Declares that this data is about to be shown. Idempotent. */
   activate(): void {
     this.active.set(true);

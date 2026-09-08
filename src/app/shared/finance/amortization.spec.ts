@@ -1,6 +1,7 @@
 import {
   buildSchedule,
   installmentAmounts,
+  instalmentDrift,
   priceInstalment,
   scheduleTotals,
   toMonthlyRate,
@@ -92,5 +93,33 @@ describe('buildSchedule guards', () => {
   it('returns nothing for impossible inputs', () => {
     expect(buildSchedule(0, 0.01, 12, 'SAC')).toEqual([]);
     expect(buildSchedule(1000, 0.01, 0, 'PRICE')).toEqual([]);
+  });
+});
+
+describe('instalmentDrift', () => {
+  const schedule = buildSchedule(10000, 0.015, 12, 'PRICE');
+
+  it('reports nothing while the instalments match the schedule', () => {
+    const pending = schedule.map((row) => ({ number: row.number, amount: row.amount }));
+    expect(instalmentDrift(pending, schedule)).toEqual([]);
+  });
+
+  it('reports the instalments an edit left behind', () => {
+    const edited = buildSchedule(12000, 0.015, 12, 'PRICE');
+    const pending = schedule
+      .slice(2)
+      .map((row) => ({ number: row.number, amount: row.amount }));
+    const drift = instalmentDrift(pending, edited);
+    expect(drift).toHaveLength(10);
+    expect(drift[0]).toEqual({ number: 3, amount: 916.8, expected: edited[2].amount });
+  });
+
+  it('compares in cents, so a float remainder is not drift', () => {
+    const pending = [{ number: 1, amount: schedule[0].amount + 0.000001 }];
+    expect(instalmentDrift(pending, schedule)).toEqual([]);
+  });
+
+  it('ignores an instalment the schedule does not reach', () => {
+    expect(instalmentDrift([{ number: 99, amount: 10 }], schedule)).toEqual([]);
   });
 });

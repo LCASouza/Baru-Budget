@@ -157,3 +157,34 @@ export function scheduleTotals(rows: readonly ScheduleRow[]): ScheduleTotals {
     interest: sumAmounts(rows.map((row) => row.interest)),
   };
 }
+
+/** A generated instalment whose amount no longer matches the schedule. */
+export interface InstalmentDrift {
+  readonly number: number;
+  readonly amount: number;
+  readonly expected: number;
+}
+
+/**
+ * Pending instalments that stopped matching the schedule they came from.
+ * Generating only inserts what is missing, so editing a debt leaves the rows
+ * already created carrying the old numbers and the screen mixes a fresh
+ * outstanding balance with a stale total to pay.
+ *
+ * Only the amount is compared, which is what misreports money. Moving the first
+ * due date shifts competences without touching amounts and goes unreported here;
+ * realigning corrects both, because it rebuilds the row from the schedule.
+ */
+export function instalmentDrift(
+  pending: readonly { readonly number: number; readonly amount: number }[],
+  schedule: readonly ScheduleRow[],
+): readonly InstalmentDrift[] {
+  const drift: InstalmentDrift[] = [];
+  for (const instalment of pending) {
+    const expected = schedule[instalment.number - 1]?.amount;
+    if (expected !== undefined && toCents(expected) !== toCents(instalment.amount)) {
+      drift.push({ number: instalment.number, amount: instalment.amount, expected });
+    }
+  }
+  return drift;
+}

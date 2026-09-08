@@ -3,10 +3,12 @@ import { IsoDate } from '../../shared/dates/iso-date';
 import { sumAmounts } from '../../shared/money/money';
 import { Transaction } from '../transactions/transaction.model';
 import {
+  InstalmentDrift,
   InterestPeriod,
   LoanInterestModel,
   ScheduleRow,
   buildSchedule,
+  instalmentDrift,
   monthlyRate,
   scheduleTotals,
 } from './loan-math';
@@ -44,6 +46,8 @@ export interface LoanView {
   readonly outstandingPrincipal: number;
   readonly totalToPay: number;
   readonly totalInterest: number;
+  /** Pending instalments left behind by an edit to the loan. */
+  readonly drifted: readonly InstalmentDrift[];
   readonly next: Transaction | null;
   readonly progressPercent: number;
   readonly accountName: string;
@@ -85,6 +89,13 @@ export function buildLoanView(
       paid.length === 0 ? loan.principal : (schedule[paid.length - 1]?.balanceAfter ?? 0),
     totalToPay: totals.total,
     totalInterest: totals.interest,
+    drifted: instalmentDrift(
+      pending.map((transaction) => ({
+        number: transaction.loan_installment_number ?? 0,
+        amount: transaction.amount,
+      })),
+      schedule,
+    ),
     next: pending[0] ?? null,
     progressPercent:
       loan.installment_count > 0 ? (paid.length / loan.installment_count) * 100 : 0,

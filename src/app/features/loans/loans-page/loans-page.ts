@@ -88,6 +88,25 @@ export class LoansPage {
     }
   }
 
+  protected async realign(view: LoanView): Promise<void> {
+    try {
+      const changed = await this.store.realignSchedule(view.loan.id);
+      this.snackBar.open(
+        changed === 0
+          ? 'As parcelas pendentes já seguiam o cronograma.'
+          : `${changed} ${changed === 1 ? 'parcela atualizada' : 'parcelas atualizadas'}.`,
+        undefined,
+        { duration: 4000 },
+      );
+    } catch (error) {
+      this.snackBar.open(
+        describeDataError(error, { fallback: 'Não foi possível atualizar as parcelas.' }),
+        'OK',
+        { duration: 5000 },
+      );
+    }
+  }
+
   protected async remove(view: LoanView): Promise<void> {
     const confirmed = await confirmAction(this.dialog, {
       title: 'Excluir empréstimo',

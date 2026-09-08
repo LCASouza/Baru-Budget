@@ -70,6 +70,15 @@ export class LoanRepository {
     }
     return data ?? 0;
   }
+
+  /** Brings pending instalments back in line with the schedule after an edit. */
+  async realignSchedule(loanId: string): Promise<number> {
+    const { data, error } = await this.client.rpc('realign_loan_schedule', { p_loan_id: loanId });
+    if (error) {
+      throw toDataError(error, 'Failed to realign the loan schedule');
+    }
+    return data ?? 0;
+  }
 }
 
 function toRow(input: LoanInput) {

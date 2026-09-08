@@ -2,7 +2,9 @@
 
 ## Current Version
 
-**v1.0 — Stable** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V1.0.md`); implementation complete, the hardening migration applied to the hosted project and `main` deployed. The ten deferred production checks listed in `versions/v1.0.md` are the remaining completion criteria and only the administrator can close them. Security review: `SECURITY_REVIEW_V1.0.md`. Architecture: `ARCHITECTURE.md`.
+**v1.0 — Stable** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V1.0.md`); implementation complete, the hardening migration applied to the hosted project and `main` deployed. One of the ten deferred production checks is closed (v0.12, on 2026-09-08); the other nine listed in `versions/v1.0.md` are the remaining completion criteria, together with branch protection, and only the administrator can close them. Security review: `SECURITY_REVIEW_V1.0.md`. Architecture: `ARCHITECTURE.md`.
+
+Production carries real family data since 2026-09-08: 234 transactions, 3 accounts, 2 credit cards and 3 fixed expenses, loaded from four real card statements through the Excel format. That dataset is what the remaining checks for v0.5, v0.6, v0.7 and v0.8 are exercised against.
 
 Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy from `main`) backed by the hosted Supabase project in São Paulo. Delivered so far: visual prototype and v0.1 to v0.13 (`versions/v0.1.md` to `versions/v0.13.md`).
 
@@ -24,6 +26,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.12 | Baru Budget Excel Format v1 | DELIVERED | Schema version 1, export, import, standardized workbook, stable IDs, preview, validation, merge by UUID, backup |
 | v0.13 | Mobile UX and Hardening | DELIVERED | Full mobile review, responsiveness, empty states, loading, accessibility, errors, performance, permission and RLS review |
 | v1.0 | Stable | IN_PROGRESS | Security review, full RLS review, final test suite, documentation, CI, stable deploy, validated backup and import/export |
+| v1.1 | Correção Monetária | PENDING | Indexed financings and loans: observed statements instead of projected correction, instalment charges, balance with provenance, Excel schema version 2. Starts only after v1.0 is DELIVERED |
 
 ## Current Work
 
@@ -57,7 +60,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.13 architectural analysis | v0.13 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.13.md`; approved on 2026-09-07 |
 | v0.13 implementation | v0.13 | DELIVERED | UX audit, mobile lists, shared state contract, keyboard access, pagination, RLS matrix; manual verification deferred |
 | v1.0 architectural analysis | v1.0 | DELIVERED | `ARCHITECTURE_ANALYSIS_V1.0.md`; approved on 2026-09-07 |
-| v1.0 implementation | v1.0 | IN_PROGRESS | CI, security review, view isolation, documentation; the ten deferred production checks remain open |
+| v1.0 implementation | v1.0 | IN_PROGRESS | CI, security review, view isolation, documentation; nine deferred production checks remain open after v0.12 closed on 2026-09-08 |
+| v1.1 architectural analysis | v1.1 | DELIVERED | `ARCHITECTURE_ANALYSIS_V1.1.md`; blocking decisions resolved on 2026-09-08. Implementation starts only after v1.0 is DELIVERED |
 
 ## Features
 
@@ -97,6 +101,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | BUG-002 | Form field hints and errors overlapped the next field (fixed one-line subscript area) and the account and category dialogs opened too narrow | v0.3 | FIXED | v0.3 | Global `subscriptSizing: 'dynamic'`, shorter hints, 16px form gap, grid rows aligned to the top, explicit dialog widths |
 | BUG-003 | Six trigger functions kept the default execute grant; a direct call already failed, so nothing was exposed | v1.0 | FIXED | v1.0 | Found by the security review; `20260907230100_function_grants.sql` revokes them and `security_surface.test.sql` guards it |
 | BUG-004 | Creating a household failed from the application with a row level security error: the client reads the new row back in the same call, and the trigger that makes the creator a member runs after that read | v0.4 | FIXED | v1.0 | Found by end-to-end testing against production; creation goes through `create_household`, guarded by `households.test.sql` and `household.repository.spec.ts` |
+| BUG-005 | A card purchase is accepted with a date later than its own invoice due date, which the competence rule makes impossible | v0.6 | FIXED | v1.0 | Found by the v0.12 production check, when an import carried 37 instalments dated past their invoice and nothing refused them; `20260908150100_card_purchase_before_invoice.sql` adds the constraint, guarded by `card_transactions.test.sql` |
+| BUG-006 | Editing a loan or a financing left the instalments already generated on the old amounts and dates: generating only inserts what is missing, so the screen showed an outstanding balance from the new record next to a total to pay from the old transactions | v0.10 | FIXED | v1.0 | Found by the v0.10 production check; `realign_loan_schedule` and `realign_financing_schedule` update pending instalments only, the views report the drift and the pages offer the action |
 
 ## Technical Debt
 
@@ -123,4 +129,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-07 — v1.0 Stable implemented and deployed. End-to-end testing against production found BUG-004, a blocking defect in household creation, now fixed. The ten deferred production checks are the remaining criteria.
+2026-09-08 — The v0.12 production check closed against the hosted project with real family data: export, edit, import with preview, and re-import of the untouched export reporting no change. Production carries 234 transactions loaded from four real card statements. The check found BUG-005, a missing validation that lets a card purchase be dated after its own invoice. The v1.1 architectural analysis was approved. Nine deferred checks and branch protection remain for v1.0.

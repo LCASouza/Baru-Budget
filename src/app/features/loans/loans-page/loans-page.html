@@ -79,6 +79,12 @@
               <span class="loan__remaining bb-amount">{{ view.remainingTotal | currency }}</span>
               <span class="loan__hint">a pagar</span>
               <span class="loan__hint">saldo devedor {{ view.outstandingPrincipal | currency }}</span>
+              @if (view.drifted.length) {
+                <span class="loan__stale">
+                  <mat-icon aria-hidden="true">warning</mat-icon>
+                  {{ view.drifted.length }} {{ view.drifted.length === 1 ? 'parcela pendente não acompanha' : 'parcelas pendentes não acompanham' }} o cronograma
+                </span>
+              }
             </div>
 
             @if (store.canManage()) {
@@ -90,6 +96,12 @@
                   <mat-icon>playlist_add</mat-icon>
                   <span>{{ view.generated ? 'Completar cronograma' : 'Gerar cronograma' }}</span>
                 </button>
+                @if (view.drifted.length) {
+                  <button mat-menu-item (click)="realign(view)">
+                    <mat-icon>sync</mat-icon>
+                    <span>Atualizar parcelas pendentes</span>
+                  </button>
+                }
                 <button mat-menu-item (click)="openForm(view)">
                   <mat-icon>edit</mat-icon>
                   <span>Editar</span>
