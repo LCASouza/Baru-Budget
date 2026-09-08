@@ -2,7 +2,9 @@
 
 ## Current Version
 
-**v1.0 — Stable** (IN_PROGRESS). Architectural analysis approved on 2026-09-07 (`ARCHITECTURE_ANALYSIS_V1.0.md`); implementation complete, the hardening migration applied to the hosted project and `main` deployed. One of the ten deferred production checks is closed (v0.12, on 2026-09-08); the other nine listed in `versions/v1.0.md` are the remaining completion criteria, together with branch protection, and only the administrator can close them. Security review: `SECURITY_REVIEW_V1.0.md`. Architecture: `ARCHITECTURE.md`.
+**v1.1 — Correção Monetária** (IN_PROGRESS). Architectural analysis approved on 2026-09-08 (`ARCHITECTURE_ANALYSIS_V1.1.md`).
+
+**v1.0 — Stable** was delivered on 2026-09-08 and tagged `v1.0.0`. Security review: `SECURITY_REVIEW_V1.0.md`. Architecture: `ARCHITECTURE.md`. Its production checks were deferred by the administrator and are tracked below, outside the version.
 
 Production carries real family data since 2026-09-08: 234 transactions, 3 accounts, 2 credit cards and 3 fixed expenses, loaded from four real card statements through the Excel format. That dataset is what the remaining checks for v0.5, v0.6, v0.7 and v0.8 are exercised against.
 
@@ -25,8 +27,8 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.11 | Financings | DELIVERED | Asset value, down payment, financed amount, interest, installments, outstanding balance, double-counting prevention |
 | v0.12 | Baru Budget Excel Format v1 | DELIVERED | Schema version 1, export, import, standardized workbook, stable IDs, preview, validation, merge by UUID, backup |
 | v0.13 | Mobile UX and Hardening | DELIVERED | Full mobile review, responsiveness, empty states, loading, accessibility, errors, performance, permission and RLS review |
-| v1.0 | Stable | IN_PROGRESS | Security review, full RLS review, final test suite, documentation, CI, stable deploy, validated backup and import/export |
-| v1.1 | Correção Monetária | PENDING | Indexed financings and loans: observed statements instead of projected correction, instalment charges, balance with provenance, Excel schema version 2. Starts only after v1.0 is DELIVERED |
+| v1.0 | Stable | DELIVERED | Security review, full RLS review, final test suite, documentation, CI, stable deploy, validated backup and import/export |
+| v1.1 | Correção Monetária | IN_PROGRESS | Indexed financings and loans: observed statements instead of projected correction, instalment charges, balance with provenance, Excel schema version 2. Starts only after v1.0 is DELIVERED |
 
 ## Current Work
 
@@ -60,8 +62,9 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.13 architectural analysis | v0.13 | DELIVERED | `ARCHITECTURE_ANALYSIS_V0.13.md`; approved on 2026-09-07 |
 | v0.13 implementation | v0.13 | DELIVERED | UX audit, mobile lists, shared state contract, keyboard access, pagination, RLS matrix; manual verification deferred |
 | v1.0 architectural analysis | v1.0 | DELIVERED | `ARCHITECTURE_ANALYSIS_V1.0.md`; approved on 2026-09-07 |
-| v1.0 implementation | v1.0 | IN_PROGRESS | CI, security review, view isolation, documentation; nine deferred production checks remain open after v0.12 closed on 2026-09-08 |
-| v1.1 architectural analysis | v1.1 | DELIVERED | `ARCHITECTURE_ANALYSIS_V1.1.md`; blocking decisions resolved on 2026-09-08. Implementation starts only after v1.0 is DELIVERED |
+| v1.0 implementation | v1.0 | DELIVERED | CI, security review, view isolation, documentation, BUG-005 and BUG-006; tagged `v1.0.0` on 2026-09-08 |
+| v1.1 architectural analysis | v1.1 | DELIVERED | `ARCHITECTURE_ANALYSIS_V1.1.md`; blocking decisions resolved on 2026-09-08 |
+| v1.1 implementation | v1.1 | IN_PROGRESS | Observed statements for financings and loans, instalment charges, balance with provenance, Excel schema version 2 |
 
 ## Features
 
@@ -89,7 +92,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | FEAT-020 | Settlements | v0.9 | DELIVERED | Settlement as a transaction kind with direction, derived balances, receivables and payables |
 | FEAT-021 | Loans | v0.10 | DELIVERED | Simple interest and Price with documented conversions, idempotent schedule, derived outstanding balance, disbursement out of income |
 | FEAT-022 | Financings | v0.11 | DELIVERED | Price and SAC with documented conversions, generated financed amount, idempotent schedule, derived outstanding balance, asset value never recorded |
-| FEAT-025 | Stable release | v1.0 | IN_PROGRESS | CI, security review, view isolation and function surface tests, architecture documentation; validated backup pending |
+| FEAT-025 | Stable release | v1.0 | DELIVERED | CI, security review, view isolation and function surface tests, architecture documentation, validated backup and import/export against production |
 | FEAT-024 | Mobile UX and Hardening | v0.13 | DELIVERED | Screen audit, mobile lists, shared loading/error/empty contract, keyboard access, focus and reduced motion, pagination, RLS matrix |
 | FEAT-023 | Baru Budget Excel Format v1 | v0.12 | DELIVERED | Frozen schema version 1, paginated export, mandatory preview, merge by UUID, absence never deletes, backup |
 
@@ -103,6 +106,25 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | BUG-004 | Creating a household failed from the application with a row level security error: the client reads the new row back in the same call, and the trigger that makes the creator a member runs after that read | v0.4 | FIXED | v1.0 | Found by end-to-end testing against production; creation goes through `create_household`, guarded by `households.test.sql` and `household.repository.spec.ts` |
 | BUG-005 | A card purchase is accepted with a date later than its own invoice due date, which the competence rule makes impossible | v0.6 | FIXED | v1.0 | Found by the v0.12 production check, when an import carried 37 instalments dated past their invoice and nothing refused them; `20260908150100_card_purchase_before_invoice.sql` adds the constraint, guarded by `card_transactions.test.sql` |
 | BUG-006 | Editing a loan or a financing left the instalments already generated on the old amounts and dates: generating only inserts what is missing, so the screen showed an outstanding balance from the new record next to a total to pay from the old transactions | v0.10 | FIXED | v1.0 | Found by the v0.10 production check; `realign_loan_schedule` and `realign_financing_schedule` update pending instalments only, the views report the drift and the pages offer the action |
+
+## Deferred Production Checks
+
+Manual checks against the hosted project, carried by the administrator. They were deferred from their own versions, then deferred again when v1.0 closed on 2026-09-08, so they follow the project instead of blocking a version. The pass that did run found BUG-004, BUG-005 and BUG-006.
+
+| Version | Check | Status |
+|---|---|---|
+| v0.4 | Two users, a household and a grant: VIEW reads and cannot write, MANAGE writes | PENDING |
+| v0.5 | Dashboard cards and charts matching the transactions of the period | PENDING |
+| v0.6 | A purchase landing on the right invoice, and paying it debiting the account without becoming an expense | PENDING |
+| v0.7 | An instalment purchase generating the rows, on a card and on an account | PENDING |
+| v0.8 | Generating a month twice and confirming nothing is duplicated | PENDING |
+| v0.9 | Splitting an expense, seeing the balance between people and settling it | PENDING |
+| v0.10 | Instalment against a calculator, schedule generated, money in without inflating income | IN_PROGRESS |
+| v0.11 | First and last instalment against a calculator, acquisition recording the down payment | PENDING |
+| v0.12 | Export, edit, re-import, and re-import untouched expecting no change | DELIVERED |
+| v0.13 | Screen reader, keyboard, twenty screens at three widths, chart colour contrast | PENDING |
+
+Also open: protecting `main` with the continuous integration check, a GitHub setting deferred on 2026-09-08 because requiring it blocks direct pushes to `main`.
 
 ## Technical Debt
 
@@ -129,4 +151,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-08 — The v0.12 production check closed against the hosted project with real family data: export, edit, import with preview, and re-import of the untouched export reporting no change. Production carries 234 transactions loaded from four real card statements. The check found BUG-005, a missing validation that lets a card purchase be dated after its own invoice. The v1.1 architectural analysis was approved. Nine deferred checks and branch protection remain for v1.0.
+2026-09-08 — v1.0 Stable delivered and tagged `v1.0.0`. The v0.12 production check closed against the hosted project with real family data, and production now carries 234 transactions loaded from four real card statements. The pass found BUG-005 and BUG-006, both fixed and deployed. The remaining production checks were deferred by the administrator and moved out of the version, into their own section above. v1.1 Correção Monetária started, with its architectural analysis approved.
