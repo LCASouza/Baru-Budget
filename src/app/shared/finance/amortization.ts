@@ -158,6 +158,56 @@ export function scheduleTotals(rows: readonly ScheduleRow[]): ScheduleTotals {
   };
 }
 
+/**
+ * A point the schedule restarts from: the contract at instalment one, and every
+ * observed statement after it.
+ */
+export interface ScheduleAnchor {
+  readonly number: number;
+  readonly balance: number;
+  readonly count: number;
+}
+
+/**
+ * Schedule of an indexed debt, as a function by parts. Each anchor restarts the
+ * projection from the balance the lender reported and runs for the number of
+ * instalments the lender still expects, until the next anchor takes over.
+ *
+ * Without anchors this is `buildSchedule`, unchanged. Mirrors
+ * `public.loan_schedule_amounts` and `public.financing_schedule_amounts`, which
+ * are the authority; the length comes from the last anchor, because a statement
+ * reporting a different remaining count changes how many instalments there are.
+ */
+export function buildScheduleByParts(
+  principal: number,
+  rate: number,
+  count: number,
+  system: AmortizationSystem,
+  statements: readonly ScheduleAnchor[],
+): ScheduleRow[] {
+  const anchors = [
+    { number: 1, balance: principal, count },
+    ...statements.filter((anchor) => anchor.number > 1 && anchor.count > 0),
+  ].sort((a, b) => a.number - b.number);
+
+  const rows: ScheduleRow[] = [];
+  anchors.forEach((anchor, index) => {
+    const nextAt = anchors[index + 1]?.number ?? anchor.number + anchor.count;
+    const taken = Math.min(nextAt - anchor.number, anchor.count);
+    if (taken <= 0) {
+      return;
+    }
+    const segment = buildSchedule(anchor.balance, rate, anchor.count, system);
+    for (let position = 0; position < taken; position += 1) {
+      const row = segment[position];
+      if (row) {
+        rows.push({ ...row, number: anchor.number + position });
+      }
+    }
+  });
+  return rows;
+}
+
 /** A generated instalment whose amount no longer matches the schedule. */
 export interface InstalmentDrift {
   readonly number: number;

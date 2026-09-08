@@ -1,5 +1,6 @@
 import {
   buildSchedule,
+  buildScheduleByParts,
   installmentAmounts,
   instalmentDrift,
   priceInstalment,
@@ -121,5 +122,58 @@ describe('instalmentDrift', () => {
 
   it('ignores an instalment the schedule does not reach', () => {
     expect(instalmentDrift([{ number: 99, amount: 10 }], schedule)).toEqual([]);
+  });
+});
+
+describe('buildScheduleByParts', () => {
+  // The same fixtures the pgTAP file asserts, so the two sides cannot drift.
+  const caixaRate = toMonthlyRate(6.6971, 'YEARLY', 'EFFECTIVE');
+  const loanRate = toMonthlyRate(1.95, 'MONTHLY', 'EFFECTIVE');
+
+  it('is buildSchedule when nothing was observed', () => {
+    expect(buildScheduleByParts(179200, caixaRate, 420, 'PRICE', [])).toEqual(
+      buildSchedule(179200, caixaRate, 420, 'PRICE'),
+    );
+  });
+
+  it('keeps the instalments before the observation on the contract projection', () => {
+    const rows = buildScheduleByParts(179200, caixaRate, 420, 'PRICE', [
+      { number: 27, balance: 183670.08, count: 394 },
+    ]);
+    expect(rows[0].amount).toBeCloseTo(1082.63, 2);
+    expect(rows[25].amount).toBeCloseTo(1082.63, 2);
+  });
+
+  it('restarts from the reported balance and lands within R$ 5,00 of the instalment charged', () => {
+    const rows = buildScheduleByParts(179200, caixaRate, 420, 'PRICE', [
+      { number: 27, balance: 183670.08, count: 394 },
+    ]);
+    expect(Math.abs(rows[26].amount - 1125.09)).toBeLessThan(5);
+    expect(rows).toHaveLength(420);
+    expect(rows[26].number).toBe(27);
+  });
+
+  it('takes its length from the last anchor, because the lender may expect fewer', () => {
+    const rows = buildScheduleByParts(179200, caixaRate, 420, 'PRICE', [
+      { number: 27, balance: 183670.08, count: 394 },
+      { number: 28, balance: 180000, count: 200 },
+    ]);
+    expect(rows).toHaveLength(227);
+    expect(rows[rows.length - 1].number).toBe(227);
+  });
+
+  it('reanchors a loan the same way', () => {
+    const rows = buildScheduleByParts(6127.3, loanRate, 12, 'PRICE', [
+      { number: 4, balance: 4725.91, count: 9 },
+    ]);
+    expect(rows[0].amount).toBeCloseTo(577.62, 2);
+    expect(Math.abs(rows[3].amount - 578.34)).toBeLessThan(1);
+    expect(rows).toHaveLength(12);
+  });
+
+  it('ignores an anchor that describes no instalment', () => {
+    const plain = buildSchedule(1000, 0.01, 12, 'PRICE');
+    expect(buildScheduleByParts(1000, 0.01, 12, 'PRICE', [{ number: 1, balance: 5, count: 5 }])).toEqual(plain);
+    expect(buildScheduleByParts(1000, 0.01, 12, 'PRICE', [{ number: 4, balance: 5, count: 0 }])).toEqual(plain);
   });
 });
