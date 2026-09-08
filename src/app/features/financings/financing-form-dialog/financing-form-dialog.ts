@@ -19,6 +19,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { FinancialContextService } from '../../../core/context/financial-context.service';
 import { describeDataError } from '../../../core/supabase/data-error';
 import { parseIsoDate, toIsoDate } from '../../../shared/dates/iso-date';
+import { formatRateInput, parseRateInput } from '../../../shared/finance/rate';
 import { formatAmountInput, parseAmountInput } from '../../../shared/money/money';
 import { AccountsStore } from '../../accounts/accounts.store';
 import { CategoriesStore } from '../../categories/categories.store';
@@ -52,7 +53,7 @@ function nonNegativeValidator(control: AbstractControl<string>): ValidationError
 }
 
 function rateValidator(control: AbstractControl<string>): ValidationErrors | null {
-  const rate = parseAmountInput(control.value);
+  const rate = parseRateInput(control.value);
   return rate === null || rate < 0 || rate >= 100 ? { rate: true } : null;
 }
 
@@ -121,7 +122,7 @@ export class FinancingFormDialog {
         [Validators.required, nonNegativeValidator],
       ],
       interestRate: [
-        this.financing ? formatAmountInput(this.financing.interest_rate) : '0,00',
+        this.financing ? formatRateInput(this.financing.interest_rate) : '0,00',
         [Validators.required, rateValidator],
       ],
       interestPeriod: this.formBuilder.control<InterestPeriod>(
@@ -173,7 +174,7 @@ export class FinancingFormDialog {
   protected readonly preview = computed(() => {
     const assetValue = parseAmountInput(this.assetValue() ?? '');
     const downPayment = parseAmountInput(this.downPayment() ?? '') ?? 0;
-    const rate = parseAmountInput(this.rate() ?? '');
+    const rate = parseRateInput(this.rate() ?? '');
     const count = this.count();
     if (assetValue === null || rate === null || !count || count < 1) {
       return null;
@@ -232,7 +233,7 @@ export class FinancingFormDialog {
       householdId: value.householdId || null,
       assetValue: parseAmountInput(value.assetValue) ?? 0,
       downPayment: parseAmountInput(value.downPayment) ?? 0,
-      interestRate: parseAmountInput(value.interestRate) ?? 0,
+      interestRate: parseRateInput(value.interestRate) ?? 0,
       interestPeriod: value.interestPeriod,
       system: value.system,
       installmentCount: value.installmentCount,

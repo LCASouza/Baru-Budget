@@ -19,6 +19,7 @@ import { CurrencyPipe } from '@angular/common';
 import { FinancialContextService } from '../../../core/context/financial-context.service';
 import { describeDataError } from '../../../core/supabase/data-error';
 import { parseIsoDate, toIsoDate } from '../../../shared/dates/iso-date';
+import { formatRateInput, parseRateInput } from '../../../shared/finance/rate';
 import { formatAmountInput, parseAmountInput } from '../../../shared/money/money';
 import { AccountsStore } from '../../accounts/accounts.store';
 import { CategoriesStore } from '../../categories/categories.store';
@@ -47,7 +48,7 @@ function amountValidator(control: AbstractControl<string>): ValidationErrors | n
 }
 
 function rateValidator(control: AbstractControl<string>): ValidationErrors | null {
-  const rate = parseAmountInput(control.value);
+  const rate = parseRateInput(control.value);
   return rate === null || rate < 0 || rate >= 100 ? { rate: true } : null;
 }
 
@@ -98,7 +99,7 @@ export class LoanFormDialog {
       [Validators.required, amountValidator],
     ],
     interestRate: [
-      this.loan ? formatAmountInput(this.loan.interest_rate) : '0,00',
+      this.loan ? formatRateInput(this.loan.interest_rate) : '0,00',
       [Validators.required, rateValidator],
     ],
     interestPeriod: this.formBuilder.control<InterestPeriod>(this.loan?.interest_period ?? 'MONTHLY'),
@@ -142,7 +143,7 @@ export class LoanFormDialog {
   /** Live preview of the instalment, the total and the interest. */
   protected readonly preview = computed(() => {
     const principal = parseAmountInput(this.principal() ?? '');
-    const rate = parseAmountInput(this.rate() ?? '');
+    const rate = parseRateInput(this.rate() ?? '');
     const count = this.count();
     if (principal === null || principal <= 0 || rate === null || !count || count < 1) {
       return null;
@@ -197,7 +198,7 @@ export class LoanFormDialog {
       disbursementCategoryId: value.disbursementCategoryId || null,
       householdId: value.householdId || null,
       principal: parseAmountInput(value.principal) ?? 0,
-      interestRate: parseAmountInput(value.interestRate) ?? 0,
+      interestRate: parseRateInput(value.interestRate) ?? 0,
       interestPeriod: value.interestPeriod,
       interestModel: value.interestModel,
       installmentCount: value.installmentCount,
