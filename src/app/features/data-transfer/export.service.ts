@@ -3,7 +3,7 @@ import { environment } from '../../../environments/environment';
 import { DataTransferRepository } from './data-transfer.repository';
 import { loadSnapshot } from './data-snapshot';
 import { WorkbookFileService } from './workbook-file.service';
-import { APPLICATION_NAME, SCHEMA_VERSION, WORKBOOK_V1 } from './workbook-schema';
+import { APPLICATION_NAME, SCHEMA_VERSION, WORKBOOK_V2 } from './workbook-schema';
 import { WorkbookInfo } from './workbook-info';
 import { backupFileName, buildWorkbook } from './workbook-model';
 
@@ -41,7 +41,7 @@ export class ExportService {
     const fileName = backupFileName(now);
     await this.files.write(model, fileName);
 
-    const rows = WORKBOOK_V1.reduce(
+    const rows = WORKBOOK_V2.reduce(
       (total, sheet) => total + (snapshot.data.get(sheet.name)?.length ?? 0),
       0,
     );

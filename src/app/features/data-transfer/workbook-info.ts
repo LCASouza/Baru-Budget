@@ -1,4 +1,8 @@
-import { WORKBOOK_V1, APPLICATION_NAME, SCHEMA_VERSION } from './workbook-schema';
+import {
+  APPLICATION_NAME,
+  READABLE_SCHEMA_VERSIONS,
+  WORKBOOK_V2,
+} from './workbook-schema';
 
 export const INFO_SHEET_NAME = 'Info';
 export const LEGEND_SHEET_NAME = 'Legenda';
@@ -67,10 +71,12 @@ export function checkCompatibility(entries: ReadonlyMap<string, string>): Compat
     };
   }
   const version = Number(rawVersion);
-  if (!Number.isInteger(version) || version !== SCHEMA_VERSION) {
+  // Version 2 only adds to version 1, so an older workbook is read as it is: the
+  // columns it does not carry are left untouched instead of being cleared.
+  if (!Number.isInteger(version) || !READABLE_SCHEMA_VERSIONS.includes(version)) {
     return {
       compatible: false,
-      reason: `O arquivo usa o schema version ${rawVersion || 'desconhecido'} e esta versão lê apenas o ${SCHEMA_VERSION}.`,
+      reason: `O arquivo usa o schema version ${rawVersion || 'desconhecido'} e esta versão lê ${READABLE_SCHEMA_VERSIONS.join(' e ')}.`,
       info,
     };
   }
@@ -82,7 +88,7 @@ export type LegendRow = readonly [string, string, string, string];
 /** Accepted values and read-only columns, so the file can be edited without guessing. */
 export function buildLegendRows(): readonly LegendRow[] {
   const rows: LegendRow[] = [];
-  for (const sheet of WORKBOOK_V1) {
+  for (const sheet of WORKBOOK_V2) {
     if (!sheet.importable) {
       rows.push([sheet.name, '(toda a aba)', 'somente leitura', 'Exportada para leitura; não é importada.']);
       continue;

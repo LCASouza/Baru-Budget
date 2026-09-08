@@ -8,7 +8,13 @@ import {
   parseCell,
   planWorkbook,
 } from './import-plan';
-import { CellValue, DatabaseRow, SheetColumn, sheetByName } from './workbook-schema';
+import {
+  CellValue,
+  DatabaseRow,
+  IMPORTABLE_SHEETS,
+  SheetColumn,
+  sheetByName,
+} from './workbook-schema';
 
 const ACCOUNT_ID = '11111111-1111-4111-8111-111111111111';
 const OTHER_ACCOUNT_ID = '22222222-2222-4222-8222-222222222222';
@@ -203,6 +209,10 @@ describe('planWorkbook name resolution', () => {
     return plan.sheets.find((sheet) => sheet.sheetName === 'Movimentacoes')!.rows[0];
   }
 
+  // An exported sheet carries every column of the contract, so a link the user
+  // left blank arrives as a present cell holding nothing. A column missing from
+  // the sheet altogether means something else: an older schema version that never
+  // knew about it, and the plan leaves that one alone.
   const base = {
     id: null,
     tipo: 'EXPENSE',
@@ -210,6 +220,8 @@ describe('planWorkbook name resolution', () => {
     valor: 100,
     data: '2026-09-05',
     status: 'PAID',
+    conta: null,
+    account_id: null,
   };
 
   it('resolves a link by name when the id cell is empty', () => {
@@ -306,8 +318,88 @@ describe('planWorkbook across sheets', () => {
     });
     expect(empty.hasWork).toBe(false);
     expect(empty.sheets).toHaveLength(
-      [...new Set(['Contas', 'Categorias', 'Cartoes', 'Emprestimos', 'Financiamentos', 'GastosFixos', 'ReceitasRecorrentes', 'Movimentacoes', 'Divisoes'])].length,
+      IMPORTABLE_SHEETS.length,
     );
     expect(sheetByName('Movimentacoes')?.importable).toBe(true);
+  });
+});
+
+describe('reading a schema version 1 workbook', () => {
+  const loan = {
+    id: null,
+    descricao: 'Empréstimo',
+    principal: 6000,
+    taxa_juros: 1.95,
+    periodo_taxa: 'MONTHLY',
+    modelo_juros: 'PRICE',
+    parcelas: 12,
+    data_inicio: '2026-06-02',
+    primeira_parcela: '2026-07-07',
+  };
+
+  function planLoan(cells: Record<string, CellValue>) {
+    const plan = planWorkbook({
+      parsed: new Map([['Emprestimos', [row(2, cells)]]]),
+      existing: new Map(),
+      catalogs,
+      newId: () => GENERATED,
+    });
+    return plan.sheets.find((sheet) => sheet.sheetName === 'Emprestimos')!.rows[0];
+  }
+
+  it('leaves a column the workbook never carried alone', () => {
+    // A version 1 file has no `seguro` and no `taxa`. Writing null for them would
+    // clear a value the file was never able to describe.
+    const planned = planLoan(loan);
+    expect(planned.status).toBe('new');
+    expect('insurance_amount' in planned.values).toBe(false);
+    expect('fee_amount' in planned.values).toBe(false);
+  });
+
+  it('still clears a column the workbook carries empty', () => {
+    const planned = planLoan({ ...loan, seguro: null, taxa: null });
+    expect(planned.values['insurance_amount']).toBeNull();
+    expect(planned.values['fee_amount']).toBeNull();
+  });
+
+  it('keeps a required column reported when the workbook omits it', () => {
+    const { descricao, ...withoutDescription } = loan;
+    void descricao;
+    const planned = planLoan(withoutDescription);
+    expect(planned.status).toBe('invalid');
+    expect(planned.issues[0].column).toBe('descricao');
+  });
+});
+
+describe('the statements sheet', () => {
+  it('plans an observed statement', () => {
+    const plan = planWorkbook({
+      parsed: new Map([
+        [
+          'Extratos',
+          [
+            row(2, {
+              id: null,
+              financing_id: '11111111-1111-4111-8111-111111111111',
+              loan_id: null,
+              competencia: '2026-09-01',
+              saldo_devedor: 183670.08,
+              parcela: 1125.09,
+              seguro: 31.59,
+              taxa: 25,
+              parcelas_restantes: 394,
+            }),
+          ],
+        ],
+      ]),
+      existing: new Map(),
+      catalogs,
+      newId: () => GENERATED,
+    });
+    const planned = plan.sheets.find((sheet) => sheet.sheetName === 'Extratos')!.rows[0];
+    expect(planned.status).toBe('new');
+    expect(planned.values['outstanding_balance']).toBe(183670.08);
+    expect(planned.values['remaining_count']).toBe(394);
+    expect(planned.values['competence']).toBe('2026-09-01');
   });
 });

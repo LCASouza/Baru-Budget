@@ -124,5 +124,25 @@ select is(
   'the loan schedule keeps its twelve instalments'
 );
 
+-- Realigning respects the statement, and still never touches a paid instalment.
+-- The transactions were generated before the second statement shortened the
+-- schedule, so the whole pending tail drifted, not one row.
+update public.transactions set status = 'PAID'
+ where financing_id = '11111111-0000-4000-8000-000000000002' and financing_installment_number = 27;
+select ok(
+  public.realign_financing_schedule('11111111-0000-4000-8000-000000000002') > 0,
+  'realigning brings the pending instalments onto the reanchored schedule'
+);
+select ok(
+  abs((select amount from public.transactions
+        where financing_id = '11111111-0000-4000-8000-000000000002' and financing_installment_number = 27) - 1181.68) < 5.00,
+  'the paid instalment keeps what was actually charged'
+);
+select is(
+  public.realign_financing_schedule('11111111-0000-4000-8000-000000000002'),
+  0,
+  'realigning again changes nothing'
+);
+
 select * from finish();
 rollback;

@@ -1,7 +1,7 @@
 import {
   FORBIDDEN_FIELDS,
   IMPORTABLE_SHEETS,
-  WORKBOOK_V1,
+  WORKBOOK_V2,
   databaseField,
   isOwnedTable,
   sheetByName,
@@ -21,6 +21,7 @@ const FROZEN_SHEETS: readonly string[] = [
   'ReceitasRecorrentes',
   'Movimentacoes',
   'Divisoes',
+  'Extratos',
   'Grupos',
   'Pessoas',
 ];
@@ -43,9 +44,9 @@ const FROZEN_ALLOCATION_COLUMNS: readonly string[] = [
   'valor',
 ];
 
-describe('workbook-schema version 1', () => {
-  it('keeps the frozen sheet names and their order', () => {
-    expect(WORKBOOK_V1.map((sheet) => sheet.name)).toEqual(FROZEN_SHEETS);
+describe('workbook-schema version 2', () => {
+  it('keeps the sheet names and their order', () => {
+    expect(WORKBOOK_V2.map((sheet) => sheet.name)).toEqual(FROZEN_SHEETS);
   });
 
   it('keeps the frozen columns of a simple sheet and of the allocations sheet', () => {
@@ -66,7 +67,7 @@ describe('workbook-schema version 1', () => {
   });
 
   it('never carries ownership or audit columns', () => {
-    for (const sheet of WORKBOOK_V1) {
+    for (const sheet of WORKBOOK_V2) {
       for (const column of sheet.columns) {
         expect(FORBIDDEN_FIELDS, `${sheet.name}.${column.key}`).not.toContain(
           databaseField(column),
@@ -76,7 +77,7 @@ describe('workbook-schema version 1', () => {
   });
 
   it('gives every lookup column a catalog and an id column beside it', () => {
-    for (const sheet of WORKBOOK_V1) {
+    for (const sheet of WORKBOOK_V2) {
       const keys = new Set(sheet.columns.map((column) => column.key));
       for (const column of sheet.columns) {
         if (column.role !== 'lookup') {
@@ -89,7 +90,7 @@ describe('workbook-schema version 1', () => {
   });
 
   it('gives every enum column its accepted values', () => {
-    for (const sheet of WORKBOOK_V1) {
+    for (const sheet of WORKBOOK_V2) {
       for (const column of sheet.columns) {
         if (column.type === 'enum') {
           expect(column.enumValues?.length, `${sheet.name}.${column.key}`).toBeGreaterThan(0);
@@ -99,14 +100,14 @@ describe('workbook-schema version 1', () => {
   });
 
   it('never repeats a column key inside a sheet', () => {
-    for (const sheet of WORKBOOK_V1) {
+    for (const sheet of WORKBOOK_V2) {
       const keys = sheet.columns.map((column) => column.key);
       expect(new Set(keys).size, sheet.name).toBe(keys.length);
     }
   });
 
   it('orders sheets so a reference is always created before it is used', () => {
-    const order = WORKBOOK_V1.map((sheet) => sheet.name);
+    const order = WORKBOOK_V2.map((sheet) => sheet.name);
     expect(order.indexOf('Contas')).toBeLessThan(order.indexOf('Movimentacoes'));
     expect(order.indexOf('Categorias')).toBeLessThan(order.indexOf('Movimentacoes'));
     expect(order.indexOf('Cartoes')).toBeLessThan(order.indexOf('Movimentacoes'));

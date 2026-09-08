@@ -1,11 +1,18 @@
-// Baru Budget Excel Format, schema version 1.
+// Baru Budget Excel Format, schema version 2.
 //
 // This module is the whole contract: the export walks it to write cells and the
-// import walks it to read them, so the two sides cannot drift. Freezing version
-// 1 means sheet names, column keys and their order never change again; a future
-// change is schema version 2 with a converter.
+// import walks it to read them, so the two sides cannot drift.
+//
+// Version 2 adds the observed statements and the instalment charges. It only
+// adds: every sheet, column key and value of version 1 means the same thing, so
+// a version 1 workbook is read by leaving the columns it does not carry
+// untouched instead of overwriting them with nothing. That is the whole
+// converter, and it lives in `planRow`.
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
+
+/** Versions the import accepts. A version 1 file is read and converted. */
+export const READABLE_SCHEMA_VERSIONS: readonly number[] = [1, 2];
 export const APPLICATION_NAME = 'Baru Budget';
 
 export type CellValue = string | number | boolean | Date | null;
@@ -25,7 +32,11 @@ export type OwnedTable =
   | 'transactions';
 
 /** Tables without an owner column, where row level security alone decides. */
-export type SharedTable = 'transaction_allocations' | 'households' | 'profiles';
+export type SharedTable =
+  | 'transaction_allocations'
+  | 'debt_statements'
+  | 'households'
+  | 'profiles';
 
 /** Tables the format covers. Nothing outside this list is ever read or written. */
 export type ExportableTable = OwnedTable | SharedTable;
@@ -182,6 +193,8 @@ export const LOANS_SHEET: SheetSpec = {
     { key: 'data_inicio', label: 'Data do empréstimo', type: 'date', role: 'editable', field: 'start_date', required: true },
     { key: 'primeira_parcela', label: 'Primeira parcela', type: 'date', role: 'editable', field: 'first_due_date', required: true },
     { key: 'observacoes', label: 'Observações', type: 'text', role: 'editable', field: 'notes' },
+    { key: 'seguro', label: 'Seguro', type: 'money', role: 'editable', field: 'insurance_amount' },
+    { key: 'taxa', label: 'Taxa operacional', type: 'money', role: 'editable', field: 'fee_amount' },
   ],
 };
 
@@ -212,6 +225,8 @@ export const FINANCINGS_SHEET: SheetSpec = {
     { key: 'data_aquisicao', label: 'Data da aquisição', type: 'date', role: 'editable', field: 'acquisition_date', required: true },
     { key: 'primeira_parcela', label: 'Primeira parcela', type: 'date', role: 'editable', field: 'first_due_date', required: true },
     { key: 'observacoes', label: 'Observações', type: 'text', role: 'editable', field: 'notes' },
+    { key: 'seguro', label: 'Seguro', type: 'money', role: 'editable', field: 'insurance_amount' },
+    { key: 'taxa', label: 'Taxa operacional', type: 'money', role: 'editable', field: 'fee_amount' },
   ],
 };
 
@@ -318,6 +333,25 @@ export const ALLOCATIONS_SHEET: SheetSpec = {
   ],
 };
 
+export const STATEMENTS_SHEET: SheetSpec = {
+  name: 'Extratos',
+  table: 'debt_statements',
+  importable: true,
+  note: 'O que o credor informou em cada mês. Preencha emprestimo_id ou financiamento_id, nunca os dois.',
+  columns: [
+    ID,
+    idRef('loan_id', 'ID do empréstimo'),
+    idRef('financing_id', 'ID do financiamento'),
+    { key: 'competencia', label: 'Mês', type: 'date', role: 'editable', field: 'competence', required: true },
+    { key: 'saldo_devedor', label: 'Saldo devedor', type: 'money', role: 'editable', field: 'outstanding_balance', required: true },
+    { key: 'parcela', label: 'Parcela', type: 'money', role: 'editable', field: 'installment_amount', required: true },
+    { key: 'seguro', label: 'Seguro', type: 'money', role: 'editable', field: 'insurance_amount' },
+    { key: 'taxa', label: 'Taxa operacional', type: 'money', role: 'editable', field: 'fee_amount' },
+    { key: 'parcelas_restantes', label: 'Parcelas restantes', type: 'number', role: 'editable', field: 'remaining_count', required: true },
+    { key: 'observacoes', label: 'Observações', type: 'text', role: 'editable', field: 'notes' },
+  ],
+};
+
 export const HOUSEHOLDS_SHEET: SheetSpec = {
   name: 'Grupos',
   table: 'households',
@@ -344,7 +378,7 @@ export const PEOPLE_SHEET: SheetSpec = {
  * Sheets in workbook order, which is also the import order: a sheet never
  * depends on one below it.
  */
-export const WORKBOOK_V1: readonly SheetSpec[] = [
+export const WORKBOOK_V2: readonly SheetSpec[] = [
   ACCOUNTS_SHEET,
   CATEGORIES_SHEET,
   CARDS_SHEET,
@@ -354,11 +388,12 @@ export const WORKBOOK_V1: readonly SheetSpec[] = [
   RECURRING_INCOMES_SHEET,
   TRANSACTIONS_SHEET,
   ALLOCATIONS_SHEET,
+  STATEMENTS_SHEET,
   HOUSEHOLDS_SHEET,
   PEOPLE_SHEET,
 ];
 
-export const IMPORTABLE_SHEETS = WORKBOOK_V1.filter((sheet) => sheet.importable);
+export const IMPORTABLE_SHEETS = WORKBOOK_V2.filter((sheet) => sheet.importable);
 
 /** Columns the format never carries: ownership and audit belong to the system. */
 export const FORBIDDEN_FIELDS: readonly string[] = [
@@ -374,5 +409,5 @@ export function databaseField(column: SheetColumn): string {
 }
 
 export function sheetByName(name: string): SheetSpec | null {
-  return WORKBOOK_V1.find((sheet) => sheet.name === name) ?? null;
+  return WORKBOOK_V2.find((sheet) => sheet.name === name) ?? null;
 }

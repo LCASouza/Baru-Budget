@@ -5,8 +5,10 @@ import { PlannedRow, SheetPlan, WorkbookPlan } from './import-plan';
 import {
   ALLOCATIONS_SHEET,
   DatabaseRow,
+  ExportableTable,
   FORBIDDEN_FIELDS,
   IMPORTABLE_SHEETS,
+  isOwnedTable,
 } from './workbook-schema';
 
 export interface SheetOutcome {
@@ -58,7 +60,7 @@ export class ImportService {
         } else {
           await this.repository.upsertAll(
             sheet.table,
-            rows.map((row) => this.toDatabaseRow(row, ownerId)),
+            rows.map((row) => this.toDatabaseRow(row, ownerId, sheet.table)),
           );
         }
         outcomes.push({ sheetName: sheet.name, written: rows.length, failed: 0, error: null });
@@ -79,16 +81,24 @@ export class ImportService {
 
   /**
    * The owner never comes from the file: it comes from the current context, and
-   * the forbidden fields are dropped even if something put them in the plan.
+   * the forbidden fields are dropped even if something put them in the plan. A
+   * table without an owner column is not stamped at all; the record it hangs from
+   * decides who owns it.
    */
-  private toDatabaseRow(row: PlannedRow, ownerId: string): DatabaseRow {
+  private toDatabaseRow(
+    row: PlannedRow,
+    ownerId: string,
+    table: ExportableTable,
+  ): DatabaseRow {
     const values: DatabaseRow = {};
     for (const [field, value] of Object.entries(row.values)) {
       if (!FORBIDDEN_FIELDS.includes(field)) {
         values[field] = value;
       }
     }
-    return { ...values, id: row.id, owner_user_id: ownerId };
+    return isOwnedTable(table)
+      ? { ...values, id: row.id, owner_user_id: ownerId }
+      : { ...values, id: row.id };
   }
 
   /**

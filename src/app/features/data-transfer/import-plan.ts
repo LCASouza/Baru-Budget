@@ -256,6 +256,12 @@ function planRow(
     if (column.role === 'lookup') {
       continue; // resolved below, after the paired id column is known
     }
+    // A column the sheet does not carry is left alone; an empty cell of a column
+    // it does carry still means null. That distinction is what lets a workbook of
+    // an older schema version be read without clearing what it never knew about.
+    if (!parsed.cells.has(column.key) && !column.required) {
+      continue;
+    }
     const result = parseCell(column, parsed.cells.get(column.key) ?? null);
     if (!result.ok) {
       issues.push({ column: column.key, message: result.message });

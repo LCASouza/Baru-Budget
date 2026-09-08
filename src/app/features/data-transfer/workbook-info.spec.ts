@@ -23,10 +23,16 @@ describe('workbook-info', () => {
     expect(result.reason).toContain('Outro App');
   });
 
-  it('refuses another schema version and says which one it read', () => {
-    const result = checkCompatibility(entries({ application: 'Baru Budget', schema_version: '2' }));
+  it('refuses a schema version it cannot read and says which one it found', () => {
+    const result = checkCompatibility(entries({ application: 'Baru Budget', schema_version: '3' }));
     expect(result.compatible).toBe(false);
-    expect(result.reason).toContain('2');
+    expect(result.reason).toContain('3');
+  });
+
+  it('reads a version 1 workbook, because version 2 only adds to it', () => {
+    const result = checkCompatibility(entries({ application: 'Baru Budget', schema_version: '1' }));
+    expect(result.compatible).toBe(true);
+    expect(result.reason).toBeNull();
   });
 
   it('writes the metadata the format promises, and the absence notice', () => {

@@ -5,7 +5,7 @@ import { NamedCatalogs, buildCatalogs } from './catalogs';
 import { DataTransferRepository } from './data-transfer.repository';
 import { ExistingRows } from './import-plan';
 import { ExportData } from './workbook-model';
-import { DatabaseRow, IMPORTABLE_SHEETS, WORKBOOK_V1, isOwnedTable } from './workbook-schema';
+import { DatabaseRow, IMPORTABLE_SHEETS, WORKBOOK_V2, isOwnedTable } from './workbook-schema';
 
 export interface DataSnapshot {
   readonly data: ExportData;
@@ -22,7 +22,7 @@ export async function loadSnapshot(
   repository: DataTransferRepository,
   ownerId: string,
 ): Promise<DataSnapshot> {
-  const tables = WORKBOOK_V1.map((sheet) => sheet.table);
+  const tables = WORKBOOK_V2.map((sheet) => sheet.table);
   const loaded = await Promise.all(
     tables.map((table) =>
       isOwnedTable(table) ? repository.listOwned(table, ownerId) : repository.listVisible(table),
@@ -43,9 +43,26 @@ export async function loadSnapshot(
     ),
   );
 
+  // Statements have no owner column either: the debt they describe decides, and
+  // a grantee sees the statements of debts that are not theirs. A backup carries
+  // only the statements of the owner's own debts.
+  const debtIds = new Set(
+    [...(rowsByTable.get('loans') ?? []), ...(rowsByTable.get('financings') ?? [])].map((row) =>
+      String(row['id'] ?? ''),
+    ),
+  );
+  rowsByTable.set(
+    'debt_statements',
+    (rowsByTable.get('debt_statements') ?? []).filter(
+      (row) =>
+        debtIds.has(String(row['loan_id'] ?? '')) ||
+        debtIds.has(String(row['financing_id'] ?? '')),
+    ),
+  );
+
   const data = new Map<string, readonly DatabaseRow[]>();
   const existing = new Map<string, ExistingRows>();
-  for (const sheet of WORKBOOK_V1) {
+  for (const sheet of WORKBOOK_V2) {
     const rows = rowsByTable.get(sheet.table) ?? [];
     data.set(sheet.name, rows);
     if (IMPORTABLE_SHEETS.includes(sheet)) {

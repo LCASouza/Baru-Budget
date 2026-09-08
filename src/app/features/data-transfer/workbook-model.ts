@@ -13,7 +13,7 @@ import {
   DatabaseRow,
   SheetColumn,
   SheetSpec,
-  WORKBOOK_V1,
+  WORKBOOK_V2,
   databaseField,
 } from './workbook-schema';
 
@@ -110,7 +110,7 @@ export function buildWorkbook(
     sheets: [
       infoSheet,
       legendSheet,
-      ...WORKBOOK_V1.map((spec) => dataSheet(spec, data.get(spec.name) ?? [], catalogs)),
+      ...WORKBOOK_V2.map((spec) => dataSheet(spec, data.get(spec.name) ?? [], catalogs)),
     ],
   };
 }

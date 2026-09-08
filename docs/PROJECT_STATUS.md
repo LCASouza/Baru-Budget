@@ -2,7 +2,7 @@
 
 ## Current Version
 
-**v1.1 — Correção Monetária** (IN_PROGRESS). Architectural analysis approved on 2026-09-08 (`ARCHITECTURE_ANALYSIS_V1.1.md`).
+**v1.1 — Correção Monetária** was delivered on 2026-09-08. An indexed debt now carries the statements the lender reported, and the schedule is reanchored on them instead of projected from the contract alone. The Baru Budget Excel Format rose to schema version 2, which still reads a version 1 workbook.
 
 **v1.0 — Stable** was delivered on 2026-09-08 and tagged `v1.0.0`. Security review: `SECURITY_REVIEW_V1.0.md`. Architecture: `ARCHITECTURE.md`. Its production checks were deferred by the administrator and are tracked below, outside the version.
 
@@ -28,7 +28,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v0.12 | Baru Budget Excel Format v1 | DELIVERED | Schema version 1, export, import, standardized workbook, stable IDs, preview, validation, merge by UUID, backup |
 | v0.13 | Mobile UX and Hardening | DELIVERED | Full mobile review, responsiveness, empty states, loading, accessibility, errors, performance, permission and RLS review |
 | v1.0 | Stable | DELIVERED | Security review, full RLS review, final test suite, documentation, CI, stable deploy, validated backup and import/export |
-| v1.1 | Correção Monetária | IN_PROGRESS | Indexed financings and loans: observed statements instead of projected correction, instalment charges, balance with provenance, Excel schema version 2. Starts only after v1.0 is DELIVERED |
+| v1.1 | Correção Monetária | DELIVERED | Indexed financings and loans: observed statements instead of projected correction, instalment charges, balance with provenance, Excel schema version 2. Starts only after v1.0 is DELIVERED |
 
 ## Current Work
 
@@ -64,7 +64,7 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | v1.0 architectural analysis | v1.0 | DELIVERED | `ARCHITECTURE_ANALYSIS_V1.0.md`; approved on 2026-09-07 |
 | v1.0 implementation | v1.0 | DELIVERED | CI, security review, view isolation, documentation, BUG-005 and BUG-006; tagged `v1.0.0` on 2026-09-08 |
 | v1.1 architectural analysis | v1.1 | DELIVERED | `ARCHITECTURE_ANALYSIS_V1.1.md`; blocking decisions resolved on 2026-09-08 |
-| v1.1 implementation | v1.1 | IN_PROGRESS | Observed statements for financings and loans, instalment charges, balance with provenance, Excel schema version 2 |
+| v1.1 implementation | v1.1 | DELIVERED | Observed statements for financings and loans, instalment charges, schedule by parts, balance with provenance, Excel schema version 2 with its converter |
 
 ## Features
 
@@ -92,9 +92,10 @@ Production: https://baru-budget.pages.dev (Cloudflare Pages, automatic deploy fr
 | FEAT-020 | Settlements | v0.9 | DELIVERED | Settlement as a transaction kind with direction, derived balances, receivables and payables |
 | FEAT-021 | Loans | v0.10 | DELIVERED | Simple interest and Price with documented conversions, idempotent schedule, derived outstanding balance, disbursement out of income |
 | FEAT-022 | Financings | v0.11 | DELIVERED | Price and SAC with documented conversions, generated financed amount, idempotent schedule, derived outstanding balance, asset value never recorded |
+| FEAT-026 | Monetary correction | v1.1 | DELIVERED | Observed statements for loans and financings, instalment charges, schedule reanchored on each statement, balance with provenance, Excel schema version 2 |
 | FEAT-025 | Stable release | v1.0 | DELIVERED | CI, security review, view isolation and function surface tests, architecture documentation, validated backup and import/export against production |
 | FEAT-024 | Mobile UX and Hardening | v0.13 | DELIVERED | Screen audit, mobile lists, shared loading/error/empty contract, keyboard access, focus and reduced motion, pagination, RLS matrix |
-| FEAT-023 | Baru Budget Excel Format v1 | v0.12 | DELIVERED | Frozen schema version 1, paginated export, mandatory preview, merge by UUID, absence never deletes, backup |
+| FEAT-023 | Baru Budget Excel Format | v0.12 | DELIVERED | Schema version 1 in v0.12, raised to version 2 in v1.1; paginated export, mandatory preview, merge by UUID, absence never deletes, backup |
 
 ## Bugs
 
@@ -151,4 +152,4 @@ Items not implemented without an explicit requirement (MASTER_PROMPT.md, section
 
 ## Last Update
 
-2026-09-08 — v1.0 Stable delivered and tagged `v1.0.0`. The v0.12 production check closed against the hosted project with real family data, and production now carries 234 transactions loaded from four real card statements. The pass found BUG-005 and BUG-006, both fixed and deployed. The remaining production checks were deferred by the administrator and moved out of the version, into their own section above. v1.1 Correção Monetária started, with its architectural analysis approved.
+2026-09-08 — v1.1 Correção Monetária delivered: `debt_statements`, instalment charges, the schedule as a function by parts mirrored between SQL and TypeScript, the outstanding balance with its provenance, and Excel schema version 2 with a converter proved against the real version 1 backup. Earlier the same day, v1.0 Stable was delivered and tagged `v1.0.0`. The v0.12 production check closed against the hosted project with real family data, and production now carries 234 transactions loaded from four real card statements. The pass found BUG-005 and BUG-006, both fixed and deployed. The remaining production checks were deferred by the administrator and moved out of the version, into their own section above. v1.1 Correção Monetária started, with its architectural analysis approved.
