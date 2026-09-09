@@ -78,6 +78,21 @@
       </mat-form-field>
     </div>
 
+    <div class="loan-form__row">
+      <mat-form-field appearance="outline">
+        <mat-label>Seguro</mat-label>
+        <input matInput formControlName="insuranceAmount" inputmode="decimal" />
+        <span matTextPrefix>R$&nbsp;</span>
+        <mat-hint>Cobrado junto com cada parcela.</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Taxa operacional</mat-label>
+        <input matInput formControlName="feeAmount" inputmode="decimal" />
+        <span matTextPrefix>R$&nbsp;</span>
+      </mat-form-field>
+    </div>
+
     @if (preview(); as preview) {
       <div class="loan-form__preview">
         <mat-icon>calculate</mat-icon>

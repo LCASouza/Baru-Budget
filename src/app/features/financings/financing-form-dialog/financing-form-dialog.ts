@@ -52,6 +52,11 @@ function nonNegativeValidator(control: AbstractControl<string>): ValidationError
   return amount === null || amount < 0 ? { amount: true } : null;
 }
 
+function nonNegativeAmountValidator(control: AbstractControl<string>): ValidationErrors | null {
+  const amount = parseAmountInput(control.value);
+  return amount === null || amount < 0 ? { amount: true } : null;
+}
+
 function rateValidator(control: AbstractControl<string>): ValidationErrors | null {
   const rate = parseRateInput(control.value);
   return rate === null || rate < 0 || rate >= 100 ? { rate: true } : null;
@@ -124,6 +129,14 @@ export class FinancingFormDialog {
       interestRate: [
         this.financing ? formatRateInput(this.financing.interest_rate) : '0,00',
         [Validators.required, rateValidator],
+      ],
+      insuranceAmount: [
+        this.financing ? formatAmountInput(this.financing.insurance_amount) : '0,00',
+        [Validators.required, nonNegativeAmountValidator],
+      ],
+      feeAmount: [
+        this.financing ? formatAmountInput(this.financing.fee_amount) : '0,00',
+        [Validators.required, nonNegativeAmountValidator],
       ],
       interestPeriod: this.formBuilder.control<InterestPeriod>(
         this.financing?.interest_period ?? 'MONTHLY',
@@ -239,6 +252,8 @@ export class FinancingFormDialog {
       installmentCount: value.installmentCount,
       acquisitionDate: toIsoDate(value.acquisitionDate as Date),
       firstDueDate: toIsoDate(value.firstDueDate as Date),
+      insuranceAmount: parseAmountInput(value.insuranceAmount) ?? 0,
+      feeAmount: parseAmountInput(value.feeAmount) ?? 0,
       notes: value.notes.trim() || null,
     };
 

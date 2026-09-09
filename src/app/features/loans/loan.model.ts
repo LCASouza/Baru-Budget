@@ -35,6 +35,8 @@ export interface LoanInput {
   readonly installmentCount: number;
   readonly startDate: IsoDate;
   readonly firstDueDate: IsoDate;
+  readonly insuranceAmount: number;
+  readonly feeAmount: number;
   readonly notes: string | null;
 }
 

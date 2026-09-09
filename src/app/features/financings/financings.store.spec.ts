@@ -155,6 +155,8 @@ describe('FinancingsStore', () => {
       installmentCount: 10,
       acquisitionDate: '2026-09-05',
       firstDueDate: '2026-10-10',
+      insuranceAmount: 0,
+      feeAmount: 0,
       notes: null,
     };
     await expect(store.create(input)).resolves.toBe('fin-2');

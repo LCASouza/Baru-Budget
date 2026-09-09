@@ -169,6 +169,8 @@ describe('LoansStore', () => {
       installmentCount: 10,
       startDate: '2026-09-05',
       firstDueDate: '2026-10-10',
+      insuranceAmount: 0,
+      feeAmount: 0,
       notes: null,
     };
     await expect(store.create(input)).resolves.toBe('loan-2');
