@@ -44,7 +44,7 @@ export class CardsStore {
     return this.cards().map((card) => {
       const invoices = buildInvoiceViews(card, this.invoices(), today);
       const usage = cardUsage(card, invoices);
-      return { card, invoices, next: nextInvoice(invoices), used: usage.used, available: usage.available };
+      return { card, invoices, next: nextInvoice(invoices, today), used: usage.used, available: usage.available };
     });
   });
 
@@ -62,12 +62,18 @@ export class CardsStore {
 
   /** Unpaid invoices due within the given range, used by the dashboard. */
   dueBetween(start: string, end: string): readonly InvoiceView[] {
-    return this.summaries()
-      .flatMap((summary) => summary.invoices)
-      .filter(
+    return this.summaries().flatMap((summary) => {
+      const invoices = summary.invoices.filter(
         (invoice) =>
           invoice.status !== 'PAID' && invoice.dueDate >= start && invoice.dueDate <= end,
       );
+      if (!summary.next || summary.next.dueDate < start || summary.next.dueDate > end) {
+        return invoices;
+      }
+      return invoices.map((invoice) =>
+        invoice.dueDate === summary.next?.dueDate ? summary.next : invoice,
+      );
+    });
   }
 
   totalDueBetween(start: string, end: string): number {

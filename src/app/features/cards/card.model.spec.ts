@@ -57,9 +57,26 @@ describe('card.model', () => {
     expect(cardUsage({ ...CARD, limit_amount: null }, views)).toEqual({ used: 350, available: null });
   });
 
-  it('points to the oldest unpaid invoice as the next one', () => {
-    expect(nextInvoice(views)?.dueDate).toBe('2026-10-05');
-    expect(nextInvoice(views.filter((invoice) => invoice.status === 'PAID'))).toBeNull();
-    expect(nextInvoice([])).toBeNull();
+  it('points to the nearest payable invoice', () => {
+    expect(nextInvoice(views, '2026-10-01')?.dueDate).toBe('2026-10-05');
+    expect(nextInvoice(views.filter((invoice) => invoice.status === 'PAID'), '2026-10-01')).toBeNull();
+    expect(nextInvoice([], '2026-10-01')).toBeNull();
+  });
+
+  it('carries an older partial balance into the nearest payable invoice', () => {
+    const carried = buildInvoiceViews(
+      CARD,
+      [
+        { cardId: 'card-1', dueDate: '2026-09-05', total: 1201.74, paid: 850, purchaseCount: 16 },
+        { cardId: 'card-1', dueDate: '2026-10-05', total: 1149.06, paid: 0, purchaseCount: 20 },
+        { cardId: 'card-1', dueDate: '2026-11-05', total: 500, paid: 0, purchaseCount: 4 },
+      ],
+      '2026-09-23',
+    );
+
+    const payable = nextInvoice(carried, '2026-09-23');
+    expect(payable?.dueDate).toBe('2026-10-05');
+    expect(payable?.remaining).toBe(1500.8);
+    expect(payable?.purchaseCount).toBe(36);
   });
 });

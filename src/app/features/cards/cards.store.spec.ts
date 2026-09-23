@@ -44,7 +44,7 @@ describe('CardsStore', () => {
         .mockResolvedValue([makeCard(), makeCard({ id: 'card-2', name: 'Antigo', active: false })]),
       listInvoices: vi.fn().mockResolvedValue([
         { cardId: 'card-1', dueDate: '2026-10-05', total: 300, paid: 0, purchaseCount: 2 },
-        { cardId: 'card-1', dueDate: '2026-09-05', total: 200, paid: 200, purchaseCount: 1 },
+        { cardId: 'card-1', dueDate: '2026-09-05', total: 250, paid: 200, purchaseCount: 1 },
       ]),
       create: vi.fn().mockResolvedValue(makeCard()),
     };
@@ -69,9 +69,10 @@ describe('CardsStore', () => {
   it('summarizes usage and the next invoice per card', async () => {
     await settle();
     const summary = store.summaryOf('card-1');
-    expect(summary?.used).toBe(300);
-    expect(summary?.available).toBe(700);
+    expect(summary?.used).toBe(350);
+    expect(summary?.available).toBe(650);
     expect(summary?.next?.dueDate).toBe('2026-10-05');
+    expect(summary?.next?.remaining).toBe(350);
     expect(store.invoicesOf('card-1')).toHaveLength(2);
     expect(store.summaryOf('missing')).toBeNull();
   });
@@ -81,8 +82,8 @@ describe('CardsStore', () => {
     expect(store.dueBetween('2026-10-01', '2026-10-31').map((invoice) => invoice.dueDate)).toEqual([
       '2026-10-05',
     ]);
-    expect(store.totalDueBetween('2026-10-01', '2026-10-31')).toBe(300);
-    expect(store.totalDueBetween('2026-09-01', '2026-09-30')).toBe(0);
+    expect(store.totalDueBetween('2026-10-01', '2026-10-31')).toBe(350);
+    expect(store.totalDueBetween('2026-09-01', '2026-09-30')).toBe(50);
   });
 
   it('reloads after a mutation and clears after logout', async () => {

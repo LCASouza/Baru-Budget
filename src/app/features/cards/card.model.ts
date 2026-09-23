@@ -66,11 +66,35 @@ export function cardUsage(card: CreditCard, invoices: readonly InvoiceView[]): C
   };
 }
 
-/** Oldest invoice that is not fully paid, which is the one to settle next. */
-export function nextInvoice(invoices: readonly InvoiceView[]): InvoiceView | null {
-  return (
-    [...invoices]
-      .filter((invoice) => invoice.status !== 'PAID')
-      .sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0] ?? null
+/**
+ * Invoice currently payable. Card issuers carry an older unpaid balance into
+ * the next statement, so the card summary folds every earlier balance into the
+ * nearest invoice that has not reached its due date yet.
+ */
+export function nextInvoice(
+  invoices: readonly InvoiceView[],
+  today: IsoDate,
+): InvoiceView | null {
+  const unpaid = [...invoices]
+    .filter((invoice) => invoice.status !== 'PAID')
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
+  if (unpaid.length === 0) {
+    return null;
+  }
+
+  const target = unpaid.find((invoice) => invoice.dueDate >= today) ?? unpaid.at(-1)!;
+  const included = unpaid.filter((invoice) => invoice.dueDate <= target.dueDate);
+  if (included.length === 1) {
+    return target;
+  }
+
+  const carried = sumAmounts(
+    included.filter((invoice) => invoice.dueDate !== target.dueDate).map((invoice) => invoice.remaining),
   );
+  return {
+    ...target,
+    total: sumAmounts([target.total, carried]),
+    remaining: sumAmounts(included.map((invoice) => invoice.remaining)),
+    purchaseCount: included.reduce((total, invoice) => total + invoice.purchaseCount, 0),
+  };
 }
