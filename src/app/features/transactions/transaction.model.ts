@@ -1,4 +1,5 @@
 import { DisplayStatus, TransactionStatus } from '../../core/finance/transaction-status';
+import { AccountType } from '../../core/finance/account-type';
 import { Tables } from '../../core/supabase/database.types';
 import { IsoDate } from '../../shared/dates/iso-date';
 import { Account } from '../accounts/account.model';
@@ -51,6 +52,7 @@ export interface TransactionView {
   readonly categoryName: string | null;
   /** Empty when the account is not visible (transaction of another household member). */
   readonly accountName: string;
+  readonly accountType: AccountType | null;
   readonly destinationAccountName: string | null;
   readonly cardName: string | null;
   readonly ownerName: string | null;
@@ -73,6 +75,9 @@ export function buildTransactionViews(
       ? (categoriesById.get(transaction.category_id)?.name ?? null)
       : null,
     accountName: accountName(transaction.account_id) ?? '',
+    accountType: transaction.account_id
+      ? (accountsById.get(transaction.account_id)?.type ?? null)
+      : null,
     destinationAccountName: accountName(transaction.destination_account_id),
     cardName: transaction.credit_card_id
       ? (cardNames.get(transaction.credit_card_id) ?? null)
@@ -80,4 +85,13 @@ export function buildTransactionViews(
     ownerName: ownerNames.get(transaction.owner_user_id) ?? null,
     displayStatus: displayStatus(transaction, today),
   }));
+}
+
+/** Benefit deposits are restricted balances and cannot pay ordinary bills. */
+export function isSpendableIncome(view: TransactionView): boolean {
+  return (
+    view.transaction.kind === 'INCOME' &&
+    view.transaction.loan_id === null &&
+    view.accountType !== 'BENEFIT'
+  );
 }

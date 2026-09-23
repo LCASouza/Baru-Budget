@@ -7,6 +7,12 @@
   display: block;
 }
 
+.dashboard__period-note {
+  margin: 0;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-medium);
+}
+
 .dashboard__summary {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -36,6 +36,20 @@
       </app-empty-state>
     </article>
   } @else {
+    <article class="bb-card cards__total">
+      <div class="cards__total-icon" aria-hidden="true">
+        <mat-icon>credit_card</mat-icon>
+      </div>
+      <div>
+        <p class="cards__total-label">Total das faturas atuais</p>
+        <p class="cards__total-hint">
+          {{ store.currentInvoiceCount() }}
+          {{ store.currentInvoiceCount() === 1 ? 'fatura em aberto' : 'faturas em aberto' }}
+        </p>
+      </div>
+      <strong class="cards__total-amount bb-amount">{{ store.totalCurrentInvoices() | currency }}</strong>
+    </article>
+
     <div class="cards__grid">
       @for (summary of store.summaries(); track summary.card.id) {
         <article class="bb-card card" [class.card--inactive]="!summary.card.active">

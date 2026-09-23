@@ -28,6 +28,8 @@
       </app-empty-state>
     </article>
   } @else {
+    <p class="dashboard__period-note">{{ store.periodDescription() }}</p>
+
     <div class="dashboard__summary">
       @for (card of store.cards(); track card.label) {
         <app-summary-card [data]="card" />

@@ -52,6 +52,7 @@ describe('dashboard-summary', () => {
       expense: 2546.35,
       balance: 3453.65,
       pending: 300,
+      overdue: 180,
       incomeCount: 2,
       expenseCount: 6,
       pendingCount: 2,
@@ -93,6 +94,37 @@ describe('dashboard-summary', () => {
     expect(summary.income).toBe(0);
     expect(summary.expense).toBe(16387.5);
     expect(summary.pending).toBe(1387.5);
+  });
+
+  it('keeps benefit deposits out of spendable income and balance', () => {
+    const benefitViews = buildTransactionViews(
+      [
+        makeTransaction({
+          id: 'salary',
+          kind: 'INCOME',
+          amount: 5000,
+          account_id: 'acc-bank',
+        }),
+        makeTransaction({
+          id: 'benefit',
+          kind: 'INCOME',
+          amount: 1000,
+          account_id: 'acc-benefit',
+        }),
+      ],
+      new Map(),
+      new Map([
+        ['acc-bank', makeAccount()],
+        ['acc-benefit', makeAccount({ id: 'acc-benefit', type: 'BENEFIT' })],
+      ]),
+      TODAY,
+    );
+
+    expect(summarizeDashboard(benefitViews)).toMatchObject({
+      income: 5000,
+      balance: 5000,
+      incomeCount: 1,
+    });
   });
 
   it('groups expenses by category, ignoring transfers and cancelled entries', () => {

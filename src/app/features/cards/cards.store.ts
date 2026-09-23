@@ -47,6 +47,12 @@ export class CardsStore {
       return { card, invoices, next: nextInvoice(invoices, today), used: usage.used, available: usage.available };
     });
   });
+  readonly currentInvoiceCount = computed(
+    () => this.summaries().filter((summary) => summary.next !== null).length,
+  );
+  readonly totalCurrentInvoices = computed(() =>
+    sumAmounts(this.summaries().map((summary) => summary.next?.remaining ?? 0)),
+  );
 
   readonly isLoading = this.cardsResource.isLoading;
   readonly error = this.cardsResource.error;

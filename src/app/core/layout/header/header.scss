@@ -65,11 +65,18 @@
   font-weight: 600;
 }
 
+.header__avatar {
+  --mat-icon-button-state-layer-size: 40px;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+}
+
 .header__initials {
   display: grid;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: var(--mat-sys-tertiary-container);
   color: var(--mat-sys-on-tertiary-container);

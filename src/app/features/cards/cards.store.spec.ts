@@ -75,6 +75,8 @@ describe('CardsStore', () => {
     expect(summary?.next?.remaining).toBe(350);
     expect(store.invoicesOf('card-1')).toHaveLength(2);
     expect(store.summaryOf('missing')).toBeNull();
+    expect(store.currentInvoiceCount()).toBe(1);
+    expect(store.totalCurrentInvoices()).toBe(350);
   });
 
   it('reports unpaid invoices due in a range', async () => {

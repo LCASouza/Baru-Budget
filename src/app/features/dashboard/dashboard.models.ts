@@ -27,6 +27,7 @@ export interface DashboardSummary {
   readonly expense: number;
   readonly balance: number;
   readonly pending: number;
+  readonly overdue: number;
   readonly incomeCount: number;
   readonly expenseCount: number;
   readonly pendingCount: number;

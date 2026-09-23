@@ -21,6 +21,10 @@
   font-weight: 600;
 }
 
+.period__label--current {
+  --mat-button-text-label-text-color: var(--mat-sys-primary);
+}
+
 .period--compact {
   display: flex;
   justify-content: space-between;

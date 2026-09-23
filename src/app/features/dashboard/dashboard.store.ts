@@ -3,6 +3,7 @@ import { FinancialContextService } from '../../core/context/financial-context.se
 import { PeriodService } from '../../core/period/period.service';
 import { monthRange, shiftMonth } from '../../core/period/period.model';
 import { todayIso } from '../../shared/dates/iso-date';
+import { displayDate } from '../../shared/format/display';
 import { SummaryCardData } from '../../shared/components/summary-card/summary-card';
 import { AccountsStore } from '../accounts/accounts.store';
 import { CardsStore } from '../cards/cards.store';
@@ -93,6 +94,10 @@ export class DashboardStore {
   readonly byOwner = computed(() => limitAmounts(spendingByOwner(this.views()), CATEGORY_LIMIT));
   readonly pending = computed(() => pendingByDueDate(this.views(), todayIso()));
   readonly recent = computed(() => recentTransactions(this.views(), RECENT_LIMIT));
+  readonly periodDescription = computed(() => {
+    const range = this.period.range();
+    return `Receitas, despesas e saldo do período consideram ${displayDate(range.start)} a ${displayDate(range.end)}.`;
+  });
 
   readonly cards = computed<readonly SummaryCardData[]>(() => {
     const summary = this.summary();
@@ -120,14 +125,11 @@ export class DashboardStore {
         signed: true,
       },
       {
-        label: 'Pendentes',
-        amount: summary.pending,
-        icon: 'schedule',
+        label: 'Contas vencidas',
+        amount: summary.overdue,
+        icon: 'event_busy',
         tone: 'payable',
-        hint:
-          summary.overdueCount > 0
-            ? `${countHint(summary.pendingCount, 'saída', 'saídas')} · ${summary.overdueCount} vencida${summary.overdueCount === 1 ? '' : 's'}`
-            : countHint(summary.pendingCount, 'saída', 'saídas'),
+        hint: countHint(summary.overdueCount, 'conta vencida', 'contas vencidas'),
       },
     ];
 
@@ -135,14 +137,14 @@ export class DashboardStore {
     // invoices only make sense in the personal and shared contexts.
     if (!this.isHousehold()) {
       const totals = this.accounts.totals();
-      const invoices = this.invoicesDueInPeriod();
-      if (invoices.length > 0) {
+      const invoiceCount = this.cardsStore.currentInvoiceCount();
+      if (invoiceCount > 0) {
         cards.push({
           label: 'Faturas a pagar',
-          amount: this.invoiceTotalDue(),
+          amount: this.cardsStore.totalCurrentInvoices(),
           icon: 'credit_card',
           tone: 'payable',
-          hint: `${invoices.length} ${invoices.length === 1 ? 'fatura vence' : 'faturas vencem'} no período`,
+          hint: `${invoiceCount} ${invoiceCount === 1 ? 'fatura atual' : 'faturas atuais'} somada${invoiceCount === 1 ? '' : 's'}`,
         });
       }
       const loanRemaining = this.loans.remainingCount();
@@ -194,35 +196,16 @@ export class DashboardStore {
           },
         );
       }
-      cards.push(
-        {
-          label: 'Saldo monetário',
-          amount: totals.money,
-          icon: 'savings',
-          tone: 'benefit',
-          hint: 'Contas e dinheiro, pelo que já foi pago',
-          signed: true,
-        },
-        {
-          label: 'Benefícios',
-          amount: totals.benefit,
-          icon: 'restaurant',
-          tone: 'benefit',
-          hint: 'Vale alimentação, refeição e similares',
-          signed: true,
-        },
-      );
+      cards.push({
+        label: 'Saldo disponível',
+        amount: totals.money,
+        icon: 'savings',
+        tone: 'balance',
+        hint: 'Dinheiro disponível nas contas para pagar despesas',
+        signed: true,
+      });
     }
     return cards;
-  });
-
-  private readonly invoicesDueInPeriod = computed(() => {
-    const range = this.period.range();
-    return this.cardsStore.dueBetween(range.start, range.end);
-  });
-  private readonly invoiceTotalDue = computed(() => {
-    const range = this.period.range();
-    return this.cardsStore.totalDueBetween(range.start, range.end);
   });
 
   readonly isLoading = computed(

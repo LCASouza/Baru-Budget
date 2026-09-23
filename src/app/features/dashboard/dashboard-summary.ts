@@ -2,7 +2,7 @@ import { formatDate } from '@angular/common';
 import { MonthPeriod, shiftMonth } from '../../core/period/period.model';
 import { IsoDate } from '../../shared/dates/iso-date';
 import { sumAmounts } from '../../shared/money/money';
-import { TransactionView } from '../transactions/transaction.model';
+import { TransactionView, isSpendableIncome } from '../transactions/transaction.model';
 import { DashboardSummary, MonthlyTotals, NamedAmount, PendingItem } from './dashboard.models';
 
 const UNCATEGORIZED = 'Sem categoria';
@@ -15,11 +15,10 @@ const OTHERS = 'Outras';
  */
 export function summarizeDashboard(views: readonly TransactionView[]): DashboardSummary {
   const counted = views.filter((view) => view.transaction.status !== 'CANCELLED');
-  const incomes = counted.filter(
-    (view) => view.transaction.kind === 'INCOME' && view.transaction.loan_id === null,
-  );
+  const incomes = counted.filter(isSpendableIncome);
   const expenses = counted.filter((view) => view.transaction.kind === 'EXPENSE');
   const pending = expenses.filter((view) => view.transaction.status === 'PENDING');
+  const overdue = pending.filter((view) => view.displayStatus === 'OVERDUE');
   const income = sumAmounts(incomes.map((view) => view.transaction.amount));
   const expense = sumAmounts(expenses.map((view) => view.transaction.amount));
 
@@ -28,10 +27,11 @@ export function summarizeDashboard(views: readonly TransactionView[]): Dashboard
     expense,
     balance: sumAmounts([income, -expense]),
     pending: sumAmounts(pending.map((view) => view.transaction.amount)),
+    overdue: sumAmounts(overdue.map((view) => view.transaction.amount)),
     incomeCount: incomes.length,
     expenseCount: expenses.length,
     pendingCount: pending.length,
-    overdueCount: pending.filter((view) => view.displayStatus === 'OVERDUE').length,
+    overdueCount: overdue.length,
   };
 }
 

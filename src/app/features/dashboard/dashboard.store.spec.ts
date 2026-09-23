@@ -112,6 +112,8 @@ describe('DashboardStore', () => {
             invoicesOf: () => [],
             dueBetween: () => [],
             totalDueBetween: () => 0,
+            currentInvoiceCount: signal(2),
+            totalCurrentInvoices: signal(6164.89),
             reload: vi.fn(),
           },
         },
@@ -176,17 +178,19 @@ describe('DashboardStore', () => {
       'Receitas',
       'Despesas',
       'Saldo do período',
-      'Pendentes',
-      'Saldo monetário',
-      'Benefícios',
+      'Contas vencidas',
+      'Faturas a pagar',
+      'Saldo disponível',
     ]);
     expect(label('Receitas')?.amount).toBe(5000);
     expect(label('Despesas')?.amount).toBe(480);
     expect(label('Saldo do período')?.amount).toBe(4520);
-    expect(label('Pendentes')?.amount).toBe(180);
-    expect(label('Pendentes')?.hint).toContain('1 vencida');
-    expect(label('Saldo monetário')?.amount).toBe(1200);
-    expect(label('Benefícios')?.amount).toBe(380);
+    expect(label('Contas vencidas')?.amount).toBe(180);
+    expect(label('Contas vencidas')?.hint).toBe('1 conta vencida no período');
+    expect(label('Faturas a pagar')?.amount).toBe(6164.89);
+    expect(label('Faturas a pagar')?.hint).toBe('2 faturas atuais somadas');
+    expect(label('Saldo disponível')?.amount).toBe(1200);
+    expect(label('Benefícios')).toBeUndefined();
   });
 
   it('drops the cash cards in a household context', async () => {
@@ -196,7 +200,7 @@ describe('DashboardStore', () => {
       'Receitas',
       'Despesas',
       'Saldo do período',
-      'Pendentes',
+      'Contas vencidas',
     ]);
   });
 

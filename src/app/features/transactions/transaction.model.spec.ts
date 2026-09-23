@@ -47,9 +47,9 @@ describe('transaction.model', () => {
       new Map([['k1', 'Cartão']]),
     );
 
-    expect(views[0]).toMatchObject({ categoryName: 'Alimentação', accountName: 'Conta corrente', destinationAccountName: null, displayStatus: 'PAID', ownerName: 'Alice' });
+    expect(views[0]).toMatchObject({ categoryName: 'Alimentação', accountName: 'Conta corrente', accountType: 'BANK', destinationAccountName: null, displayStatus: 'PAID', ownerName: 'Alice' });
     expect(views[1]).toMatchObject({ categoryName: null, accountName: 'Conta corrente', destinationAccountName: 'Dinheiro' });
-    expect(views[2]).toMatchObject({ categoryName: null, accountName: '', ownerName: 'Alice', cardName: null });
+    expect(views[2]).toMatchObject({ categoryName: null, accountName: '', accountType: null, ownerName: 'Alice', cardName: null });
     expect(views[3]).toMatchObject({ accountName: '', cardName: 'Cartão' });
   });
 });

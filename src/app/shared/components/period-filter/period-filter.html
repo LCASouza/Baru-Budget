@@ -5,8 +5,8 @@
   <button
     matButton
     class="period__label"
+    [class.period__label--current]="period.isCurrentMonth()"
     (click)="period.reset()"
-    [disabled]="period.isCurrentMonth()"
     [matTooltip]="period.isCurrentMonth() ? '' : 'Voltar ao mês atual'"
   >
     <mat-icon>calendar_month</mat-icon>

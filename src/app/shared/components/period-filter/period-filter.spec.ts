@@ -29,6 +29,11 @@ describe('PeriodFilter', () => {
 
   it('shows the shared month in Portuguese', () => {
     expect(label()).toContain(monthLabel(currentMonth()));
+    const button = (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+      '.period__label',
+    );
+    expect(button?.disabled).toBe(false);
+    expect(button?.classList.contains('period__label--current')).toBe(true);
   });
 
   it('navigates the shared period service', () => {

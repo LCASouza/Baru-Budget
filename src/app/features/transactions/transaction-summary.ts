@@ -1,7 +1,7 @@
 import { DisplayStatus } from '../../core/finance/transaction-status';
 import { sumAmounts } from '../../shared/money/money';
 import { includesNormalized } from '../../shared/text/normalize';
-import { TransactionView } from './transaction.model';
+import { TransactionView, isSpendableIncome } from './transaction.model';
 
 export type KindTab = 'INCOME' | 'EXPENSE' | null;
 
@@ -72,14 +72,17 @@ export interface PeriodSummary {
 // Competence view of the period: paid and pending incomes and expenses count;
 // cancelled transactions and transfers between own accounts do not.
 export function summarizeTransactions(views: readonly TransactionView[]): PeriodSummary {
-  const counted = views
-    .map((view) => view.transaction)
-    .filter((transaction) => transaction.status !== 'CANCELLED');
+  const counted = views.filter((view) => view.transaction.status !== 'CANCELLED');
   // Money received from a loan is cash, not income of the period.
+  // Benefit deposits are restricted balances and stay outside spendable income.
   const income = sumAmounts(
-    counted.filter((t) => t.kind === 'INCOME' && t.loan_id === null).map((t) => t.amount),
+    counted.filter(isSpendableIncome).map((view) => view.transaction.amount),
   );
-  const expense = sumAmounts(counted.filter((t) => t.kind === 'EXPENSE').map((t) => t.amount));
+  const expense = sumAmounts(
+    counted
+      .filter((view) => view.transaction.kind === 'EXPENSE')
+      .map((view) => view.transaction.amount),
+  );
   return {
     income,
     expense,

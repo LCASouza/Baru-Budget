@@ -94,6 +94,19 @@ describe('transaction-summary', () => {
     });
   });
 
+  it('does not treat a benefit deposit as spendable income', () => {
+    const benefitViews = buildTransactionViews(
+      [makeTransaction({ kind: 'INCOME', amount: 1000, account_id: 'acc-benefit' })],
+      new Map(),
+      new Map([
+        ['acc-benefit', makeAccount({ id: 'acc-benefit', type: 'BENEFIT' })],
+      ]),
+      TODAY,
+    );
+
+    expect(summarizeTransactions(benefitViews)).toMatchObject({ income: 0, balance: 0 });
+  });
+
   it('groups by date in descending order', () => {
     const groups = groupByDate(views);
     expect(groups.map((g) => g.date)).toEqual(['2026-09-05', '2026-09-04', '2026-09-03', '2026-09-02', '2026-09-01']);
