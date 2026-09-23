@@ -40,6 +40,7 @@ import { parseIsoDate, toIsoDate } from '../../../shared/dates/iso-date';
 import { formatAmountInput, parseAmountInput } from '../../../shared/money/money';
 import { AccountsStore } from '../../accounts/accounts.store';
 import { CategoriesStore } from '../../categories/categories.store';
+import { categoryIcon } from '../../categories/category.model';
 import { CardsStore } from '../../cards/cards.store';
 import { invoiceDueDateFor, invoiceLabel } from '../../cards/invoice';
 import {
@@ -57,6 +58,10 @@ import { isSplitValid, remainingToAllocate, splitEqually } from '../../settlemen
 interface SelectOption {
   readonly id: string;
   readonly name: string;
+}
+
+interface CategoryOption extends SelectOption {
+  readonly icon: string;
 }
 
 interface SplitRow {
@@ -278,18 +283,27 @@ export class TransactionFormDialog {
     () => this.context.context().kind !== 'shared' && this.householdOptions().length > 0,
   );
 
-  protected readonly categories = computed<readonly SelectOption[]>(() => {
+  protected readonly categories = computed<readonly CategoryOption[]>(() => {
     const kind = this.kind();
     if (kind === 'TRANSFER') {
       return [];
     }
     const current = this.transaction?.category_id ?? null;
-    const options: SelectOption[] = this.categoriesStore
+    const options: CategoryOption[] = this.categoriesStore
       .ofKind(kind)
-      .filter((category) => category.active || category.id === current);
+      .filter((category) => category.active || category.id === current)
+      .map((category) => ({
+        id: category.id,
+        name: category.name,
+        icon: categoryIcon(category),
+      }));
     if (current && !options.some((option) => option.id === current)) {
       const visible = this.categoriesStore.byId().get(current);
-      options.push({ id: current, name: visible?.name ?? 'Categoria de outro usuário' });
+      options.push({
+        id: current,
+        name: visible?.name ?? 'Categoria de outro usuário',
+        icon: visible ? categoryIcon(visible) : 'label',
+      });
     }
     return options;
   });

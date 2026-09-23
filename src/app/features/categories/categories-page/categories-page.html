@@ -34,7 +34,7 @@
             @for (category of section.items; track category.id) {
               <li class="categories__row" [class.categories__row--inactive]="!category.active">
                 <span class="categories__icon" [class.categories__icon--income]="section.kind === 'INCOME'">
-                  <mat-icon>{{ section.icon }}</mat-icon>
+                  <mat-icon>{{ categoryIcon(category) }}</mat-icon>
                 </span>
                 <span class="categories__name">
                   {{ category.name }}

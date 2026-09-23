@@ -68,6 +68,7 @@
           [data]="store.byOwner()"
           title="Gastos por pessoa"
           emptyMessage="Sem despesas do grupo no período."
+          [showCategoryIcons]="false"
         />
       }
       <app-pending-payments [items]="store.pending()" (openTransaction)="open($event)" />

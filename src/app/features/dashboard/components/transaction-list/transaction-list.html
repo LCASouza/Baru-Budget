@@ -23,7 +23,7 @@
               class="transactions__icon"
               [class.transactions__icon--income]="item.transaction.kind === 'INCOME'"
             >
-              <mat-icon>{{ kindIcons[item.transaction.kind] }}</mat-icon>
+              <mat-icon>{{ item.categoryIcon ?? kindIcons[item.transaction.kind] }}</mat-icon>
             </span>
             <span class="transactions__info">
               <span class="transactions__name">{{ item.transaction.description }}</span>

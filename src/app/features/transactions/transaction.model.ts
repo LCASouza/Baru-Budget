@@ -1,9 +1,9 @@
-import { DisplayStatus, TransactionStatus } from '../../core/finance/transaction-status';
 import { AccountType } from '../../core/finance/account-type';
+import { DisplayStatus, TransactionStatus } from '../../core/finance/transaction-status';
 import { Tables } from '../../core/supabase/database.types';
 import { IsoDate } from '../../shared/dates/iso-date';
 import { Account } from '../accounts/account.model';
-import { Category } from '../categories/category.model';
+import { Category, categoryIcon } from '../categories/category.model';
 
 export type Transaction = Tables<'transactions'>;
 
@@ -50,6 +50,7 @@ export function displayStatus(
 export interface TransactionView {
   readonly transaction: Transaction;
   readonly categoryName: string | null;
+  readonly categoryIcon: string | null;
   /** Empty when the account is not visible (transaction of another household member). */
   readonly accountName: string;
   readonly accountType: AccountType | null;
@@ -69,22 +70,26 @@ export function buildTransactionViews(
 ): TransactionView[] {
   const accountName = (id: string | null): string | null =>
     id ? (accountsById.get(id)?.name ?? null) : null;
-  return transactions.map((transaction) => ({
-    transaction,
-    categoryName: transaction.category_id
-      ? (categoriesById.get(transaction.category_id)?.name ?? null)
-      : null,
-    accountName: accountName(transaction.account_id) ?? '',
-    accountType: transaction.account_id
-      ? (accountsById.get(transaction.account_id)?.type ?? null)
-      : null,
-    destinationAccountName: accountName(transaction.destination_account_id),
-    cardName: transaction.credit_card_id
-      ? (cardNames.get(transaction.credit_card_id) ?? null)
-      : null,
-    ownerName: ownerNames.get(transaction.owner_user_id) ?? null,
-    displayStatus: displayStatus(transaction, today),
-  }));
+  return transactions.map((transaction) => {
+    const category = transaction.category_id
+      ? (categoriesById.get(transaction.category_id) ?? null)
+      : null;
+    return {
+      transaction,
+      categoryName: category?.name ?? null,
+      categoryIcon: category ? categoryIcon(category) : null,
+      accountName: accountName(transaction.account_id) ?? '',
+      accountType: transaction.account_id
+        ? (accountsById.get(transaction.account_id)?.type ?? null)
+        : null,
+      destinationAccountName: accountName(transaction.destination_account_id),
+      cardName: transaction.credit_card_id
+        ? (cardNames.get(transaction.credit_card_id) ?? null)
+        : null,
+      ownerName: ownerNames.get(transaction.owner_user_id) ?? null,
+      displayStatus: displayStatus(transaction, today),
+    };
+  });
 }
 
 /** Benefit deposits are restricted balances and cannot pay ordinary bills. */

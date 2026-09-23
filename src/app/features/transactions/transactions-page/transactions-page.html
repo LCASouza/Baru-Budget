@@ -65,14 +65,20 @@
               @if (categoryOptions().income.length > 0) {
                 <mat-optgroup label="Receitas">
                   @for (category of categoryOptions().income; track category.id) {
-                    <mat-option [value]="category.id">{{ category.name }}</mat-option>
+                    <mat-option [value]="category.id">
+                      <mat-icon>{{ categoryIcon(category) }}</mat-icon>
+                      {{ category.name }}
+                    </mat-option>
                   }
                 </mat-optgroup>
               }
               @if (categoryOptions().expense.length > 0) {
                 <mat-optgroup label="Despesas">
                   @for (category of categoryOptions().expense; track category.id) {
-                    <mat-option [value]="category.id">{{ category.name }}</mat-option>
+                    <mat-option [value]="category.id">
+                      <mat-icon>{{ categoryIcon(category) }}</mat-icon>
+                      {{ category.name }}
+                    </mat-option>
                   }
                 </mat-optgroup>
               }
@@ -186,7 +192,7 @@
                     (click)="edit(view)"
                   >
                     <span class="tx-row__icon" [class]="'tx-row__icon tx-row__icon--' + view.transaction.kind.toLowerCase()">
-                      <mat-icon>{{ view.cardName ? 'credit_card' : kindIcons[view.transaction.kind] }}</mat-icon>
+                      <mat-icon>{{ view.categoryIcon ?? kindIcons[view.transaction.kind] }}</mat-icon>
                     </span>
                     <span class="tx-row__info">
                       <span class="tx-row__name">

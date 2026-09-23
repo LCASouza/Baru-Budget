@@ -31,6 +31,7 @@ import { SummaryCard, SummaryCardData } from '../../../shared/components/summary
 import { AccountsStore } from '../../accounts/accounts.store';
 import { CardsStore } from '../../cards/cards.store';
 import { CategoriesStore } from '../../categories/categories.store';
+import { categoryIcon } from '../../categories/category.model';
 import { openTransactionDialog } from '../open-transaction-dialog';
 import { KindTab } from '../transaction-summary';
 import { TransactionView } from '../transaction.model';
@@ -95,6 +96,7 @@ export class TransactionsPage {
 
   protected readonly tabs = KIND_TABS;
   protected readonly kindIcons = KIND_ICONS;
+  protected readonly categoryIcon = categoryIcon;
   protected readonly statusLabel = transactionStatusLabel;
   protected readonly statusOptions = computed(() =>
     DISPLAY_STATUSES.map((status) => ({

@@ -170,7 +170,10 @@
           <mat-label>Categoria</mat-label>
           <mat-select formControlName="categoryId">
             @for (category of categories(); track category.id) {
-              <mat-option [value]="category.id">{{ category.name }}</mat-option>
+              <mat-option [value]="category.id">
+                <mat-icon>{{ category.icon }}</mat-icon>
+                {{ category.name }}
+              </mat-option>
             }
           </mat-select>
           @if (form.controls.categoryId.hasError('required')) {

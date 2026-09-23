@@ -1,6 +1,8 @@
 import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { sumAmounts } from '../../../../shared/money/money';
+import { categoryIconByName } from '../../../categories/category.model';
 import { NamedAmount } from '../../dashboard.models';
 
 interface AmountRow extends NamedAmount {
@@ -9,7 +11,7 @@ interface AmountRow extends NamedAmount {
 
 @Component({
   selector: 'app-category-chart',
-  imports: [CurrencyPipe],
+  imports: [CurrencyPipe, MatIconModule],
   templateUrl: './category-chart.html',
   styleUrl: './category-chart.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,6 +20,8 @@ export class CategoryChart {
   readonly data = input.required<readonly NamedAmount[]>();
   readonly title = input('Gastos por categoria');
   readonly emptyMessage = input('Sem despesas no período.');
+  readonly showCategoryIcons = input(true);
+  protected readonly categoryIcon = (name: string) => categoryIconByName('EXPENSE', name);
 
   protected readonly total = computed(() => sumAmounts(this.data().map((item) => item.amount)));
 

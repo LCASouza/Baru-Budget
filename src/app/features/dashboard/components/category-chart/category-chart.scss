@@ -18,16 +18,27 @@
 
 .categories__row {
   display: grid;
-  grid-template-columns: 96px minmax(0, 1fr) auto;
+  grid-template-columns: 120px minmax(0, 1fr) auto;
   align-items: center;
   gap: 12px;
 }
 
 .categories__name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font: var(--mat-sys-body-medium);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  mat-icon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+    color: var(--mat-sys-primary);
+  }
 }
 
 .categories__track {

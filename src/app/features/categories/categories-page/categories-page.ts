@@ -11,7 +11,7 @@ import { describeDataError } from '../../../core/supabase/data-error';
 import { confirmAction } from '../../../shared/components/confirm-dialog/confirm-dialog';
 import { EmptyState } from '../../../shared/components/empty-state/empty-state';
 import { CategoriesStore } from '../categories.store';
-import { Category } from '../category.model';
+import { Category, categoryIcon } from '../category.model';
 import {
   CategoryFormData,
   CategoryFormDialog,
@@ -20,7 +20,6 @@ import {
 interface CategorySection {
   readonly kind: CategoryKind;
   readonly title: string;
-  readonly icon: string;
   readonly items: readonly Category[];
 }
 
@@ -34,6 +33,7 @@ interface CategorySection {
 export class CategoriesPage {
   protected readonly store = inject(CategoriesStore);
   protected readonly context = inject(FinancialContextService);
+  protected readonly categoryIcon = categoryIcon;
   private readonly dialog = inject(MatDialog);
   private readonly snackBar = inject(MatSnackBar);
 
@@ -41,13 +41,11 @@ export class CategoriesPage {
     {
       kind: 'INCOME',
       title: `${CATEGORY_KIND_LABELS.INCOME}s`,
-      icon: 'arrow_downward',
       items: this.store.ofKind('INCOME'),
     },
     {
       kind: 'EXPENSE',
       title: `${CATEGORY_KIND_LABELS.EXPENSE}s`,
-      icon: 'arrow_upward',
       items: this.store.ofKind('EXPENSE'),
     },
   ]);

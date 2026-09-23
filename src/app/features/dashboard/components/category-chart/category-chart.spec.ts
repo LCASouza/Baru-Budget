@@ -12,7 +12,8 @@ describe('CategoryChart', () => {
 
   const rows = () =>
     Array.from(element.querySelectorAll('.categories__row')).map((row) => ({
-      name: row.querySelector('.categories__name')?.textContent?.trim(),
+      name: row.querySelector('.categories__name')?.getAttribute('title'),
+      icon: row.querySelector('mat-icon')?.textContent?.trim(),
       width: (row.querySelector('.categories__bar') as HTMLElement | null)?.style.width,
     }));
 
@@ -35,8 +36,8 @@ describe('CategoryChart', () => {
 
   it('sorts by amount and scales the bars against the largest one', () => {
     expect(rows()).toEqual([
-      { name: 'Moradia', width: '100%' },
-      { name: 'Alimentação', width: '25%' },
+      { name: 'Moradia', icon: 'home', width: '100%' },
+      { name: 'Alimentação', icon: 'restaurant', width: '25%' },
     ]);
     expect(element.querySelector('.bb-card__subtitle')?.textContent).toContain('1.000,00');
   });

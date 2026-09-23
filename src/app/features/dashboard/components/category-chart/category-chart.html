@@ -12,7 +12,12 @@
     <ul class="categories__list">
       @for (row of rows(); track row.name) {
         <li class="categories__row">
-          <span class="categories__name" [title]="row.name">{{ row.name }}</span>
+          <span class="categories__name" [title]="row.name">
+            @if (showCategoryIcons()) {
+              <mat-icon>{{ categoryIcon(row.name) }}</mat-icon>
+            }
+            {{ row.name }}
+          </span>
           <span class="categories__track">
             <span class="categories__bar" [style.width.%]="row.percent"></span>
           </span>
