@@ -5,9 +5,9 @@ import { ViewportService } from '../../../../core/layout/viewport.service';
 import { formatTickLabel, niceTickStep } from '../../dashboard-summary';
 import { MonthlyTotals } from '../../dashboard.models';
 
-const DESKTOP_WIDTH = 600;
+const DESKTOP_WIDTH = 1100;
 const MOBILE_WIDTH = 360;
-const HEIGHT = 220;
+const HEIGHT = 280;
 const PADDING = { top: 12, right: 8, bottom: 28, left: 52 } as const;
 const TARGET_TICKS = 4;
 const BAR_RADIUS = 4;

@@ -54,22 +54,24 @@
       </article>
     }
 
-    <div class="dashboard__charts">
+    <div class="dashboard__chart-main">
       <app-income-expense-chart
-        [data]="store.isHousehold() ? store.monthlySeries() : store.paymentSeries()"
+        [data]="store.monthlySeries()"
         [title]="store.isHousehold() ? 'Receitas × Despesas' : 'Receitas × A pagar'"
         [expenseLabel]="store.isHousehold() ? 'Despesas' : 'A pagar'"
-        [subtitle]="store.hasEvolutionData() ? (store.isHousehold() ? '2 meses anteriores e 3 seguintes' : 'Mês do gasto → mês do vencimento') : 'Sem movimentações nos 6 meses exibidos'"
+        [subtitle]="store.hasEvolutionData() ? '2 meses anteriores e 9 seguintes · por mês do lançamento' : 'Sem movimentações nos 12 meses exibidos'"
       />
-      @if (store.isHousehold()) {
-        <app-category-chart [data]="store.byCategory()" />
-      } @else {
+    </div>
+
+    <div class="dashboard__breakdowns">
+      @if (!store.isHousehold()) {
         <app-category-chart
           [data]="store.payableByType()"
           title="A pagar por tipo"
           emptyMessage="Nenhum compromisso pendente no próximo ciclo."
         />
       }
+      <app-category-chart [data]="store.byCategory()" />
     </div>
 
     <div class="dashboard__lists">

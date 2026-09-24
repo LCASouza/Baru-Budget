@@ -25,7 +25,7 @@ import {
 } from './dashboard-summary';
 import { DashboardRepository } from './dashboard.repository';
 
-export const EVOLUTION_MONTHS = 6;
+export const EVOLUTION_MONTHS = 12;
 export const CATEGORY_LIMIT = 8;
 export const RECENT_LIMIT = 5;
 
@@ -43,10 +43,10 @@ export class DashboardStore {
   private readonly loans = inject(LoansStore);
   private readonly financings = inject(FinancingsStore);
 
-  private readonly seriesEnd = computed(() => shiftMonth(this.period.month(), 3));
+  private readonly seriesEnd = computed(() => shiftMonth(this.period.month(), 9));
 
-  // Six-month window with the selected month in the third position: two months
-  // of context behind it and three months of commitments ahead.
+  // Twelve-month window with the selected month in the third position: two
+  // months of context behind it and nine months ahead.
   private readonly totalsResource = resource({
     params: () => {
       const ownerId = this.context.dataOwnerId();
@@ -78,10 +78,7 @@ export class DashboardStore {
       }
       return {
         ownerId,
-        range: {
-          start: monthRange(shiftMonth(this.period.month(), -1)).start,
-          end: monthRange(shiftMonth(this.period.month(), 4)).end,
-        },
+        range: this.paymentRange(),
       };
     },
     loader: ({ params }) => this.repository.listDirectBillsDue(params.ownerId, params.range),
@@ -111,21 +108,8 @@ export class DashboardStore {
       EVOLUTION_MONTHS,
     ),
   );
-  readonly paymentSeries = computed(() =>
-    this.monthlySeries().map((month) => {
-      const [year, monthNumber] = month.key.split('-').map(Number);
-      const paymentMonth = shiftMonth({ year, month: monthNumber }, 1);
-      return {
-        ...month,
-        month: `${month.month}→${monthLabel(paymentMonth).slice(0, 3)}`,
-        expense: this.payableFor(monthRange(paymentMonth)).amount,
-      };
-    }),
-  );
   readonly hasEvolutionData = computed(() =>
-    (this.isHousehold() ? this.monthlySeries() : this.paymentSeries()).some(
-      (month) => month.income > 0 || month.expense > 0,
-    ),
+    this.monthlySeries().some((month) => month.income > 0 || month.expense > 0),
   );
 
   readonly byCategory = computed(() => limitAmounts(spendingByCategory(this.views()), CATEGORY_LIMIT));

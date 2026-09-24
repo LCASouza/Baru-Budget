@@ -169,26 +169,23 @@ describe('DashboardStore', () => {
     store = TestBed.inject(DashboardStore);
   });
 
-  it('requests two months behind and three months ahead of the selected month', async () => {
+  it('requests two months behind and nine months ahead of the selected month', async () => {
     await settle();
     const month = currentMonth();
     expect(listMonthlyTotals).toHaveBeenCalledWith(
       { ownerId: 'u1' },
       {
         start: monthRange(shiftMonth(month, -2)).start,
-        end: monthRange(shiftMonth(month, 3)).end,
+        end: monthRange(shiftMonth(month, 9)).end,
       },
     );
     expect(store.monthlySeries()).toHaveLength(EVOLUTION_MONTHS);
     expect(listDirectBillsDue).toHaveBeenCalledWith(
       'u1',
-      {
-        start: monthRange(shiftMonth(month, -1)).start,
-        end: monthRange(shiftMonth(month, 4)).end,
-      },
+      monthRange(shiftMonth(month, 1)),
     );
-    expect(store.paymentSeries()[2].key).toBe(monthRange(month).start);
-    expect(store.paymentSeries()[2].expense).toBe(7658.34);
+    expect(store.monthlySeries()[2].key).toBe(monthRange(month).start);
+    expect(store.monthlySeries()[2].expense).toBe(480);
   });
 
   it('reloads the series when the month changes', async () => {
@@ -198,7 +195,7 @@ describe('DashboardStore', () => {
     expect(listMonthlyTotals).toHaveBeenCalledTimes(2);
     expect(listMonthlyTotals).toHaveBeenLastCalledWith(
       { ownerId: 'u1' },
-      expect.objectContaining({ end: monthRange(shiftMonth(currentMonth(), 2)).end }),
+      expect.objectContaining({ end: monthRange(shiftMonth(currentMonth(), 8)).end }),
     );
   });
 
