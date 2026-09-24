@@ -14,6 +14,7 @@ export interface MonthlyTotals {
 export interface NamedAmount {
   readonly name: string;
   readonly amount: number;
+  readonly icon?: string;
 }
 
 export interface PendingItem {

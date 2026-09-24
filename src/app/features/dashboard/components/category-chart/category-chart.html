@@ -14,7 +14,7 @@
         <li class="categories__row">
           <span class="categories__name" [title]="row.name">
             @if (showCategoryIcons()) {
-              <mat-icon>{{ categoryIcon(row.name) }}</mat-icon>
+              <mat-icon>{{ categoryIcon(row) }}</mat-icon>
             }
             {{ row.name }}
           </span>

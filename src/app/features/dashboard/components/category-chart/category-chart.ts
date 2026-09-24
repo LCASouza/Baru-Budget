@@ -21,7 +21,8 @@ export class CategoryChart {
   readonly title = input('Gastos por categoria');
   readonly emptyMessage = input('Sem despesas no período.');
   readonly showCategoryIcons = input(true);
-  protected readonly categoryIcon = (name: string) => categoryIconByName('EXPENSE', name);
+  protected readonly categoryIcon = (row: NamedAmount) =>
+    row.icon ?? categoryIconByName('EXPENSE', row.name);
 
   protected readonly total = computed(() => sumAmounts(this.data().map((item) => item.amount)));
 

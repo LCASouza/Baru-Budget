@@ -61,6 +61,8 @@ function yFor(value: number, max: number): number {
 })
 export class IncomeExpenseChart {
   readonly data = input.required<readonly MonthlyTotals[]>();
+  readonly title = input('Receitas × Despesas');
+  readonly expenseLabel = input('Despesas');
   readonly subtitle = input('Últimos 6 meses');
 
   private readonly viewport = inject(ViewportService);
@@ -104,15 +106,15 @@ export class IncomeExpenseChart {
   protected readonly summary = computed(() => {
     const data = this.data();
     if (data.length === 0) {
-      return 'Gráfico de receitas e despesas sem dados no período.';
+      return `Gráfico de receitas e ${this.expenseLabel().toLowerCase()} sem dados no período.`;
     }
     const months = data
       .map(
         (item) =>
-          `${item.month}: receitas ${displayAmount(item.income)}, despesas ${displayAmount(item.expense)}`,
+          `${item.month}: receitas ${displayAmount(item.income)}, ${this.expenseLabel().toLowerCase()} ${displayAmount(item.expense)}`,
       )
       .join('; ');
-    return `Receitas e despesas por mês. ${months}.`;
+    return `Receitas e ${this.expenseLabel().toLowerCase()} por mês. ${months}.`;
   });
 
   protected readonly groups = computed<BarGroup[]>(() => {

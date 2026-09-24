@@ -8,6 +8,7 @@ import { sumAmounts } from '../../shared/money/money';
 import { SummaryCardData } from '../../shared/components/summary-card/summary-card';
 import { AccountsStore } from '../accounts/accounts.store';
 import { CardsStore } from '../cards/cards.store';
+import { CategoriesStore } from '../categories/categories.store';
 import { InstallmentsStore } from '../installments/installments.store';
 import { SettlementsStore } from '../settlements/settlements.store';
 import { FinancingsStore } from '../financings/financings.store';
@@ -36,13 +37,16 @@ export class DashboardStore {
   private readonly transactions = inject(TransactionsStore);
   private readonly accounts = inject(AccountsStore);
   private readonly cardsStore = inject(CardsStore);
+  private readonly categories = inject(CategoriesStore);
   private readonly installments = inject(InstallmentsStore);
   private readonly settlements = inject(SettlementsStore);
   private readonly loans = inject(LoansStore);
   private readonly financings = inject(FinancingsStore);
 
-  // Six-month window ending at the selected month; the current month itself comes
-  // from the transactions already loaded for the page.
+  private readonly seriesEnd = computed(() => shiftMonth(this.period.month(), 3));
+
+  // Six-month window with the selected month in the third position: two months
+  // of context behind it and three months of commitments ahead.
   private readonly totalsResource = resource({
     params: () => {
       const ownerId = this.context.dataOwnerId();
@@ -50,7 +54,7 @@ export class DashboardStore {
         return undefined;
       }
       const householdId = this.context.householdId();
-      const end = this.period.month();
+      const end = this.seriesEnd();
       return {
         scope: householdId ? { householdId } : { ownerId },
         range: {
@@ -72,7 +76,13 @@ export class DashboardStore {
       if (!ownerId || this.context.householdId()) {
         return undefined;
       }
-      return { ownerId, range: this.paymentRange() };
+      return {
+        ownerId,
+        range: {
+          start: monthRange(shiftMonth(this.period.month(), -1)).start,
+          end: monthRange(shiftMonth(this.period.month(), 4)).end,
+        },
+      };
     },
     loader: ({ params }) => this.repository.listDirectBillsDue(params.ownerId, params.range),
   });
@@ -97,12 +107,25 @@ export class DashboardStore {
   readonly monthlySeries = computed(() =>
     buildMonthlySeries(
       this.totalsResource.hasValue() ? this.totalsResource.value() : [],
-      this.period.month(),
+      this.seriesEnd(),
       EVOLUTION_MONTHS,
     ),
   );
+  readonly paymentSeries = computed(() =>
+    this.monthlySeries().map((month) => {
+      const [year, monthNumber] = month.key.split('-').map(Number);
+      const paymentMonth = shiftMonth({ year, month: monthNumber }, 1);
+      return {
+        ...month,
+        month: `${month.month}→${monthLabel(paymentMonth).slice(0, 3)}`,
+        expense: this.payableFor(monthRange(paymentMonth)).amount,
+      };
+    }),
+  );
   readonly hasEvolutionData = computed(() =>
-    this.monthlySeries().some((month) => month.income > 0 || month.expense > 0),
+    (this.isHousehold() ? this.monthlySeries() : this.paymentSeries()).some(
+      (month) => month.income > 0 || month.expense > 0,
+    ),
   );
 
   readonly byCategory = computed(() => limitAmounts(spendingByCategory(this.views()), CATEGORY_LIMIT));
@@ -116,27 +139,79 @@ export class DashboardStore {
   });
 
   readonly monthlyPayable = computed(() => {
+    return this.payableFor(this.paymentRange());
+  });
+
+  readonly payableByType = computed(() => {
     const range = this.paymentRange();
-    const directBills = this.directBillsResource.hasValue()
-      ? this.directBillsResource.value()
-      : [];
-    const invoices = this.cardsStore.dueBetween(range.start, range.end);
-    const loanInstalments = this.loans.dueBetween(range.start, range.end);
-    const financingInstalments = this.financings.dueBetween(range.start, range.end);
+    const parts = this.payableParts(range);
+    const grouped = new Map<string, number[]>();
+    for (const transaction of parts.directBills) {
+      const category = transaction.category_id
+        ? this.categories.byId().get(transaction.category_id)
+        : null;
+      const name = category?.name ?? 'Outras contas';
+      const amounts = grouped.get(name) ?? [];
+      amounts.push(transaction.amount);
+      grouped.set(name, amounts);
+    }
+    const rows = [...grouped.entries()].map(([name, amounts]) => ({
+      name,
+      amount: sumAmounts(amounts),
+    }));
+    const fixed = [
+      {
+        name: 'Faturas de cartão',
+        amount: sumAmounts(parts.invoices.map((invoice) => invoice.remaining)),
+        icon: 'credit_card',
+      },
+      {
+        name: 'Financiamentos',
+        amount: sumAmounts(parts.financingInstalments.map((transaction) => transaction.amount)),
+        icon: 'house',
+      },
+      {
+        name: 'Empréstimos',
+        amount: sumAmounts(parts.loanInstalments.map((transaction) => transaction.amount)),
+        icon: 'account_balance',
+      },
+    ].filter((row) => row.amount > 0);
+    return [...fixed, ...rows].sort((a, b) => b.amount - a.amount);
+  });
+
+  private payableFor(range: { readonly start: string; readonly end: string }) {
+    const parts = this.payableParts(range);
     return {
       amount: sumAmounts([
-        ...directBills.map((transaction) => transaction.amount),
-        ...invoices.map((invoice) => invoice.remaining),
-        ...loanInstalments.map((transaction) => transaction.amount),
-        ...financingInstalments.map((transaction) => transaction.amount),
+        ...parts.directBills.map((transaction) => transaction.amount),
+        ...parts.invoices.map((invoice) => invoice.remaining),
+        ...parts.loanInstalments.map((transaction) => transaction.amount),
+        ...parts.financingInstalments.map((transaction) => transaction.amount),
       ]),
       count:
-        directBills.length +
-        invoices.length +
-        loanInstalments.length +
-        financingInstalments.length,
+        parts.directBills.length +
+        parts.invoices.length +
+        parts.loanInstalments.length +
+        parts.financingInstalments.length,
     };
-  });
+  }
+
+  private payableParts(range: { readonly start: string; readonly end: string }) {
+    const directBills = this.directBillsResource.hasValue()
+      ? this.directBillsResource
+          .value()
+          .filter((transaction) => {
+            const dueDate = transaction.due_date ?? transaction.date;
+            return dueDate >= range.start && dueDate <= range.end;
+          })
+      : [];
+    return {
+      directBills,
+      invoices: this.cardsStore.dueBetween(range.start, range.end),
+      loanInstalments: this.loans.dueBetween(range.start, range.end),
+      financingInstalments: this.financings.dueBetween(range.start, range.end),
+    };
+  }
 
   readonly cards = computed<readonly SummaryCardData[]>(() => {
     const summary = this.summary();

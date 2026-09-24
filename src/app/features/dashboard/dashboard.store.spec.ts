@@ -9,6 +9,7 @@ import { currentMonth, monthRange, shiftMonth } from '../../core/period/period.m
 import { makeAccount, makeCategory, makeTransaction } from '../../testing/finance-fixtures';
 import { AccountsStore } from '../accounts/accounts.store';
 import { CardsStore } from '../cards/cards.store';
+import { CategoriesStore } from '../categories/categories.store';
 import { SettlementsStore } from '../settlements/settlements.store';
 import { FinancingsStore } from '../financings/financings.store';
 import { LoansStore } from '../loans/loans.store';
@@ -140,6 +141,12 @@ describe('DashboardStore', () => {
           },
         },
         {
+          provide: CategoriesStore,
+          useValue: {
+            byId: signal(new Map([['cat-food', makeCategory()]])),
+          },
+        },
+        {
           provide: TransactionsStore,
           useValue: {
             views,
@@ -162,21 +169,26 @@ describe('DashboardStore', () => {
     store = TestBed.inject(DashboardStore);
   });
 
-  it('requests six months of totals for the context owner ending at the selected month', async () => {
+  it('requests two months behind and three months ahead of the selected month', async () => {
     await settle();
     const month = currentMonth();
     expect(listMonthlyTotals).toHaveBeenCalledWith(
       { ownerId: 'u1' },
       {
-        start: monthRange(shiftMonth(month, -(EVOLUTION_MONTHS - 1))).start,
-        end: monthRange(month).end,
+        start: monthRange(shiftMonth(month, -2)).start,
+        end: monthRange(shiftMonth(month, 3)).end,
       },
     );
     expect(store.monthlySeries()).toHaveLength(EVOLUTION_MONTHS);
     expect(listDirectBillsDue).toHaveBeenCalledWith(
       'u1',
-      monthRange(shiftMonth(month, 1)),
+      {
+        start: monthRange(shiftMonth(month, -1)).start,
+        end: monthRange(shiftMonth(month, 4)).end,
+      },
     );
+    expect(store.paymentSeries()[2].key).toBe(monthRange(month).start);
+    expect(store.paymentSeries()[2].expense).toBe(7658.34);
   });
 
   it('reloads the series when the month changes', async () => {
@@ -186,7 +198,7 @@ describe('DashboardStore', () => {
     expect(listMonthlyTotals).toHaveBeenCalledTimes(2);
     expect(listMonthlyTotals).toHaveBeenLastCalledWith(
       { ownerId: 'u1' },
-      expect.objectContaining({ end: monthRange(shiftMonth(currentMonth(), -1)).end }),
+      expect.objectContaining({ end: monthRange(shiftMonth(currentMonth(), 2)).end }),
     );
   });
 
@@ -221,6 +233,12 @@ describe('DashboardStore', () => {
     expect(label('Faturas a pagar')?.hint).toBe('2 faturas atuais somadas');
     expect(label('Saldo disponível')).toBeUndefined();
     expect(label('Benefícios')).toBeUndefined();
+    expect(store.payableByType()).toEqual([
+      { name: 'Faturas de cartão', amount: 6000, icon: 'credit_card' },
+      { name: 'Financiamentos', amount: 900, icon: 'house' },
+      { name: 'Empréstimos', amount: 578.34, icon: 'account_balance' },
+      { name: 'Alimentação', amount: 180 },
+    ]);
   });
 
   it('drops the cash cards in a household context', async () => {

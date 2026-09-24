@@ -34,8 +34,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 40px;
+  height: 40px;
   border-radius: 12px;
   background: var(--mat-sys-tertiary-container);
   color: var(--mat-sys-on-tertiary-container);
@@ -79,6 +79,7 @@
 }
 
 .pending__list {
+  gap: 4px;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -89,7 +90,9 @@
   align-items: center;
   gap: 12px;
   width: 100%;
-  padding: 10px 4px;
+  box-sizing: border-box;
+  min-height: 52px;
+  padding: 8px 6px;
   border: 0;
   border-top: 1px solid var(--bb-card-border);
   border-radius: 8px;
