@@ -40,6 +40,7 @@ describe('DashboardStore', () => {
     ),
   );
   let listMonthlyTotals: ReturnType<typeof vi.fn>;
+  let listDirectBillsDue: ReturnType<typeof vi.fn>;
   let reloadTransactions: ReturnType<typeof vi.fn>;
   let store: DashboardStore;
   let loansStore: { activate: ReturnType<typeof vi.fn> } & Record<string, unknown>;
@@ -76,6 +77,16 @@ describe('DashboardStore', () => {
       { month: '2026-09-01', kind: 'INCOME', total: 5000 },
       { month: '2026-09-01', kind: 'EXPENSE', total: 480 },
     ]);
+    listDirectBillsDue = vi.fn().mockResolvedValue([
+      makeTransaction({
+        id: 'internet-due',
+        kind: 'EXPENSE',
+        amount: 180,
+        status: 'PENDING',
+        date: '2026-10-10',
+        due_date: '2026-10-10',
+      }),
+    ]);
     reloadTransactions = vi.fn();
     TestBed.configureTestingModule({
       providers: [
@@ -83,7 +94,10 @@ describe('DashboardStore', () => {
           provide: FinancialContextService,
           useValue: { dataOwnerId: ownerId, householdId, canManage: signal(true) },
         },
-        { provide: DashboardRepository, useValue: { listMonthlyTotals } },
+        {
+          provide: DashboardRepository,
+          useValue: { listMonthlyTotals, listDirectBillsDue },
+        },
         {
           provide: SettlementsStore,
           useValue: {
@@ -159,6 +173,10 @@ describe('DashboardStore', () => {
       },
     );
     expect(store.monthlySeries()).toHaveLength(EVOLUTION_MONTHS);
+    expect(listDirectBillsDue).toHaveBeenCalledWith(
+      'u1',
+      monthRange(shiftMonth(month, 1)),
+    );
   });
 
   it('reloads the series when the month changes', async () => {
@@ -186,16 +204,16 @@ describe('DashboardStore', () => {
       'Receitas',
       'Gastos do mês',
       'Saldo do período',
-      'Total a pagar no mês',
+      'A pagar em Outubro',
       'Contas vencidas',
       'Faturas a pagar',
     ]);
     expect(label('Receitas')?.amount).toBe(5000);
     expect(label('Gastos do mês')?.amount).toBe(480);
     expect(label('Saldo do período')?.amount).toBe(4520);
-    expect(label('Total a pagar no mês')?.amount).toBe(7658.34);
-    expect(label('Total a pagar no mês')?.hint).toBe(
-      '4 compromissos pendentes por vencimento',
+    expect(label('A pagar em Outubro')?.amount).toBe(7658.34);
+    expect(label('A pagar em Outubro')?.hint).toBe(
+      '4 compromissos pendentes do próximo ciclo',
     );
     expect(label('Contas vencidas')?.amount).toBe(180);
     expect(label('Contas vencidas')?.hint).toBe('1 conta vencida no período');

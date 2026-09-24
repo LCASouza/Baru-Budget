@@ -1,7 +1,7 @@
 import { Injectable, computed, effect, inject, resource } from '@angular/core';
 import { FinancialContextService } from '../../core/context/financial-context.service';
 import { PeriodService } from '../../core/period/period.service';
-import { monthRange, shiftMonth } from '../../core/period/period.model';
+import { monthLabel, monthRange, shiftMonth } from '../../core/period/period.model';
 import { todayIso } from '../../shared/dates/iso-date';
 import { displayDate } from '../../shared/format/display';
 import { sumAmounts } from '../../shared/money/money';
@@ -63,6 +63,20 @@ export class DashboardStore {
     loader: ({ params }) => this.repository.listMonthlyTotals(params.scope, params.range),
   });
 
+  private readonly paymentMonth = computed(() => shiftMonth(this.period.month(), 1));
+  private readonly paymentRange = computed(() => monthRange(this.paymentMonth()));
+
+  private readonly directBillsResource = resource({
+    params: () => {
+      const ownerId = this.context.dataOwnerId();
+      if (!ownerId || this.context.householdId()) {
+        return undefined;
+      }
+      return { ownerId, range: this.paymentRange() };
+    },
+    loader: ({ params }) => this.repository.listDirectBillsDue(params.ownerId, params.range),
+  });
+
   readonly isHousehold = computed(() => this.context.householdId() !== null);
 
   // The commitment cards only exist outside a household context, so the stores
@@ -97,35 +111,21 @@ export class DashboardStore {
   readonly recent = computed(() => recentTransactions(this.views(), RECENT_LIMIT));
   readonly periodDescription = computed(() => {
     const range = this.period.range();
-    return `Receitas, gastos e saldo consideram os lançamentos de ${displayDate(range.start)} a ${displayDate(range.end)}. Total a pagar reúne os compromissos ainda pendentes com vencimento nesse intervalo.`;
-  });
-
-  private readonly directBillsDueInPeriod = computed(() => {
-    const range = this.period.range();
-    return this.views().filter((view) => {
-      const transaction = view.transaction;
-      const dueDate = transaction.due_date ?? transaction.date;
-      return (
-        transaction.kind === 'EXPENSE' &&
-        transaction.status === 'PENDING' &&
-        transaction.credit_card_id === null &&
-        transaction.loan_id === null &&
-        transaction.financing_id === null &&
-        dueDate >= range.start &&
-        dueDate <= range.end
-      );
-    });
+    const paymentRange = this.paymentRange();
+    return `Receitas, gastos e saldo consideram os lançamentos de ${displayDate(range.start)} a ${displayDate(range.end)}. O total a pagar mostra os vencimentos de ${displayDate(paymentRange.start)} a ${displayDate(paymentRange.end)}.`;
   });
 
   readonly monthlyPayable = computed(() => {
-    const range = this.period.range();
-    const directBills = this.directBillsDueInPeriod();
+    const range = this.paymentRange();
+    const directBills = this.directBillsResource.hasValue()
+      ? this.directBillsResource.value()
+      : [];
     const invoices = this.cardsStore.dueBetween(range.start, range.end);
     const loanInstalments = this.loans.dueBetween(range.start, range.end);
     const financingInstalments = this.financings.dueBetween(range.start, range.end);
     return {
       amount: sumAmounts([
-        ...directBills.map((view) => view.transaction.amount),
+        ...directBills.map((transaction) => transaction.amount),
         ...invoices.map((invoice) => invoice.remaining),
         ...loanInstalments.map((transaction) => transaction.amount),
         ...financingInstalments.map((transaction) => transaction.amount),
@@ -170,11 +170,11 @@ export class DashboardStore {
     if (!this.isHousehold()) {
       const payable = this.monthlyPayable();
       cards.push({
-        label: 'Total a pagar no mês',
+        label: `A pagar em ${monthLabel(this.paymentMonth()).split(' ')[0]}`,
         amount: payable.amount,
         icon: 'payments',
         tone: 'payable',
-        hint: `${payable.count} ${payable.count === 1 ? 'compromisso pendente' : 'compromissos pendentes'} por vencimento`,
+        hint: `${payable.count} ${payable.count === 1 ? 'compromisso pendente' : 'compromissos pendentes'} do próximo ciclo`,
       });
     }
 
@@ -253,13 +253,20 @@ export class DashboardStore {
   readonly isLoading = computed(
     () =>
       this.totalsResource.isLoading() ||
+      this.directBillsResource.isLoading() ||
       (this.transactions.isLoading() && !this.transactions.loaded()),
   );
-  readonly error = computed(() => this.totalsResource.error() ?? this.transactions.error());
+  readonly error = computed(
+    () =>
+      this.totalsResource.error() ??
+      this.directBillsResource.error() ??
+      this.transactions.error(),
+  );
   readonly isEmptyMonth = computed(() => this.transactions.loaded() && this.views().length === 0);
 
   reload(): void {
     this.totalsResource.reload();
+    this.directBillsResource.reload();
     this.transactions.reload();
   }
 }
