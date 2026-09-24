@@ -56,10 +56,10 @@
 
     <div class="dashboard__chart-main">
       <app-income-expense-chart
-        [data]="store.monthlySeries()"
+        [data]="store.chartSeries()"
         [title]="store.isHousehold() ? 'Receitas × Despesas' : 'Receitas × A pagar'"
         [expenseLabel]="store.isHousehold() ? 'Despesas' : 'A pagar'"
-        [subtitle]="store.hasEvolutionData() ? '2 meses anteriores e 9 seguintes · por mês do lançamento' : 'Sem movimentações nos 12 meses exibidos'"
+        [subtitle]="store.hasEvolutionData() ? (store.isHousehold() || !store.periodIsCurrentMonth() ? '3 meses anteriores e 8 seguintes · por mês do lançamento' : 'Meses anteriores por gastos · mês atual pelo total a pagar') : 'Sem movimentações nos 12 meses exibidos'"
       />
     </div>
 
@@ -71,7 +71,11 @@
           emptyMessage="Nenhum compromisso pendente no próximo ciclo."
         />
       }
-      <app-category-chart [data]="store.byCategory()" />
+      <app-category-chart
+        [data]="store.isHousehold() ? store.byCategory() : store.payableByCategory()"
+        [title]="store.isHousehold() ? 'Gastos por categoria' : 'A pagar por categoria'"
+        [emptyMessage]="store.isHousehold() ? 'Sem despesas no período.' : 'Nenhum compromisso pendente no próximo ciclo.'"
+      />
     </div>
 
     <div class="dashboard__lists">

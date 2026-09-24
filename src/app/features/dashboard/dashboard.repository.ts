@@ -58,4 +58,23 @@ export class DashboardRepository {
       'Failed to load bills due in the next cycle',
     );
   }
+
+  /** Card purchases that compose invoices due in the payment cycle. */
+  async listCardPurchasesDue(ownerId: string, range: DateRange): Promise<Transaction[]> {
+    return readAllPages(
+      (from, to) =>
+        this.client
+          .from('transactions')
+          .select('*')
+          .eq('owner_user_id', ownerId)
+          .eq('kind', 'EXPENSE')
+          .not('credit_card_id', 'is', null)
+          .neq('status', 'CANCELLED')
+          .gte('invoice_due_date', range.start)
+          .lte('invoice_due_date', range.end)
+          .order('date')
+          .range(from, to),
+      'Failed to load card purchases in the next cycle',
+    );
+  }
 }

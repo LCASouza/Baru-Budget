@@ -41,4 +41,36 @@ describe('DashboardRepository', () => {
     );
     expect(range).toHaveBeenCalledWith(0, PAGE_SIZE - 1);
   });
+
+  it('loads card purchases by invoice due date for the category breakdown', async () => {
+    const range = vi.fn().mockResolvedValue({
+      data: [makeTransaction({ id: 'purchase', credit_card_id: 'card-1' })],
+      error: null,
+    });
+    const query = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      not: vi.fn().mockReturnThis(),
+      neq: vi.fn().mockReturnThis(),
+      gte: vi.fn().mockReturnThis(),
+      lte: vi.fn().mockReturnThis(),
+      order: vi.fn().mockReturnThis(),
+      range,
+    };
+    const client = { from: vi.fn().mockReturnValue(query) };
+    TestBed.configureTestingModule({
+      providers: [{ provide: SUPABASE_CLIENT, useValue: client }],
+    });
+
+    const rows = await TestBed.inject(DashboardRepository).listCardPurchasesDue('u1', {
+      start: '2026-10-01',
+      end: '2026-10-31',
+    });
+
+    expect(rows.map((row) => row.id)).toEqual(['purchase']);
+    expect(query.not).toHaveBeenCalledWith('credit_card_id', 'is', null);
+    expect(query.neq).toHaveBeenCalledWith('status', 'CANCELLED');
+    expect(query.gte).toHaveBeenCalledWith('invoice_due_date', '2026-10-01');
+    expect(query.lte).toHaveBeenCalledWith('invoice_due_date', '2026-10-31');
+  });
 });

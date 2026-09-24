@@ -42,6 +42,7 @@ describe('DashboardStore', () => {
   );
   let listMonthlyTotals: ReturnType<typeof vi.fn>;
   let listDirectBillsDue: ReturnType<typeof vi.fn>;
+  let listCardPurchasesDue: ReturnType<typeof vi.fn>;
   let reloadTransactions: ReturnType<typeof vi.fn>;
   let store: DashboardStore;
   let loansStore: { activate: ReturnType<typeof vi.fn> } & Record<string, unknown>;
@@ -75,6 +76,11 @@ describe('DashboardStore', () => {
       totalDueBetween: vi.fn().mockReturnValue(900),
     };
     listMonthlyTotals = vi.fn().mockResolvedValue([
+      {
+        month: monthRange(shiftMonth(currentMonth(), -1)).start,
+        kind: 'EXPENSE',
+        total: 6890.82,
+      },
       { month: '2026-09-01', kind: 'INCOME', total: 5000 },
       { month: '2026-09-01', kind: 'EXPENSE', total: 480 },
     ]);
@@ -88,6 +94,16 @@ describe('DashboardStore', () => {
         due_date: '2026-10-10',
       }),
     ]);
+    listCardPurchasesDue = vi.fn().mockResolvedValue([
+      makeTransaction({
+        id: 'card-purchase',
+        kind: 'EXPENSE',
+        amount: 6000,
+        account_id: null,
+        credit_card_id: 'card-1',
+        invoice_due_date: '2026-10-04',
+      }),
+    ]);
     reloadTransactions = vi.fn();
     TestBed.configureTestingModule({
       providers: [
@@ -97,7 +113,7 @@ describe('DashboardStore', () => {
         },
         {
           provide: DashboardRepository,
-          useValue: { listMonthlyTotals, listDirectBillsDue },
+          useValue: { listMonthlyTotals, listDirectBillsDue, listCardPurchasesDue },
         },
         {
           provide: SettlementsStore,
@@ -169,14 +185,14 @@ describe('DashboardStore', () => {
     store = TestBed.inject(DashboardStore);
   });
 
-  it('requests two months behind and nine months ahead of the selected month', async () => {
+  it('requests three months behind and eight months ahead of the selected month', async () => {
     await settle();
     const month = currentMonth();
     expect(listMonthlyTotals).toHaveBeenCalledWith(
       { ownerId: 'u1' },
       {
-        start: monthRange(shiftMonth(month, -2)).start,
-        end: monthRange(shiftMonth(month, 9)).end,
+        start: monthRange(shiftMonth(month, -3)).start,
+        end: monthRange(shiftMonth(month, 8)).end,
       },
     );
     expect(store.monthlySeries()).toHaveLength(EVOLUTION_MONTHS);
@@ -184,8 +200,14 @@ describe('DashboardStore', () => {
       'u1',
       monthRange(shiftMonth(month, 1)),
     );
-    expect(store.monthlySeries()[2].key).toBe(monthRange(month).start);
-    expect(store.monthlySeries()[2].expense).toBe(480);
+    expect(listCardPurchasesDue).toHaveBeenCalledWith(
+      'u1',
+      monthRange(shiftMonth(month, 1)),
+    );
+    expect(store.monthlySeries()[3].key).toBe(monthRange(month).start);
+    expect(store.monthlySeries()[3].expense).toBe(480);
+    expect(store.chartSeries()[2].expense).toBe(6890.82);
+    expect(store.chartSeries()[3].expense).toBe(7658.34);
   });
 
   it('reloads the series when the month changes', async () => {
@@ -195,7 +217,7 @@ describe('DashboardStore', () => {
     expect(listMonthlyTotals).toHaveBeenCalledTimes(2);
     expect(listMonthlyTotals).toHaveBeenLastCalledWith(
       { ownerId: 'u1' },
-      expect.objectContaining({ end: monthRange(shiftMonth(currentMonth(), 8)).end }),
+      expect.objectContaining({ end: monthRange(shiftMonth(currentMonth(), 7)).end }),
     );
   });
 
@@ -235,6 +257,9 @@ describe('DashboardStore', () => {
       { name: 'Financiamentos', amount: 900, icon: 'house' },
       { name: 'Empréstimos', amount: 578.34, icon: 'account_balance' },
       { name: 'Alimentação', amount: 180 },
+    ]);
+    expect(store.payableByCategory()).toEqual([
+      { name: 'Alimentação', amount: 7658.34 },
     ]);
   });
 

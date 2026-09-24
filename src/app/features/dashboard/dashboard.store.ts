@@ -43,10 +43,10 @@ export class DashboardStore {
   private readonly loans = inject(LoansStore);
   private readonly financings = inject(FinancingsStore);
 
-  private readonly seriesEnd = computed(() => shiftMonth(this.period.month(), 9));
+  private readonly seriesEnd = computed(() => shiftMonth(this.period.month(), 8));
 
-  // Twelve-month window with the selected month in the third position: two
-  // months of context behind it and nine months ahead.
+  // Twelve-month window with the selected month in the fourth position: three
+  // months of context behind it and eight months ahead.
   private readonly totalsResource = resource({
     params: () => {
       const ownerId = this.context.dataOwnerId();
@@ -84,6 +84,17 @@ export class DashboardStore {
     loader: ({ params }) => this.repository.listDirectBillsDue(params.ownerId, params.range),
   });
 
+  private readonly cardPurchasesResource = resource({
+    params: () => {
+      const ownerId = this.context.dataOwnerId();
+      if (!ownerId || this.context.householdId()) {
+        return undefined;
+      }
+      return { ownerId, range: this.paymentRange() };
+    },
+    loader: ({ params }) => this.repository.listCardPurchasesDue(params.ownerId, params.range),
+  });
+
   readonly isHousehold = computed(() => this.context.householdId() !== null);
 
   // The commitment cards only exist outside a household context, so the stores
@@ -96,6 +107,7 @@ export class DashboardStore {
   });
 
   readonly canManage = this.context.canManage;
+  readonly periodIsCurrentMonth = this.period.isCurrentMonth;
   readonly hasAccounts = computed(() => this.accounts.accounts().length > 0);
 
   private readonly views = computed(() => this.transactions.views());
@@ -108,8 +120,18 @@ export class DashboardStore {
       EVOLUTION_MONTHS,
     ),
   );
+  readonly chartSeries = computed(() => {
+    const series = this.monthlySeries();
+    if (this.isHousehold() || !this.period.isCurrentMonth()) {
+      return series;
+    }
+    const currentKey = this.period.range().start;
+    return series.map((month) =>
+      month.key === currentKey ? { ...month, expense: this.monthlyPayable().amount } : month,
+    );
+  });
   readonly hasEvolutionData = computed(() =>
-    this.monthlySeries().some((month) => month.income > 0 || month.expense > 0),
+    this.chartSeries().some((month) => month.income > 0 || month.expense > 0),
   );
 
   readonly byCategory = computed(() => limitAmounts(spendingByCategory(this.views()), CATEGORY_LIMIT));
@@ -161,6 +183,56 @@ export class DashboardStore {
       },
     ].filter((row) => row.amount > 0);
     return [...fixed, ...rows].sort((a, b) => b.amount - a.amount);
+  });
+
+  readonly payableByCategory = computed(() => {
+    const range = this.paymentRange();
+    const parts = this.payableParts(range);
+    const grouped = new Map<string, number[]>();
+    const add = (transaction: { readonly category_id: string | null; readonly amount: number }) => {
+      const category = transaction.category_id
+        ? this.categories.byId().get(transaction.category_id)
+        : null;
+      const name = category?.name ?? 'Outros';
+      const amounts = grouped.get(name) ?? [];
+      amounts.push(transaction.amount);
+      grouped.set(name, amounts);
+    };
+
+    for (const transaction of [
+      ...parts.directBills,
+      ...parts.loanInstalments,
+      ...parts.financingInstalments,
+    ]) {
+      add(transaction);
+    }
+
+    const purchases = this.cardPurchasesResource.hasValue()
+      ? this.cardPurchasesResource.value()
+      : [];
+    const purchaseTotal = sumAmounts(purchases.map((transaction) => transaction.amount));
+    const invoiceTotal = sumAmounts(parts.invoices.map((invoice) => invoice.remaining));
+    const cardFactor = purchaseTotal > invoiceTotal && purchaseTotal > 0 ? invoiceTotal / purchaseTotal : 1;
+    for (const transaction of purchases) {
+      add({ ...transaction, amount: transaction.amount * cardFactor });
+    }
+    const priorBalance = sumAmounts([invoiceTotal, -Math.min(invoiceTotal, purchaseTotal)]);
+    if (priorBalance > 0) {
+      grouped.set('Saldo anterior das faturas', [priorBalance]);
+    }
+
+    const rows = [...grouped.entries()]
+      .map(([name, amounts]) => ({ name, amount: sumAmounts(amounts) }))
+      .filter((row) => row.amount > 0)
+      .sort((a, b) => b.amount - a.amount || a.name.localeCompare(b.name, 'pt-BR'));
+    const difference = sumAmounts([
+      this.monthlyPayable().amount,
+      -sumAmounts(rows.map((row) => row.amount)),
+    ]);
+    if (difference !== 0 && rows[0] && rows[0].amount + difference > 0) {
+      rows[0] = { ...rows[0], amount: sumAmounts([rows[0].amount, difference]) };
+    }
+    return rows;
   });
 
   private payableFor(range: { readonly start: string; readonly end: string }) {
@@ -313,12 +385,14 @@ export class DashboardStore {
     () =>
       this.totalsResource.isLoading() ||
       this.directBillsResource.isLoading() ||
+      this.cardPurchasesResource.isLoading() ||
       (this.transactions.isLoading() && !this.transactions.loaded()),
   );
   readonly error = computed(
     () =>
       this.totalsResource.error() ??
       this.directBillsResource.error() ??
+      this.cardPurchasesResource.error() ??
       this.transactions.error(),
   );
   readonly isEmptyMonth = computed(() => this.transactions.loaded() && this.views().length === 0);
@@ -326,6 +400,7 @@ export class DashboardStore {
   reload(): void {
     this.totalsResource.reload();
     this.directBillsResource.reload();
+    this.cardPurchasesResource.reload();
     this.transactions.reload();
   }
 }
