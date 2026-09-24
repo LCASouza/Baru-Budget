@@ -4,6 +4,7 @@ import { PeriodService } from '../../core/period/period.service';
 import { monthRange, shiftMonth } from '../../core/period/period.model';
 import { todayIso } from '../../shared/dates/iso-date';
 import { displayDate } from '../../shared/format/display';
+import { sumAmounts } from '../../shared/money/money';
 import { SummaryCardData } from '../../shared/components/summary-card/summary-card';
 import { AccountsStore } from '../accounts/accounts.store';
 import { CardsStore } from '../cards/cards.store';
@@ -96,7 +97,45 @@ export class DashboardStore {
   readonly recent = computed(() => recentTransactions(this.views(), RECENT_LIMIT));
   readonly periodDescription = computed(() => {
     const range = this.period.range();
-    return `Receitas, despesas e saldo do período consideram ${displayDate(range.start)} a ${displayDate(range.end)}.`;
+    return `Receitas, gastos e saldo consideram os lançamentos de ${displayDate(range.start)} a ${displayDate(range.end)}. Total a pagar reúne os compromissos ainda pendentes com vencimento nesse intervalo.`;
+  });
+
+  private readonly directBillsDueInPeriod = computed(() => {
+    const range = this.period.range();
+    return this.views().filter((view) => {
+      const transaction = view.transaction;
+      const dueDate = transaction.due_date ?? transaction.date;
+      return (
+        transaction.kind === 'EXPENSE' &&
+        transaction.status === 'PENDING' &&
+        transaction.credit_card_id === null &&
+        transaction.loan_id === null &&
+        transaction.financing_id === null &&
+        dueDate >= range.start &&
+        dueDate <= range.end
+      );
+    });
+  });
+
+  readonly monthlyPayable = computed(() => {
+    const range = this.period.range();
+    const directBills = this.directBillsDueInPeriod();
+    const invoices = this.cardsStore.dueBetween(range.start, range.end);
+    const loanInstalments = this.loans.dueBetween(range.start, range.end);
+    const financingInstalments = this.financings.dueBetween(range.start, range.end);
+    return {
+      amount: sumAmounts([
+        ...directBills.map((view) => view.transaction.amount),
+        ...invoices.map((invoice) => invoice.remaining),
+        ...loanInstalments.map((transaction) => transaction.amount),
+        ...financingInstalments.map((transaction) => transaction.amount),
+      ]),
+      count:
+        directBills.length +
+        invoices.length +
+        loanInstalments.length +
+        financingInstalments.length,
+    };
   });
 
   readonly cards = computed<readonly SummaryCardData[]>(() => {
@@ -110,33 +149,44 @@ export class DashboardStore {
         hint: countHint(summary.incomeCount, 'entrada', 'entradas'),
       },
       {
-        label: 'Despesas',
+        label: 'Gastos do mês',
         amount: summary.expense,
         icon: 'arrow_upward',
         tone: 'expense',
-        hint: countHint(summary.expenseCount, 'saída', 'saídas'),
+        hint: `${countHint(summary.expenseCount, 'saída', 'saídas')} · por data do lançamento`,
       },
       {
         label: 'Saldo do período',
         amount: summary.balance,
         icon: 'account_balance_wallet',
         tone: 'balance',
-        hint: 'Receitas menos despesas',
+        hint: 'Receitas menos gastos do mês',
         signed: true,
-      },
-      {
-        label: 'Contas vencidas',
-        amount: summary.overdue,
-        icon: 'event_busy',
-        tone: 'payable',
-        hint: countHint(summary.overdueCount, 'conta vencida', 'contas vencidas'),
       },
     ];
 
     // A household has no accounts or cards of its own, so cash balances and
     // invoices only make sense in the personal and shared contexts.
     if (!this.isHousehold()) {
-      const totals = this.accounts.totals();
+      const payable = this.monthlyPayable();
+      cards.push({
+        label: 'Total a pagar no mês',
+        amount: payable.amount,
+        icon: 'payments',
+        tone: 'payable',
+        hint: `${payable.count} ${payable.count === 1 ? 'compromisso pendente' : 'compromissos pendentes'} por vencimento`,
+      });
+    }
+
+    cards.push({
+      label: 'Contas vencidas',
+      amount: summary.overdue,
+      icon: 'event_busy',
+      tone: 'payable',
+      hint: countHint(summary.overdueCount, 'conta vencida', 'contas vencidas'),
+    });
+
+    if (!this.isHousehold()) {
       const invoiceCount = this.cardsStore.currentInvoiceCount();
       if (invoiceCount > 0) {
         cards.push({
@@ -196,14 +246,6 @@ export class DashboardStore {
           },
         );
       }
-      cards.push({
-        label: 'Saldo disponível',
-        amount: totals.money,
-        icon: 'savings',
-        tone: 'balance',
-        hint: 'Dinheiro disponível nas contas para pagar despesas',
-        signed: true,
-      });
     }
     return cards;
   });

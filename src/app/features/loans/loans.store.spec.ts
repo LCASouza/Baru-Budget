@@ -113,6 +113,15 @@ describe('LoansStore', () => {
     expect(store.open()).toHaveLength(1);
   });
 
+  it('totals pending instalments by due date', async () => {
+    await load();
+    expect(store.dueBetween('2026-09-01', '2026-09-30').map((item) => item.id)).toEqual([
+      'i2',
+    ]);
+    expect(store.totalDueBetween('2026-09-01', '2026-09-30')).toBe(100);
+    expect(store.totalDueBetween('2026-10-01', '2026-10-31')).toBe(0);
+  });
+
   it('generates the schedule and refreshes the account balances', async () => {
     await load();
     await expect(store.generateSchedule('loan-1')).resolves.toBe(12);

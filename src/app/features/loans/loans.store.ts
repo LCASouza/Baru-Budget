@@ -3,6 +3,7 @@ import { FinancialContextService } from '../../core/context/financial-context.se
 import { AccountsStore } from '../accounts/accounts.store';
 import { CategoriesStore } from '../categories/categories.store';
 import { DebtStatementInput } from '../../shared/components/debt-statement-dialog/debt-statement-dialog';
+import { sumAmounts } from '../../shared/money/money';
 import { Transaction } from '../transactions/transaction.model';
 import {
   DebtStatement,
@@ -66,6 +67,19 @@ export class LoansStore {
   readonly error = this.dataResource.error;
   readonly loaded = computed(() => this.dataResource.hasValue());
   readonly canManage = this.context.canManage;
+
+  dueBetween(start: string, end: string): readonly Transaction[] {
+    return this.views().flatMap((view) =>
+      view.instalments.filter((transaction) => {
+        const dueDate = transaction.due_date ?? transaction.date;
+        return transaction.status === 'PENDING' && dueDate >= start && dueDate <= end;
+      }),
+    );
+  }
+
+  totalDueBetween(start: string, end: string): number {
+    return sumAmounts(this.dueBetween(start, end).map((transaction) => transaction.amount));
+  }
 
   viewOf(loanId: string): LoanView | null {
     return this.views().find((view) => view.loan.id === loanId) ?? null;

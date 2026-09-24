@@ -57,12 +57,20 @@ describe('DashboardStore', () => {
       remainingCount: signal(0),
       reload: vi.fn(),
       activate: vi.fn(),
+      dueBetween: vi.fn().mockReturnValue([
+        makeTransaction({ id: 'loan-due', amount: 578.34, status: 'PENDING' }),
+      ]),
+      totalDueBetween: vi.fn().mockReturnValue(578.34),
     };
     financingsStore = {
       totalRemaining: signal(0),
       remainingCount: signal(0),
       reload: vi.fn(),
       activate: vi.fn(),
+      dueBetween: vi.fn().mockReturnValue([
+        makeTransaction({ id: 'financing-due', amount: 900, status: 'PENDING' }),
+      ]),
+      totalDueBetween: vi.fn().mockReturnValue(900),
     };
     listMonthlyTotals = vi.fn().mockResolvedValue([
       { month: '2026-09-01', kind: 'INCOME', total: 5000 },
@@ -110,8 +118,8 @@ describe('DashboardStore', () => {
             byId: signal(new Map()),
             nameById: signal(new Map()),
             invoicesOf: () => [],
-            dueBetween: () => [],
-            totalDueBetween: () => 0,
+            dueBetween: () => [{ remaining: 6000 }],
+            totalDueBetween: () => 6000,
             currentInvoiceCount: signal(2),
             totalCurrentInvoices: signal(6164.89),
             reload: vi.fn(),
@@ -176,20 +184,24 @@ describe('DashboardStore', () => {
     await settle();
     expect(store.cards().map((card) => card.label)).toEqual([
       'Receitas',
-      'Despesas',
+      'Gastos do mês',
       'Saldo do período',
+      'Total a pagar no mês',
       'Contas vencidas',
       'Faturas a pagar',
-      'Saldo disponível',
     ]);
     expect(label('Receitas')?.amount).toBe(5000);
-    expect(label('Despesas')?.amount).toBe(480);
+    expect(label('Gastos do mês')?.amount).toBe(480);
     expect(label('Saldo do período')?.amount).toBe(4520);
+    expect(label('Total a pagar no mês')?.amount).toBe(7658.34);
+    expect(label('Total a pagar no mês')?.hint).toBe(
+      '4 compromissos pendentes por vencimento',
+    );
     expect(label('Contas vencidas')?.amount).toBe(180);
     expect(label('Contas vencidas')?.hint).toBe('1 conta vencida no período');
     expect(label('Faturas a pagar')?.amount).toBe(6164.89);
     expect(label('Faturas a pagar')?.hint).toBe('2 faturas atuais somadas');
-    expect(label('Saldo disponível')?.amount).toBe(1200);
+    expect(label('Saldo disponível')).toBeUndefined();
     expect(label('Benefícios')).toBeUndefined();
   });
 
@@ -198,7 +210,7 @@ describe('DashboardStore', () => {
     await settle();
     expect(store.cards().map((card) => card.label)).toEqual([
       'Receitas',
-      'Despesas',
+      'Gastos do mês',
       'Saldo do período',
       'Contas vencidas',
     ]);
